@@ -1,6 +1,6 @@
 package com.redcrow.dragonsfirstflight
 
-import com.redcrow.dragonsfirstflight.game.DragonGameConfig
+import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.createDragonGame
 import korlibs.image.color.Colors
 import korlibs.korge.Korge
