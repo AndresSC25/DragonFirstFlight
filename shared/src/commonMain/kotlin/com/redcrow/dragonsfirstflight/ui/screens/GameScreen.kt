@@ -1,11 +1,11 @@
 package com.redcrow.dragonsfirstflight
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,23 +27,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun GameScreen(onVolverAlMenu: () -> Unit) {
-    var numeroPartida by remember { mutableIntStateOf(0) }
-
-    var posicionDragon by remember(numeroPartida) {
-        mutableStateOf(92.dp)
-    }
-    var vidas by remember(numeroPartida) {
-        mutableIntStateOf(3)
-    }
-    var puntos by remember(numeroPartida) {
+    var numeroPartida by remember {
         mutableIntStateOf(0)
     }
 
-    val partidaActiva = vidas > 0 && puntos < PUNTOS_PARA_GANAR
+    val estado = remember(numeroPartida) {
+        GameState()
+    }
+
+    val controlador = remember(estado) {
+        GameController(estado)
+    }
+
+    val posicionDragon by estado.posicionDragon
+    var vidas by estado.vidas
+    var puntos by estado.puntos
+
+    val partidaActiva = estado.partidaActiva
 
     Column(
         modifier = Modifier
@@ -56,18 +61,32 @@ fun GameScreen(onVolverAlMenu: () -> Unit) {
             style = MaterialTheme.typography.headlineSmall
         )
 
-        Text("Vidas: $vidas    Puntos: $puntos/$PUNTOS_PARA_GANAR")
+        Text(
+            text = "Vidas: $vidas    " +
+                    "Puntos: $puntos/${GameConfig.PUNTOS_PARA_GANAR}"
+        )
 
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(240.dp)
+                .height(GameConfig.ALTO_AREA)
                 .clipToBounds()
                 .background(Color(0xFFE3F2FD))
+                .pointerInput(controlador) {
+                    detectTapGestures(
+                        onPress = {
+                            controlador.aletear()
+                        }
+                    )
+                }
         ) {
-            val posicionInicial = maxWidth - 72.dp
+            val posicionInicial =
+                maxWidth - GameConfig.MARGEN_INICIAL_OBSTACULO
 
-            var posicionObstaculo by remember(maxWidth, numeroPartida) {
+            var posicionObstaculo by remember(
+                maxWidth,
+                numeroPartida
+            ) {
                 mutableStateOf(posicionInicial)
             }
 
@@ -77,19 +96,34 @@ fun GameScreen(onVolverAlMenu: () -> Unit) {
                     var impactoRegistrado = false
                     var puntoRegistrado = false
 
-                    while (vidas > 0 && puntos < PUNTOS_PARA_GANAR) {
+                    while (estado.partidaActiva) {
                         val tiempoActual = withFrameNanos { it }
 
                         if (tiempoAnterior != 0L) {
                             val segundosTranscurridos =
-                                ((tiempoActual - tiempoAnterior) /
-                                        1_000_000_000f).coerceAtMost(0.05f)
+                                (
+                                        (tiempoActual - tiempoAnterior) /
+                                                1_000_000_000f
+                                        ).coerceAtMost(
+                                        GameConfig.MAX_DELTA_SEGUNDOS
+                                    )
+
+                            // Actualizar el vuelo antes de comprobar colisiones.
+                            controlador.actualizarVuelo(
+                                segundosTranscurridos
+                            )
 
                             val siguientePosicion =
                                 posicionObstaculo -
-                                        (120.dp * segundosTranscurridos)
+                                        (
+                                                GameConfig.VELOCIDAD_OBSTACULO *
+                                                        segundosTranscurridos
+                                                )
 
-                            if (siguientePosicion <= (-48).dp) {
+                            if (
+                                siguientePosicion <=
+                                -GameConfig.OBSTACULO_TAMANO
+                            ) {
                                 posicionObstaculo = posicionInicial
                                 impactoRegistrado = false
                                 puntoRegistrado = false
@@ -100,12 +134,16 @@ fun GameScreen(onVolverAlMenu: () -> Unit) {
                                     !impactoRegistrado &&
                                     !puntoRegistrado &&
                                     hayColision(
-                                        dragonX = 24.dp,
-                                        dragonY = posicionDragon,
-                                        dragonTamano = 56.dp,
+                                        dragonX = GameConfig.DRAGON_X,
+                                        dragonY =
+                                            estado.posicionDragon.value,
+                                        dragonTamano =
+                                            GameConfig.DRAGON_TAMANO,
                                         obstaculoX = posicionObstaculo,
-                                        obstaculoY = 96.dp,
-                                        obstaculoTamano = 48.dp
+                                        obstaculoY =
+                                            GameConfig.OBSTACULO_Y,
+                                        obstaculoTamano =
+                                            GameConfig.OBSTACULO_TAMANO
                                     )
                                 ) {
                                     vidas -= 1
@@ -115,7 +153,9 @@ fun GameScreen(onVolverAlMenu: () -> Unit) {
                                 if (
                                     !impactoRegistrado &&
                                     !puntoRegistrado &&
-                                    posicionObstaculo + 48.dp <= 24.dp
+                                    posicionObstaculo +
+                                    GameConfig.OBSTACULO_TAMANO <=
+                                    GameConfig.DRAGON_X
                                 ) {
                                     puntos += 1
                                     puntoRegistrado = true
@@ -128,22 +168,28 @@ fun GameScreen(onVolverAlMenu: () -> Unit) {
                 }
             }
 
-            // Representación provisional del dragón
+            // Representación provisional del dragón.
             Box(
                 modifier = Modifier
-                    .offset(x = 24.dp, y = posicionDragon)
-                    .size(56.dp)
+                    .offset(
+                        x = GameConfig.DRAGON_X,
+                        y = posicionDragon
+                    )
+                    .size(GameConfig.DRAGON_TAMANO)
                     .background(Color(0xFF1976D2)),
                 contentAlignment = Alignment.Center
             ) {
                 Text("D", color = Color.White)
             }
 
-            // Representación provisional del obstáculo
+            // Representación provisional del obstáculo.
             Box(
                 modifier = Modifier
-                    .offset(x = posicionObstaculo, y = 96.dp)
-                    .size(48.dp)
+                    .offset(
+                        x = posicionObstaculo,
+                        y = GameConfig.OBSTACULO_Y
+                    )
+                    .size(GameConfig.OBSTACULO_TAMANO)
                     .background(Color(0xFFE53935)),
                 contentAlignment = Alignment.Center
             ) {
@@ -151,39 +197,20 @@ fun GameScreen(onVolverAlMenu: () -> Unit) {
             }
         }
 
-        if (partidaActiva) {
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Button(
-                    onClick = {
-                        posicionDragon =
-                            (posicionDragon - 24.dp)
-                                .coerceIn(0.dp, 184.dp)
-                    }
-                ) {
-                    Text("Subir")
-                }
-
-                Button(
-                    onClick = {
-                        posicionDragon =
-                            (posicionDragon + 24.dp)
-                                .coerceIn(0.dp, 184.dp)
-                    }
-                ) {
-                    Text("Bajar")
-                }
-            }
-        } else {
+        if (!partidaActiva) {
             Text(
                 text = if (vidas == 0) {
                     "Fin de partida"
                 } else {
-                    "¡Victoria! Esquivaste $PUNTOS_PARA_GANAR obstáculos"
+                    "¡Victoria! Esquivaste " +
+                            "${GameConfig.PUNTOS_PARA_GANAR} obstáculos"
                 },
                 style = MaterialTheme.typography.headlineSmall
             )
 
-            Button(onClick = { numeroPartida += 1 }) {
+            Button(
+                onClick = { numeroPartida += 1 }
+            ) {
                 Text("Jugar de nuevo")
             }
         }
