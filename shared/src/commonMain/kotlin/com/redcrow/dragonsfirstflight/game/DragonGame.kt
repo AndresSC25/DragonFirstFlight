@@ -1,10 +1,9 @@
 package com.redcrow.dragonsfirstflight.game
 
-import com.redcrow.dragonsfirstflight.game.engine.GameEngine
+import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
-import com.redcrow.dragonsfirstflight.game.state.GameScreenState
 import korlibs.image.color.Colors
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
@@ -34,9 +33,7 @@ object DragonGameConfig {
 }
 
 suspend fun Container.createDragonGame() {
-    var screenState = GameScreenState.MENU
-
-    val engine = GameEngine(
+    val controller = GameController(
         gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH
     )
 
@@ -49,31 +46,29 @@ suspend fun Container.createDragonGame() {
     val menuContainer = container()
     val gameContainer = container()
 
+    fun updateScreenVisibility() {
+        menuContainer.visible = controller.isMenuVisible
+        gameContainer.visible = controller.isGameVisible
+    }
+
     createMainMenu(
         parent = menuContainer,
         onPlay = {
-            engine.restart()
-            screenState = GameScreenState.PLAYING
-            menuContainer.visible = false
-            gameContainer.visible = true
+            controller.startGame()
+            updateScreenVisibility()
         }
     )
 
     createGameplayScreen(
         parent = gameContainer,
-        engine = engine,
-        isPlaying = {
-            screenState == GameScreenState.PLAYING
-        },
+        controller = controller,
         onBackToMenu = {
-            screenState = GameScreenState.MENU
-            gameContainer.visible = false
-            menuContainer.visible = true
+            controller.returnToMenu()
+            updateScreenVisibility()
         }
     )
 
-    menuContainer.visible = true
-    gameContainer.visible = false
+    updateScreenVisibility()
 }
 
 private fun createMainMenu(
@@ -122,8 +117,7 @@ private fun createMainMenu(
 
 private fun createGameplayScreen(
     parent: Container,
-    engine: GameEngine,
-    isPlaying: () -> Boolean,
+    controller: GameController,
     onBackToMenu: () -> Unit
 ) {
     with(parent) {
@@ -208,15 +202,7 @@ private fun createGameplayScreen(
             )
 
             gameAreaBackground.onClick {
-                if (!isPlaying()) {
-                    return@onClick
-                }
-
-                if (engine.isRunning) {
-                    engine.flap()
-                } else {
-                    engine.restart()
-                }
+                controller.handleGameAreaInput()
             }
         }
 
@@ -288,18 +274,14 @@ private fun createGameplayScreen(
         }
 
         gameArea.addUpdater { delta ->
-            if (!isPlaying()) {
-                return@addUpdater
-            }
-
             val elapsedSeconds =
                 delta.inWholeMilliseconds / 1000.0
 
-            engine.update(elapsedSeconds)
-            updateView(engine.snapshot())
+            controller.update(elapsedSeconds)
+            updateView(controller.snapshot())
         }
 
-        updateView(engine.snapshot())
+        updateView(controller.snapshot())
     }
 }
 
