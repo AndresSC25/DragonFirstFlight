@@ -10,6 +10,7 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.SolidRect
 import korlibs.korge.view.Text
 import korlibs.korge.view.addUpdater
+import korlibs.korge.view.clipContainer
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 import korlibs.math.geom.Size
@@ -65,38 +66,50 @@ suspend fun Container.createDragonGame() {
         y = 160.0
     }
 
-    solidRect(
-        width = DragonGameConfig.GAME_AREA_WIDTH,
-        height = GameEngineConfig.GAME_AREA_HEIGHT,
-        color = Colors["#D9ECFF"]
+    lateinit var dragon: SolidRect
+    lateinit var dragonLabel: Text
+    lateinit var obstacle: SolidRect
+    lateinit var obstacleLabel: Text
+
+    clipContainer(
+        size = Size(
+            width = DragonGameConfig.GAME_AREA_WIDTH,
+            height = GameEngineConfig.GAME_AREA_HEIGHT
+        )
     ) {
         x = DragonGameConfig.GAME_AREA_X
         y = DragonGameConfig.GAME_AREA_Y
+
+        solidRect(
+            width = DragonGameConfig.GAME_AREA_WIDTH,
+            height = GameEngineConfig.GAME_AREA_HEIGHT,
+            color = Colors["#D9ECFF"]
+        )
+
+        dragon = solidRect(
+            width = GameEngineConfig.DRAGON_SIZE,
+            height = GameEngineConfig.DRAGON_SIZE,
+            color = Colors["#1976D2"]
+        )
+
+        dragonLabel = text(
+            text = "D",
+            textSize = 30.0,
+            color = Colors.WHITE
+        )
+
+        obstacle = solidRect(
+            width = GameEngineConfig.OBSTACLE_SIZE,
+            height = GameEngineConfig.OBSTACLE_SIZE,
+            color = Colors["#E53935"]
+        )
+
+        obstacleLabel = text(
+            text = "X",
+            textSize = 28.0,
+            color = Colors.WHITE
+        )
     }
-
-    val dragon = solidRect(
-        width = GameEngineConfig.DRAGON_SIZE,
-        height = GameEngineConfig.DRAGON_SIZE,
-        color = Colors["#1976D2"]
-    )
-
-    val dragonLabel = text(
-        text = "D",
-        textSize = 30.0,
-        color = Colors.WHITE
-    )
-
-    val obstacle = solidRect(
-        width = GameEngineConfig.OBSTACLE_SIZE,
-        height = GameEngineConfig.OBSTACLE_SIZE,
-        color = Colors["#E53935"]
-    )
-
-    val obstacleLabel = text(
-        text = "X",
-        textSize = 28.0,
-        color = Colors.WHITE
-    )
 
     val resultText = text(
         text = "",
@@ -154,10 +167,8 @@ suspend fun Container.createDragonGame() {
 
             GameStatus.LOST -> {
                 resultText.text = "Game over"
-
                 restartText.text =
                     "Click or tap to play again"
-
                 instructionText.text = ""
             }
         }
@@ -189,13 +200,8 @@ private fun updateDragonView(
     label: Text,
     snapshot: GameSnapshot
 ) {
-    dragon.x =
-        DragonGameConfig.GAME_AREA_X +
-                snapshot.dragonX
-
-    dragon.y =
-        DragonGameConfig.GAME_AREA_Y +
-                snapshot.dragonY
+    dragon.x = snapshot.dragonX
+    dragon.y = snapshot.dragonY
 
     label.x =
         dragon.x +
@@ -211,13 +217,8 @@ private fun updateObstacleView(
     label: Text,
     snapshot: GameSnapshot
 ) {
-    obstacle.x =
-        DragonGameConfig.GAME_AREA_X +
-                snapshot.obstacleX
-
-    obstacle.y =
-        DragonGameConfig.GAME_AREA_Y +
-                snapshot.obstacleY
+    obstacle.x = snapshot.obstacleX
+    obstacle.y = snapshot.obstacleY
 
     label.x =
         obstacle.x +
