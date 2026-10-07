@@ -1,25 +1,25 @@
 package com.redcrow.dragonsfirstflight
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
+import com.redcrow.dragonsfirstflight.game.DragonGameConfig
+import com.redcrow.dragonsfirstflight.game.createDragonGame
+import korlibs.image.color.Colors
+import korlibs.korge.Korge
+import korlibs.render.GameWindowCreationConfig
+import korlibs.render.KorgwActivity
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
-        super.onCreate(savedInstanceState)
-
-        setContent {
-            App()
+class MainActivity : KorgwActivity(
+    config = GameWindowCreationConfig(
+        msaa = 1,
+        fullscreen = true
+    )
+) {
+    override suspend fun activityMain() {
+        Korge(
+            windowSize = DragonGameConfig.VIRTUAL_SIZE,
+            virtualSize = DragonGameConfig.VIRTUAL_SIZE,
+            backgroundColor = Colors["#101827"]
+        ) {
+            createDragonGame()
         }
     }
-}
-
-@Preview
-@Composable
-fun AppAndroidPreview() {
-    App()
 }
