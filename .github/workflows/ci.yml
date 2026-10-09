@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build Desktop and Android
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK 37 platform
+        shell: bash
+        run: |
+          android sdk install --canary platforms/android-37
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+          cache-cleanup: on-success
+
+      - name: Grant Gradle Wrapper permission
+        shell: bash
+        run: chmod +x gradlew
+
+      - name: Show environment versions
+        shell: bash
+        run: |
+          java -version
+          android --version
+          ./gradlew --version
+
+      - name: Compile shared JVM
+        shell: bash
+        run: |
+          ./gradlew :shared:compileKotlinJvm \
+            --no-daemon \
+            --console=plain \
+            --stacktrace
+
+      - name: Compile Desktop
+        shell: bash
+        run: |
+          ./gradlew :desktopApp:compileKotlin \
+            --no-daemon \
+            --console=plain \
+            --stacktrace
+
+      - name: Build Android debug APK
+        shell: bash
+        run: |
+          ./gradlew :androidApp:assembleDebug \
+            --no-daemon \
+            --console=plain \
+            --stacktrace
