@@ -3,7 +3,8 @@ package com.redcrow.dragonsfirstflight.game.engine
 class GameEngine(
     gameAreaWidth: Double
 ) {
-    private var areaWidth: Double = validateAreaWidth(gameAreaWidth)
+    private var areaWidth: Double =
+        validateAreaWidth(gameAreaWidth)
 
     private var dragonY: Double =
         GameEngineConfig.DRAGON_INITIAL_Y
@@ -56,7 +57,8 @@ class GameEngine(
             return
         }
 
-        if (!elapsedSeconds.isFinite() ||
+        if (
+            !elapsedSeconds.isFinite() ||
             elapsedSeconds <= 0.0
         ) {
             return
@@ -106,14 +108,15 @@ class GameEngine(
             )
 
         val displacement =
-            ((previousVelocity + newVelocity) / 2.0) *
-                    delta
+            (
+                    (previousVelocity + newVelocity) / 2.0
+                    ) * delta
 
         val newY = dragonY + displacement
 
         when {
-            newY <= 0.0 -> {
-                dragonY = 0.0
+            newY <= GameEngineConfig.DRAGON_MIN_Y -> {
+                dragonY = GameEngineConfig.DRAGON_MIN_Y
                 verticalVelocity = 0.0
             }
 
@@ -133,13 +136,17 @@ class GameEngine(
         obstacleX -=
             GameEngineConfig.OBSTACLE_SPEED * delta
 
-        if (obstacleX <= -GameEngineConfig.OBSTACLE_SIZE) {
+        if (
+            obstacleX <=
+            -GameEngineConfig.OBSTACLE_SIZE
+        ) {
             resetObstacle()
         }
     }
 
     private fun evaluateCollisionAndScore() {
-        if (!collisionRegistered &&
+        if (
+            !collisionRegistered &&
             !pointRegistered &&
             rectanglesOverlap(
                 firstX = GameEngineConfig.DRAGON_X,
@@ -157,7 +164,8 @@ class GameEngine(
             return
         }
 
-        if (!collisionRegistered &&
+        if (
+            !collisionRegistered &&
             !pointRegistered &&
             obstacleX + GameEngineConfig.OBSTACLE_SIZE <=
             GameEngineConfig.DRAGON_X
@@ -195,4 +203,3 @@ class GameEngine(
         return width
     }
 }
-

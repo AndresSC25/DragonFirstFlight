@@ -27,6 +27,18 @@ android {
         versionName = "1.0"
     }
 
+    sourceSets {
+        getByName("main") {
+            assets.srcDir(
+                project(
+                    ":shared"
+                ).layout.projectDirectory.dir(
+                    "src/commonMain/resources"
+                )
+            )
+        }
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"

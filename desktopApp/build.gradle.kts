@@ -13,6 +13,17 @@ kotlin {
     }
 }
 
+sourceSets {
+    main {
+        resources.srcDir(
+            project(":shared")
+                .layout
+                .projectDirectory
+                .dir("src/commonMain/resources")
+        )
+    }
+}
+
 dependencies {
     implementation(project(":shared"))
 
