@@ -40,7 +40,7 @@ jobs:
       - name: Install Android SDK 37 platform
         shell: bash
         run: |
-          sdkmanager "platforms;android-37"
+          android sdk install --canary platforms/android-37
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -56,7 +56,7 @@ jobs:
         shell: bash
         run: |
           java -version
-          sdkmanager --version
+          android --version
           ./gradlew --version
 
       - name: Compile shared JVM
