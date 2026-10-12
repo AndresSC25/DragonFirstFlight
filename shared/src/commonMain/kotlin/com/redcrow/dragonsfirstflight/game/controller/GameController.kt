@@ -15,6 +15,9 @@ class GameController(
         GameScreenState.MENU
         private set
 
+    var isPaused: Boolean = false
+        private set
+
     val isMenuVisible: Boolean
         get() = screenState == GameScreenState.MENU
 
@@ -22,19 +25,41 @@ class GameController(
         get() = screenState == GameScreenState.PLAYING
 
     val isGameRunning: Boolean
-        get() = isGameVisible && engine.isRunning
+        get() = isGameVisible && engine.isRunning && !isPaused
 
     fun startGame() {
         engine.restart()
+        isPaused = false
         screenState = GameScreenState.PLAYING
     }
 
     fun returnToMenu() {
+        isPaused = false
         screenState = GameScreenState.MENU
     }
 
+    fun pauseGame() {
+        if (isGameVisible && engine.isRunning) {
+            isPaused = true
+        }
+    }
+
+    fun resumeGame() {
+        if (isGameVisible && engine.isRunning) {
+            isPaused = false
+        }
+    }
+
+    fun togglePause() {
+        if (isPaused) {
+            resumeGame()
+        } else {
+            pauseGame()
+        }
+    }
+
     fun handleGameAreaInput() {
-        if (!isGameVisible) {
+        if (!isGameVisible || isPaused) {
             return
         }
 
@@ -46,7 +71,7 @@ class GameController(
     }
 
     fun update(elapsedSeconds: Double) {
-        if (!isGameVisible) {
+        if (!isGameVisible || isPaused) {
             return
         }
 

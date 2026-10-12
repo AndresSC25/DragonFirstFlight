@@ -5,6 +5,7 @@ import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
+import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
@@ -31,6 +32,12 @@ private const val DRAGON_SPRITESHEET_PATH: String =
 private const val ZONE_ONE_BACKGROUND_PATH: String =
     "backgrounds/zone1/fortress_courtyard.png"
 
+private const val PAUSE_PANEL_PATH: String =
+    "ui/panels/panel_medieval.png"
+
+private const val GAME_BUTTON_PATH: String =
+    "ui/buttons/button_normal.png"
+
 private const val DRAGON_FRAME_WIDTH: Int = 32
 private const val DRAGON_FRAME_HEIGHT: Int = 32
 private const val DRAGON_FRAME_COLUMNS: Int = 6
@@ -38,6 +45,11 @@ private const val DRAGON_FRAME_ROWS: Int = 1
 private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
 private const val BACKGROUND_SCROLL_SPEED: Double = 70.0
+
+private const val PAUSE_PANEL_WIDTH: Double = 560.0
+private const val PAUSE_PANEL_HEIGHT: Double = 430.0
+private const val PAUSE_CONTENT_WIDTH: Double = 430.0
+private const val PAUSE_CONTENT_HEIGHT: Double = 345.0
 
 internal suspend fun Container.createGameplayScreen(
     controller: GameController,
@@ -48,6 +60,12 @@ internal suspend fun Container.createGameplayScreen(
 
     val dragonSpriteMap =
         resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
+
+    val pausePanelBitmap =
+        resourcesVfs[PAUSE_PANEL_PATH].readBitmap()
+
+    val gameButtonBitmap =
+        resourcesVfs[GAME_BUTTON_PATH].readBitmap()
 
     require(
         dragonSpriteMap.width ==
@@ -156,13 +174,23 @@ internal suspend fun Container.createGameplayScreen(
         }
 
         solidRect(
+            width = DragonGameConfig.HUD_WIDTH + 16.0,
+            height = DragonGameConfig.HUD_HEIGHT + 16.0,
+            color = Colors["#6B7280"]
+        ) {
+            x = DragonGameConfig.HUD_X - 8.0
+            y = DragonGameConfig.HUD_Y - 8.0
+            alpha = 0.92
+        }
+
+        solidRect(
             width = DragonGameConfig.HUD_WIDTH,
             height = DragonGameConfig.HUD_HEIGHT,
             color = Colors["#101827"]
         ) {
             x = DragonGameConfig.HUD_X
             y = DragonGameConfig.HUD_Y
-            alpha = 0.82
+            alpha = 0.90
         }
 
         text(
@@ -192,11 +220,24 @@ internal suspend fun Container.createGameplayScreen(
             y = 112.0
         }
 
-        createGameButton(
+        val pauseButtonContainer = container {
+            createGameplayImageButton(
+                x = 850.0,
+                y = 42.0,
+                width = 140.0,
+                height = 52.0,
+                texture = gameButtonBitmap,
+                label = "Pause",
+                onClick = controller::pauseGame
+            )
+        }
+
+        createGameplayImageButton(
             x = 1010.0,
             y = 42.0,
             width = 220.0,
             height = 52.0,
+            texture = gameButtonBitmap,
             label = "Back to menu",
             onClick = onBackToMenu
         )
@@ -219,6 +260,86 @@ internal suspend fun Container.createGameplayScreen(
             y = 660.0
         }
 
+        val pauseContainer = container {
+            visible = false
+
+            solidRect(
+                width = DragonGameConfig.VIRTUAL_SIZE.width,
+                height = DragonGameConfig.VIRTUAL_SIZE.height,
+                color = Colors.BLACK
+            ) {
+                alpha = 0.62
+            }
+
+            solidRect(
+                width = PAUSE_CONTENT_WIDTH,
+                height = PAUSE_CONTENT_HEIGHT,
+                color = Colors["#101827"]
+            ) {
+                x =
+                    (DragonGameConfig.VIRTUAL_SIZE.width -
+                            PAUSE_CONTENT_WIDTH) / 2.0
+                y = 170.0
+                alpha = 0.70
+            }
+
+            image(texture = pausePanelBitmap) {
+                x =
+                    (DragonGameConfig.VIRTUAL_SIZE.width -
+                            PAUSE_PANEL_WIDTH) / 2.0
+                y =
+                    (DragonGameConfig.VIRTUAL_SIZE.height -
+                            PAUSE_PANEL_HEIGHT) / 2.0
+                scaleX =
+                    PAUSE_PANEL_WIDTH /
+                            pausePanelBitmap.width.toDouble()
+                scaleY =
+                    PAUSE_PANEL_HEIGHT /
+                            pausePanelBitmap.height.toDouble()
+                smoothing = false
+            }
+
+            val pauseTitle = text(
+                text = "Paused",
+                textSize = 48.0,
+                color = Colors["#F8D66D"]
+            )
+            pauseTitle.x =
+                (DragonGameConfig.VIRTUAL_SIZE.width -
+                        pauseTitle.width) / 2.0
+            pauseTitle.y = 230.0
+
+            val pauseSubtitle = text(
+                text = "Your flight is waiting",
+                textSize = 19.0,
+                color = Colors.WHITE
+            )
+            pauseSubtitle.x =
+                (DragonGameConfig.VIRTUAL_SIZE.width -
+                        pauseSubtitle.width) / 2.0
+            pauseSubtitle.y = 295.0
+
+            createGameplayImageButton(
+                x = 500.0,
+                y = 345.0,
+                width = 280.0,
+                height = 64.0,
+                texture = gameButtonBitmap,
+                label = "Resume",
+                onClick = controller::resumeGame
+            )
+
+            createGameplayImageButton(
+                x = 500.0,
+                y = 435.0,
+                width = 280.0,
+                height = 64.0,
+                texture = gameButtonBitmap,
+                label = "Back to menu",
+                onClick = onBackToMenu
+            )
+        }
+
         fun updateView(snapshot: GameSnapshot) {
             dragon.x = snapshot.dragonX
             dragon.y = snapshot.dragonY
@@ -239,21 +360,29 @@ internal suspend fun Container.createGameplayScreen(
                         "Points: ${snapshot.points}/" +
                         GameEngineConfig.POINTS_TO_WIN
 
+            pauseContainer.visible = controller.isPaused
+            pauseButtonContainer.visible =
+                snapshot.status == GameStatus.RUNNING &&
+                        !controller.isPaused
+
             when (snapshot.status) {
                 GameStatus.RUNNING -> {
                     resultText.text = ""
                     restartText.text = ""
-                    instructionText.text = "Click or tap to flap"
+                    instructionText.text =
+                        if (controller.isPaused) {
+                            ""
+                        } else {
+                            "Click or tap to flap"
+                        }
                 }
 
                 GameStatus.WON -> {
                     resultText.text =
                         "Victory! You avoided " +
                                 "${GameEngineConfig.POINTS_TO_WIN} obstacles."
-
                     restartText.text =
                         "Click or tap to play again"
-
                     instructionText.text = ""
                 }
 
@@ -292,7 +421,10 @@ internal suspend fun Container.createGameplayScreen(
 
             val snapshot = controller.snapshot()
 
-            if (snapshot.status == GameStatus.RUNNING) {
+            if (
+                snapshot.status == GameStatus.RUNNING &&
+                !controller.isPaused
+            ) {
                 updateScrollingBackground(elapsedSeconds)
             }
 
@@ -301,4 +433,42 @@ internal suspend fun Container.createGameplayScreen(
 
         updateView(controller.snapshot())
     }
+}
+
+private fun Container.createGameplayImageButton(
+    x: Double,
+    y: Double,
+    width: Double,
+    height: Double,
+    texture: Bitmap,
+    label: String,
+    onClick: () -> Unit
+): Image {
+    require(width > 0.0) {
+        "Button width must be greater than zero."
+    }
+    require(height > 0.0) {
+        "Button height must be greater than zero."
+    }
+
+    val button = image(texture = texture) {
+        this.x = x
+        this.y = y
+        scaleX = width / texture.width.toDouble()
+        scaleY = height / texture.height.toDouble()
+        smoothing = false
+    }
+
+    val buttonText = text(
+        text = label,
+        textSize = 24.0,
+        color = Colors.WHITE
+    )
+    buttonText.x = x + (width - buttonText.width) / 2.0
+    buttonText.y = y + (height - buttonText.height) / 2.0 + 3.0
+
+    button.onClick { onClick() }
+    buttonText.onClick { onClick() }
+
+    return button
 }
