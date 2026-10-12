@@ -103,14 +103,6 @@ internal suspend fun Container.createMainMenuScreen(
         val panelX = (screenWidth - MENU_PANEL_WIDTH) / 2.0
         val panelY = (screenHeight - MENU_PANEL_HEIGHT) / 2.0
 
-        image(texture = panelBitmap) {
-            x = panelX
-            y = panelY
-            scaleX = MENU_PANEL_WIDTH / panelBitmap.width.toDouble()
-            scaleY = MENU_PANEL_HEIGHT / panelBitmap.height.toDouble()
-            smoothing = false
-        }
-
         solidRect(
             width = MENU_CONTENT_WIDTH,
             height = MENU_CONTENT_HEIGHT,
@@ -119,6 +111,14 @@ internal suspend fun Container.createMainMenuScreen(
             x = (screenWidth - MENU_CONTENT_WIDTH) / 2.0
             y = 178.0
             alpha = 0.60
+        }
+
+        image(texture = panelBitmap) {
+            x = panelX
+            y = panelY
+            scaleX = MENU_PANEL_WIDTH / panelBitmap.width.toDouble()
+            scaleY = MENU_PANEL_HEIGHT / panelBitmap.height.toDouble()
+            smoothing = false
         }
 
         val titleText = text(
@@ -206,7 +206,7 @@ private fun Container.createMenuImageButton(
         color = Colors.WHITE
     )
     buttonText.x = x + (width - buttonText.width) / 2.0
-    buttonText.y = y + (height - buttonText.height) / 2.0 - 2.0
+    buttonText.y = y + (height - buttonText.height) / 2.0 + 3.0
 
     button.onClick { onClick() }
     buttonText.onClick { onClick() }
