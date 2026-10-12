@@ -10,6 +10,7 @@ import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
+import korlibs.korge.view.Image
 import korlibs.korge.view.SolidRect
 import korlibs.korge.view.Sprite
 import korlibs.korge.view.SpriteAnimation
@@ -36,6 +37,8 @@ private const val DRAGON_FRAME_COLUMNS: Int = 6
 private const val DRAGON_FRAME_ROWS: Int = 1
 private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
+private const val BACKGROUND_SCROLL_SPEED: Double = 70.0
+
 internal suspend fun Container.createGameplayScreen(
     controller: GameController,
     onBackToMenu: () -> Unit
@@ -54,8 +57,7 @@ internal suspend fun Container.createGameplayScreen(
     }
 
     require(
-        dragonSpriteMap.height ==
-                DRAGON_FRAME_HEIGHT
+        dragonSpriteMap.height == DRAGON_FRAME_HEIGHT
     ) {
         "Invalid dragon spritesheet height."
     }
@@ -73,9 +75,13 @@ internal suspend fun Container.createGameplayScreen(
     )
 
     return container {
+        lateinit var firstBackground: Image
+        lateinit var secondBackground: Image
         lateinit var dragon: Sprite
         lateinit var obstacle: SolidRect
         lateinit var obstacleLabel: Text
+
+        val backgroundWidth = DragonGameConfig.GAME_AREA_WIDTH
 
         val gameArea = clipContainer(
             size = Size(
@@ -87,17 +93,27 @@ internal suspend fun Container.createGameplayScreen(
             y = DragonGameConfig.GAME_AREA_Y
 
             val backgroundScaleX =
-                DragonGameConfig.GAME_AREA_WIDTH /
+                backgroundWidth /
                         zoneOneBackground.width.toDouble()
 
             val backgroundScaleY =
                 GameEngineConfig.GAME_AREA_HEIGHT /
                         zoneOneBackground.height.toDouble()
 
-            val gameAreaBackground = image(
+            firstBackground = image(
                 texture = zoneOneBackground
             ) {
                 x = 0.0
+                y = 0.0
+                scaleX = backgroundScaleX
+                scaleY = backgroundScaleY
+                smoothing = false
+            }
+
+            secondBackground = image(
+                texture = zoneOneBackground
+            ) {
+                x = backgroundWidth
                 y = 0.0
                 scaleX = backgroundScaleX
                 scaleY = backgroundScaleY
@@ -133,10 +149,10 @@ internal suspend fun Container.createGameplayScreen(
                 textSize = 36.0,
                 color = Colors.WHITE
             )
+        }
 
-            gameAreaBackground.onClick {
-                controller.handleGameAreaInput()
-            }
+        gameArea.onClick {
+            controller.handleGameAreaInput()
         }
 
         solidRect(
@@ -212,17 +228,11 @@ internal suspend fun Container.createGameplayScreen(
 
             obstacleLabel.x =
                 obstacle.x +
-                        (
-                                snapshot.obstacleSize -
-                                        obstacleLabel.width
-                                ) / 2.0
+                        (snapshot.obstacleSize - obstacleLabel.width) / 2.0
 
             obstacleLabel.y =
                 obstacle.y +
-                        (
-                                snapshot.obstacleSize -
-                                        obstacleLabel.height
-                                ) / 2.0
+                        (snapshot.obstacleSize - obstacleLabel.height) / 2.0
 
             statusText.text =
                 "Lives: ${snapshot.lives}    " +
@@ -233,8 +243,7 @@ internal suspend fun Container.createGameplayScreen(
                 GameStatus.RUNNING -> {
                     resultText.text = ""
                     restartText.text = ""
-                    instructionText.text =
-                        "Click or tap to flap"
+                    instructionText.text = "Click or tap to flap"
                 }
 
                 GameStatus.WON -> {
@@ -257,12 +266,37 @@ internal suspend fun Container.createGameplayScreen(
             }
         }
 
+        fun updateScrollingBackground(elapsedSeconds: Double) {
+            val movement =
+                BACKGROUND_SCROLL_SPEED * elapsedSeconds
+
+            firstBackground.x -= movement
+            secondBackground.x -= movement
+
+            if (firstBackground.x <= -backgroundWidth) {
+                firstBackground.x =
+                    secondBackground.x + backgroundWidth
+            }
+
+            if (secondBackground.x <= -backgroundWidth) {
+                secondBackground.x =
+                    firstBackground.x + backgroundWidth
+            }
+        }
+
         gameArea.addUpdater { delta ->
             val elapsedSeconds =
                 delta.inWholeMilliseconds / 1000.0
 
             controller.update(elapsedSeconds)
-            updateView(controller.snapshot())
+
+            val snapshot = controller.snapshot()
+
+            if (snapshot.status == GameStatus.RUNNING) {
+                updateScrollingBackground(elapsedSeconds)
+            }
+
+            updateView(snapshot)
         }
 
         updateView(controller.snapshot())
