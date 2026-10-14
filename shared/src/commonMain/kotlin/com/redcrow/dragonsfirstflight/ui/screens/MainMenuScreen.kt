@@ -1,6 +1,8 @@
-package com.redcrow.dragonsfirstflight.ui.screens
+﻿package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
+import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
+import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
@@ -10,12 +12,14 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.Image
 import korlibs.korge.view.SolidRect
 import korlibs.korge.view.SpriteAnimation
+import korlibs.korge.view.Views
 import korlibs.korge.view.container
 import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.sprite
 import korlibs.korge.view.text
 import korlibs.time.milliseconds
+
 
 private const val MENU_BACKGROUND_PATH =
     "backgrounds/zone1/fortress_courtyard.png"
@@ -41,6 +45,7 @@ private const val MENU_BUTTON_HEIGHT = 76.0
 private const val MENU_DRAGON_DISPLAY_SIZE = 108.0
 
 internal suspend fun Container.createMainMenuScreen(
+    views: Views,
     onPlay: () -> Unit
 ): Container {
     val backgroundBitmap =
@@ -81,6 +86,11 @@ internal suspend fun Container.createMainMenuScreen(
     return container {
         val screenWidth = DragonGameConfig.VIRTUAL_SIZE.width
         val screenHeight = DragonGameConfig.VIRTUAL_SIZE.height
+
+        createResponsiveBackdrop(
+            bitmap = backgroundBitmap,
+            views = views
+        )
 
         image(texture = backgroundBitmap) {
             x = 0.0
@@ -155,13 +165,14 @@ internal suspend fun Container.createMainMenuScreen(
                 MENU_DRAGON_FRAME_DURATION_MS.milliseconds
         )
 
-        createMenuImageButton(
+        createMedievalImageButton(
             x = (screenWidth - MENU_BUTTON_WIDTH) / 2.0,
             y = 430.0,
             width = MENU_BUTTON_WIDTH,
             height = MENU_BUTTON_HEIGHT,
             texture = buttonBitmap,
             label = "Play",
+            textSize = 28.0,
             onClick = onPlay
         )
 
@@ -174,44 +185,6 @@ internal suspend fun Container.createMainMenuScreen(
             (screenWidth - instructionText.width) / 2.0
         instructionText.y = 515.0
     }
-}
-
-private fun Container.createMenuImageButton(
-    x: Double,
-    y: Double,
-    width: Double,
-    height: Double,
-    texture: Bitmap,
-    label: String,
-    onClick: () -> Unit
-): Image {
-    require(width > 0.0) {
-        "Button width must be greater than zero."
-    }
-    require(height > 0.0) {
-        "Button height must be greater than zero."
-    }
-
-    val button = image(texture = texture) {
-        this.x = x
-        this.y = y
-        scaleX = width / texture.width.toDouble()
-        scaleY = height / texture.height.toDouble()
-        smoothing = false
-    }
-
-    val buttonText = text(
-        text = label,
-        textSize = 28.0,
-        color = Colors.WHITE
-    )
-    buttonText.x = x + (width - buttonText.width) / 2.0
-    buttonText.y = y + (height - buttonText.height) / 2.0 + 3.0
-
-    button.onClick { onClick() }
-    buttonText.onClick { onClick() }
-
-    return button
 }
 
 internal fun Container.createGameButton(

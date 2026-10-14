@@ -1,4 +1,4 @@
-package com.redcrow.dragonsfirstflight.game
+﻿package com.redcrow.dragonsfirstflight.game
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
@@ -6,9 +6,12 @@ import com.redcrow.dragonsfirstflight.ui.screens.createGameplayScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createMainMenuScreen
 import korlibs.image.color.Colors
 import korlibs.korge.view.Container
+import korlibs.korge.view.Views
 import korlibs.korge.view.solidRect
 
-suspend fun Container.createDragonGame() {
+suspend fun Container.createDragonGame(
+    views: Views
+) {
     val controller = GameController(
         gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH
     )
@@ -28,6 +31,7 @@ suspend fun Container.createDragonGame() {
     }
 
     menuContainer = createMainMenuScreen(
+        views = views,
         onPlay = {
             controller.startGame()
             updateScreenVisibility()
@@ -35,6 +39,7 @@ suspend fun Container.createDragonGame() {
     )
 
     gameContainer = createGameplayScreen(
+        views = views,
         controller = controller,
         onBackToMenu = {
             controller.returnToMenu()
