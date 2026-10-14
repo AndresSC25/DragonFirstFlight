@@ -38,6 +38,12 @@ private const val PAUSE_PANEL_PATH: String =
 private const val GAME_BUTTON_PATH: String =
     "ui/buttons/button_normal.png"
 
+private const val LIFE_FULL_PATH: String =
+    "sprites/dragon/lives/dragon_life_full.png"
+
+private const val LIFE_EMPTY_PATH: String =
+    "sprites/dragon/lives/dragon_life_empty.png"
+
 private const val DRAGON_FRAME_WIDTH: Int = 32
 private const val DRAGON_FRAME_HEIGHT: Int = 32
 private const val DRAGON_FRAME_COLUMNS: Int = 6
@@ -45,6 +51,11 @@ private const val DRAGON_FRAME_ROWS: Int = 1
 private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
 private const val BACKGROUND_SCROLL_SPEED: Double = 70.0
+
+private const val MAX_LIVES: Int = 3
+private const val LIFE_ICON_SIZE: Double = 42.0
+private const val LIFE_ICON_GAP: Double = 8.0
+private const val HUD_CONTENT_Y: Double = 62.0
 
 private const val PAUSE_PANEL_WIDTH: Double = 560.0
 private const val PAUSE_PANEL_HEIGHT: Double = 430.0
@@ -66,6 +77,12 @@ internal suspend fun Container.createGameplayScreen(
 
     val gameButtonBitmap =
         resourcesVfs[GAME_BUTTON_PATH].readBitmap()
+
+    val lifeFullBitmap =
+        resourcesVfs[LIFE_FULL_PATH].readBitmap()
+
+    val lifeEmptyBitmap =
+        resourcesVfs[LIFE_EMPTY_PATH].readBitmap()
 
     require(
         dragonSpriteMap.width ==
@@ -98,6 +115,10 @@ internal suspend fun Container.createGameplayScreen(
         lateinit var dragon: Sprite
         lateinit var obstacle: SolidRect
         lateinit var obstacleLabel: Text
+
+        val fullLifeIcons = mutableListOf<Image>()
+        val emptyLifeIcons = mutableListOf<Image>()
+        var isDragonAnimationStopped = false
 
         val backgroundWidth = DragonGameConfig.GAME_AREA_WIDTH
 
@@ -174,56 +195,71 @@ internal suspend fun Container.createGameplayScreen(
         }
 
         solidRect(
-            width = DragonGameConfig.HUD_WIDTH + 16.0,
-            height = DragonGameConfig.HUD_HEIGHT + 16.0,
-            color = Colors["#6B7280"]
-        ) {
-            x = DragonGameConfig.HUD_X - 8.0
-            y = DragonGameConfig.HUD_Y - 8.0
-            alpha = 0.92
-        }
-
-        solidRect(
             width = DragonGameConfig.HUD_WIDTH,
             height = DragonGameConfig.HUD_HEIGHT,
             color = Colors["#101827"]
         ) {
             x = DragonGameConfig.HUD_X
             y = DragonGameConfig.HUD_Y
-            alpha = 0.90
+            alpha = 0.88
+        }
+
+        solidRect(
+            width = DragonGameConfig.HUD_WIDTH,
+            height = 3.0,
+            color = Colors["#C9962F"]
+        ) {
+            x = DragonGameConfig.HUD_X
+            y = DragonGameConfig.HUD_Y + DragonGameConfig.HUD_HEIGHT - 3.0
+            alpha = 0.95
         }
 
         text(
-            text = DragonGameConfig.GAME_TITLE,
-            textSize = 34.0,
-            color = Colors.WHITE
+            text = "Lives",
+            textSize = 17.0,
+            color = Colors["#F8D66D"]
         ) {
             x = 45.0
-            y = 28.0
+            y = 31.0
         }
 
-        val statusText = text(
+        repeat(MAX_LIVES) { index ->
+            val iconX =
+                45.0 + index * (LIFE_ICON_SIZE + LIFE_ICON_GAP)
+
+            val emptyIcon = image(texture = lifeEmptyBitmap) {
+                x = iconX
+                y = HUD_CONTENT_Y
+                scaleX = LIFE_ICON_SIZE / lifeEmptyBitmap.width.toDouble()
+                scaleY = LIFE_ICON_SIZE / lifeEmptyBitmap.height.toDouble()
+                smoothing = false
+            }
+
+            val fullIcon = image(texture = lifeFullBitmap) {
+                x = iconX
+                y = HUD_CONTENT_Y
+                scaleX = LIFE_ICON_SIZE / lifeFullBitmap.width.toDouble()
+                scaleY = LIFE_ICON_SIZE / lifeFullBitmap.height.toDouble()
+                smoothing = false
+            }
+
+            emptyLifeIcons += emptyIcon
+            fullLifeIcons += fullIcon
+        }
+
+        val pointsText = text(
             text = "",
-            textSize = 22.0,
+            textSize = 25.0,
             color = Colors.WHITE
         ) {
-            x = 45.0
-            y = 78.0
-        }
-
-        val instructionText = text(
-            text = "Click or tap to flap",
-            textSize = 18.0,
-            color = Colors["#CBD5E1"]
-        ) {
-            x = 45.0
-            y = 112.0
+            x = 235.0
+            y = 69.0
         }
 
         val pauseButtonContainer = container {
             createGameplayImageButton(
                 x = 850.0,
-                y = 42.0,
+                y = 45.0,
                 width = 140.0,
                 height = 52.0,
                 texture = gameButtonBitmap,
@@ -234,7 +270,7 @@ internal suspend fun Container.createGameplayScreen(
 
         createGameplayImageButton(
             x = 1010.0,
-            y = 42.0,
+            y = 45.0,
             width = 220.0,
             height = 52.0,
             texture = gameButtonBitmap,
@@ -354,10 +390,16 @@ internal suspend fun Container.createGameplayScreen(
             obstacleLabel.y =
                 obstacle.y +
                         (snapshot.obstacleSize - obstacleLabel.height) / 2.0
+            fullLifeIcons.forEachIndexed { index, icon ->
+                icon.visible = index < snapshot.lives
+            }
 
-            statusText.text =
-                "Lives: ${snapshot.lives}    " +
-                        "Points: ${snapshot.points}/" +
+            emptyLifeIcons.forEach { icon ->
+                icon.visible = true
+            }
+
+            pointsText.text =
+                "Points: ${snapshot.points}/" +
                         GameEngineConfig.POINTS_TO_WIN
 
             pauseContainer.visible = controller.isPaused
@@ -369,12 +411,6 @@ internal suspend fun Container.createGameplayScreen(
                 GameStatus.RUNNING -> {
                     resultText.text = ""
                     restartText.text = ""
-                    instructionText.text =
-                        if (controller.isPaused) {
-                            ""
-                        } else {
-                            "Click or tap to flap"
-                        }
                 }
 
                 GameStatus.WON -> {
@@ -383,17 +419,33 @@ internal suspend fun Container.createGameplayScreen(
                                 "${GameEngineConfig.POINTS_TO_WIN} obstacles."
                     restartText.text =
                         "Click or tap to play again"
-                    instructionText.text = ""
                 }
 
                 GameStatus.LOST -> {
                     resultText.text = "Game over"
                     restartText.text =
                         "Click or tap to play again"
-                    instructionText.text = ""
                 }
             }
         }
+        fun updateDragonAnimation(snapshot: GameSnapshot) {
+            val shouldAnimate =
+                snapshot.status == GameStatus.RUNNING &&
+                        !controller.isPaused
+
+            if (shouldAnimate && isDragonAnimationStopped) {
+                dragon.playAnimationLooped(
+                    spriteAnimation = dragonFlightAnimation,
+                    spriteDisplayTime =
+                        DRAGON_FRAME_DURATION_MS.milliseconds
+                )
+                isDragonAnimationStopped = false
+            } else if (!shouldAnimate && !isDragonAnimationStopped) {
+                dragon.stopAnimation()
+                isDragonAnimationStopped = true
+            }
+        }
+
 
         fun updateScrollingBackground(elapsedSeconds: Double) {
             val movement =
@@ -427,11 +479,13 @@ internal suspend fun Container.createGameplayScreen(
             ) {
                 updateScrollingBackground(elapsedSeconds)
             }
-
+            updateDragonAnimation(snapshot)
             updateView(snapshot)
         }
 
-        updateView(controller.snapshot())
+        val initialSnapshot = controller.snapshot()
+        updateDragonAnimation(initialSnapshot)
+        updateView(initialSnapshot)
     }
 }
 
