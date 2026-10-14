@@ -5,6 +5,7 @@ import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
+import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
@@ -55,10 +56,6 @@ private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
 private const val BACKGROUND_SCROLL_SPEED: Double = 70.0
 
-private const val MAX_LIVES: Int = 3
-private const val LIFE_ICON_SIZE: Double = 42.0
-private const val LIFE_ICON_GAP: Double = 8.0
-private const val HUD_CONTENT_Y: Double = 62.0
 
 private const val PAUSE_PANEL_WIDTH: Double = 560.0
 private const val PAUSE_PANEL_HEIGHT: Double = 430.0
@@ -119,9 +116,6 @@ internal suspend fun Container.createGameplayScreen(
         lateinit var dragon: Sprite
         lateinit var obstacle: SolidRect
         lateinit var obstacleLabel: Text
-
-        val fullLifeIcons = mutableListOf<Image>()
-        val emptyLifeIcons = mutableListOf<Image>()
         var isDragonAnimationStopped = false
 
         val backgroundWidth =
@@ -204,88 +198,13 @@ internal suspend fun Container.createGameplayScreen(
             controller.handleGameAreaInput()
         }
 
-        solidRect(
-            width = DragonGameConfig.HUD_WIDTH,
-            height = DragonGameConfig.HUD_HEIGHT,
-            color = Colors["#101827"]
-        ) {
-            x = DragonGameConfig.HUD_X
-            y = DragonGameConfig.HUD_Y
-            alpha = 0.88
-        }
-
-        solidRect(
-            width = DragonGameConfig.HUD_WIDTH,
-            height = 3.0,
-            color = Colors["#C9962F"]
-        ) {
-            x = DragonGameConfig.HUD_X
-            y = DragonGameConfig.HUD_Y + DragonGameConfig.HUD_HEIGHT - 3.0
-            alpha = 0.95
-        }
-
-        text(
-            text = "Lives",
-            textSize = 17.0,
-            color = Colors["#F8D66D"]
-        ) {
-            x = 45.0
-            y = 31.0
-        }
-
-        repeat(MAX_LIVES) { index ->
-            val iconX =
-                45.0 + index * (LIFE_ICON_SIZE + LIFE_ICON_GAP)
-
-            val emptyIcon = image(texture = lifeEmptyBitmap) {
-                x = iconX
-                y = HUD_CONTENT_Y
-                scaleX = LIFE_ICON_SIZE / lifeEmptyBitmap.width.toDouble()
-                scaleY = LIFE_ICON_SIZE / lifeEmptyBitmap.height.toDouble()
-                smoothing = false
-            }
-
-            val fullIcon = image(texture = lifeFullBitmap) {
-                x = iconX
-                y = HUD_CONTENT_Y
-                scaleX = LIFE_ICON_SIZE / lifeFullBitmap.width.toDouble()
-                scaleY = LIFE_ICON_SIZE / lifeFullBitmap.height.toDouble()
-                smoothing = false
-            }
-
-            emptyLifeIcons += emptyIcon
-            fullLifeIcons += fullIcon
-        }
-
-        val pointsText = text(
-            text = "",
-            textSize = 25.0,
-            color = Colors.WHITE
-        ) {
-            x = 235.0
-            y = 69.0
-        }
-
-        val pauseButtonContainer = container {
-            createMedievalImageButton(
-                x = 850.0,
-                y = 45.0,
-                width = 140.0,
-                height = 52.0,
-                texture = gameButtonBitmap,
-                label = "Pause",
-                onClick = controller::pauseGame
-            )
-        }
-
-        createMedievalImageButton(
-            x = 1010.0,
-            y = 45.0,
-            width = 220.0,
-            height = 52.0,
-            texture = gameButtonBitmap,
-            label = "Back to menu",
-            onClick = onBackToMenu
+        val gameplayHud = GameplayHud.create(
+            container = this,
+            lifeFullBitmap = lifeFullBitmap,
+            lifeEmptyBitmap = lifeEmptyBitmap,
+            gameButtonBitmap = gameButtonBitmap,
+            onPause = controller::pauseGame,
+            onBackToMenu = onBackToMenu
         )
 
         val resultText = text(
@@ -400,23 +319,12 @@ internal suspend fun Container.createGameplayScreen(
             obstacleLabel.y =
                 obstacle.y +
                         (snapshot.obstacleSize - obstacleLabel.height) / 2.0
-            fullLifeIcons.forEachIndexed { index, icon ->
-                icon.visible = index < snapshot.lives
-            }
-
-            emptyLifeIcons.forEach { icon ->
-                icon.visible = true
-            }
-
-            pointsText.text =
-                "Points: ${snapshot.points}/" +
-                        GameEngineConfig.POINTS_TO_WIN
+            gameplayHud.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused
+            )
 
             pauseContainer.visible = controller.isPaused
-            pauseButtonContainer.visible =
-                snapshot.status == GameStatus.RUNNING &&
-                        !controller.isPaused
-
             when (snapshot.status) {
                 GameStatus.RUNNING -> {
                     resultText.text = ""
@@ -498,4 +406,3 @@ internal suspend fun Container.createGameplayScreen(
         updateView(initialSnapshot)
     }
 }
-
