@@ -6,7 +6,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
-import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
+import com.redcrow.dragonsfirstflight.ui.components.PauseOverlay
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
@@ -57,10 +57,6 @@ private const val DRAGON_FRAME_DURATION_MS: Int = 120
 private const val BACKGROUND_SCROLL_SPEED: Double = 70.0
 
 
-private const val PAUSE_PANEL_WIDTH: Double = 560.0
-private const val PAUSE_PANEL_HEIGHT: Double = 430.0
-private const val PAUSE_CONTENT_WIDTH: Double = 430.0
-private const val PAUSE_CONTENT_HEIGHT: Double = 345.0
 
 internal suspend fun Container.createGameplayScreen(
     views: Views,
@@ -225,85 +221,13 @@ internal suspend fun Container.createGameplayScreen(
             y = 660.0
         }
 
-        val pauseContainer = container {
-            visible = false
-
-            solidRect(
-                width = DragonGameConfig.VIRTUAL_SIZE.width,
-                height = DragonGameConfig.VIRTUAL_SIZE.height,
-                color = Colors.BLACK
-            ) {
-                alpha = 0.62
-            }
-
-            solidRect(
-                width = PAUSE_CONTENT_WIDTH,
-                height = PAUSE_CONTENT_HEIGHT,
-                color = Colors["#101827"]
-            ) {
-                x =
-                    (DragonGameConfig.VIRTUAL_SIZE.width -
-                            PAUSE_CONTENT_WIDTH) / 2.0
-                y = 170.0
-                alpha = 0.70
-            }
-
-            image(texture = pausePanelBitmap) {
-                x =
-                    (DragonGameConfig.VIRTUAL_SIZE.width -
-                            PAUSE_PANEL_WIDTH) / 2.0
-                y =
-                    (DragonGameConfig.VIRTUAL_SIZE.height -
-                            PAUSE_PANEL_HEIGHT) / 2.0
-                scaleX =
-                    PAUSE_PANEL_WIDTH /
-                            pausePanelBitmap.width.toDouble()
-                scaleY =
-                    PAUSE_PANEL_HEIGHT /
-                            pausePanelBitmap.height.toDouble()
-                smoothing = false
-            }
-
-            val pauseTitle = text(
-                text = "Paused",
-                textSize = 48.0,
-                color = Colors["#F8D66D"]
-            )
-            pauseTitle.x =
-                (DragonGameConfig.VIRTUAL_SIZE.width -
-                        pauseTitle.width) / 2.0
-            pauseTitle.y = 230.0
-
-            val pauseSubtitle = text(
-                text = "Your flight is waiting",
-                textSize = 19.0,
-                color = Colors.WHITE
-            )
-            pauseSubtitle.x =
-                (DragonGameConfig.VIRTUAL_SIZE.width -
-                        pauseSubtitle.width) / 2.0
-            pauseSubtitle.y = 295.0
-
-            createMedievalImageButton(
-                x = 500.0,
-                y = 345.0,
-                width = 280.0,
-                height = 64.0,
-                texture = gameButtonBitmap,
-                label = "Resume",
-                onClick = controller::resumeGame
-            )
-
-            createMedievalImageButton(
-                x = 500.0,
-                y = 435.0,
-                width = 280.0,
-                height = 64.0,
-                texture = gameButtonBitmap,
-                label = "Back to menu",
-                onClick = onBackToMenu
-            )
-        }
+        val pauseOverlay = PauseOverlay.create(
+            container = this,
+            panelBitmap = pausePanelBitmap,
+            buttonBitmap = gameButtonBitmap,
+            onResume = controller::resumeGame,
+            onBackToMenu = onBackToMenu
+        )
 
         fun updateView(snapshot: GameSnapshot) {
             dragon.x = snapshot.dragonX
@@ -324,7 +248,7 @@ internal suspend fun Container.createGameplayScreen(
                 isPaused = controller.isPaused
             )
 
-            pauseContainer.visible = controller.isPaused
+            pauseOverlay.isVisible = controller.isPaused
             when (snapshot.status) {
                 GameStatus.RUNNING -> {
                     resultText.text = ""
