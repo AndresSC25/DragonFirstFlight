@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.screens
+package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
@@ -8,6 +8,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.PauseOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
+import com.redcrow.dragonsfirstflight.ui.gameplay.PlaceholderObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
@@ -17,7 +18,6 @@ import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
 import korlibs.korge.view.Image
-import korlibs.korge.view.SolidRect
 import korlibs.korge.view.Text
 import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
@@ -76,8 +76,7 @@ internal suspend fun Container.createGameplayScreen(
 
     return container {
         lateinit var dragonView: DragonView
-        lateinit var obstacle: SolidRect
-        lateinit var obstacleLabel: Text
+        lateinit var obstacleView: PlaceholderObstacleView
         lateinit var scrollingBackground: ScrollingBackground
         val backgroundWidth =
             DragonGameConfig.GAME_AREA_WIDTH
@@ -108,17 +107,7 @@ internal suspend fun Container.createGameplayScreen(
                 spriteMap = dragonSpriteMap
             )
 
-            obstacle = solidRect(
-                width = GameEngineConfig.OBSTACLE_SIZE,
-                height = GameEngineConfig.OBSTACLE_SIZE,
-                color = Colors["#E53935"]
-            )
-
-            obstacleLabel = text(
-                text = "X",
-                textSize = 36.0,
-                color = Colors.WHITE
-            )
+            obstacleView = PlaceholderObstacleView.create(container = this)
         }
 
         gameArea.onClick {
@@ -162,16 +151,7 @@ internal suspend fun Container.createGameplayScreen(
 
         fun updateView(snapshot: GameSnapshot) {
 
-            obstacle.x = snapshot.obstacleX
-            obstacle.y = snapshot.obstacleY
-
-            obstacleLabel.x =
-                obstacle.x +
-                        (snapshot.obstacleSize - obstacleLabel.width) / 2.0
-
-            obstacleLabel.y =
-                obstacle.y +
-                        (snapshot.obstacleSize - obstacleLabel.height) / 2.0
+            obstacleView.update(snapshot)
             gameplayHud.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused
