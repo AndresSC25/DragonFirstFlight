@@ -7,6 +7,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.PauseOverlay
+import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
@@ -17,8 +18,6 @@ import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
 import korlibs.korge.view.Image
 import korlibs.korge.view.SolidRect
-import korlibs.korge.view.Sprite
-import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.Text
 import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
@@ -26,10 +25,8 @@ import korlibs.korge.view.clipContainer
 import korlibs.korge.view.container
 import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
-import korlibs.korge.view.sprite
 import korlibs.korge.view.text
 import korlibs.math.geom.Size
-import korlibs.time.milliseconds
 
 private const val DRAGON_SPRITESHEET_PATH: String =
     "sprites/dragon/YoungBrassDragon.png"
@@ -49,11 +46,6 @@ private const val LIFE_FULL_PATH: String =
 private const val LIFE_EMPTY_PATH: String =
     "sprites/dragon/lives/dragon_life_empty.png"
 
-private const val DRAGON_FRAME_WIDTH: Int = 32
-private const val DRAGON_FRAME_HEIGHT: Int = 32
-private const val DRAGON_FRAME_COLUMNS: Int = 6
-private const val DRAGON_FRAME_ROWS: Int = 1
-private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
 
 
@@ -81,38 +73,12 @@ internal suspend fun Container.createGameplayScreen(
     val lifeEmptyBitmap =
         resourcesVfs[LIFE_EMPTY_PATH].readBitmap()
 
-    require(
-        dragonSpriteMap.width ==
-                DRAGON_FRAME_WIDTH * DRAGON_FRAME_COLUMNS
-    ) {
-        "Invalid dragon spritesheet width."
-    }
-
-    require(
-        dragonSpriteMap.height == DRAGON_FRAME_HEIGHT
-    ) {
-        "Invalid dragon spritesheet height."
-    }
-
-    val dragonFlightAnimation = SpriteAnimation(
-        spriteMap = dragonSpriteMap,
-        spriteWidth = DRAGON_FRAME_WIDTH,
-        spriteHeight = DRAGON_FRAME_HEIGHT,
-        marginTop = 0,
-        marginLeft = 0,
-        columns = DRAGON_FRAME_COLUMNS,
-        rows = DRAGON_FRAME_ROWS,
-        offsetBetweenColumns = 0,
-        offsetBetweenRows = 0
-    )
 
     return container {
-        lateinit var dragon: Sprite
+        lateinit var dragonView: DragonView
         lateinit var obstacle: SolidRect
         lateinit var obstacleLabel: Text
         lateinit var scrollingBackground: ScrollingBackground
-        var isDragonAnimationStopped = false
-
         val backgroundWidth =
             DragonGameConfig.GAME_AREA_WIDTH
 
@@ -137,22 +103,9 @@ internal suspend fun Container.createGameplayScreen(
                 height = GameEngineConfig.GAME_AREA_HEIGHT
             )
 
-            dragon = sprite(
-                initialAnimation = dragonFlightAnimation
-            )
-
-            val dragonScale =
-                GameEngineConfig.DRAGON_SIZE /
-                        DRAGON_FRAME_WIDTH.toDouble()
-
-            dragon.scaleX = dragonScale
-            dragon.scaleY = dragonScale
-            dragon.smoothing = false
-
-            dragon.playAnimationLooped(
-                spriteAnimation = dragonFlightAnimation,
-                spriteDisplayTime =
-                    DRAGON_FRAME_DURATION_MS.milliseconds
+            dragonView = DragonView.create(
+                container = this,
+                spriteMap = dragonSpriteMap
             )
 
             obstacle = solidRect(
@@ -208,8 +161,6 @@ internal suspend fun Container.createGameplayScreen(
         )
 
         fun updateView(snapshot: GameSnapshot) {
-            dragon.x = snapshot.dragonX
-            dragon.y = snapshot.dragonY
 
             obstacle.x = snapshot.obstacleX
             obstacle.y = snapshot.obstacleY
@@ -248,24 +199,6 @@ internal suspend fun Container.createGameplayScreen(
                 }
             }
         }
-        fun updateDragonAnimation(snapshot: GameSnapshot) {
-            val shouldAnimate =
-                snapshot.status == GameStatus.RUNNING &&
-                        !controller.isPaused
-
-            if (shouldAnimate && isDragonAnimationStopped) {
-                dragon.playAnimationLooped(
-                    spriteAnimation = dragonFlightAnimation,
-                    spriteDisplayTime =
-                        DRAGON_FRAME_DURATION_MS.milliseconds
-                )
-                isDragonAnimationStopped = false
-            } else if (!shouldAnimate && !isDragonAnimationStopped) {
-                dragon.stopAnimation()
-                isDragonAnimationStopped = true
-            }
-        }
-
 
         gameArea.addUpdater { delta ->
             val elapsedSeconds =
@@ -281,12 +214,18 @@ internal suspend fun Container.createGameplayScreen(
             ) {
                 scrollingBackground.update(elapsedSeconds)
             }
-            updateDragonAnimation(snapshot)
+            dragonView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused
+            )
             updateView(snapshot)
         }
 
         val initialSnapshot = controller.snapshot()
-        updateDragonAnimation(initialSnapshot)
+        dragonView.update(
+            snapshot = initialSnapshot,
+            isPaused = controller.isPaused
+        )
         updateView(initialSnapshot)
     }
 }
