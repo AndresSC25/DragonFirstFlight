@@ -5,6 +5,7 @@ import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
+import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
@@ -266,7 +267,7 @@ internal suspend fun Container.createGameplayScreen(
         }
 
         val pauseButtonContainer = container {
-            createGameplayImageButton(
+            createMedievalImageButton(
                 x = 850.0,
                 y = 45.0,
                 width = 140.0,
@@ -277,7 +278,7 @@ internal suspend fun Container.createGameplayScreen(
             )
         }
 
-        createGameplayImageButton(
+        createMedievalImageButton(
             x = 1010.0,
             y = 45.0,
             width = 220.0,
@@ -364,7 +365,7 @@ internal suspend fun Container.createGameplayScreen(
                         pauseSubtitle.width) / 2.0
             pauseSubtitle.y = 295.0
 
-            createGameplayImageButton(
+            createMedievalImageButton(
                 x = 500.0,
                 y = 345.0,
                 width = 280.0,
@@ -374,7 +375,7 @@ internal suspend fun Container.createGameplayScreen(
                 onClick = controller::resumeGame
             )
 
-            createGameplayImageButton(
+            createMedievalImageButton(
                 x = 500.0,
                 y = 435.0,
                 width = 280.0,
@@ -497,43 +498,4 @@ internal suspend fun Container.createGameplayScreen(
         updateView(initialSnapshot)
     }
 }
-
-private fun Container.createGameplayImageButton(
-    x: Double,
-    y: Double,
-    width: Double,
-    height: Double,
-    texture: Bitmap,
-    label: String,
-    onClick: () -> Unit
-): Image {
-    require(width > 0.0) {
-        "Button width must be greater than zero."
-    }
-    require(height > 0.0) {
-        "Button height must be greater than zero."
-    }
-
-    val button = image(texture = texture) {
-        this.x = x
-        this.y = y
-        scaleX = width / texture.width.toDouble()
-        scaleY = height / texture.height.toDouble()
-        smoothing = false
-    }
-
-    val buttonText = text(
-        text = label,
-        textSize = 24.0,
-        color = Colors.WHITE
-    )
-    buttonText.x = x + (width - buttonText.width) / 2.0
-    buttonText.y = y + (height - buttonText.height) / 2.0 + 3.0
-
-    button.onClick { onClick() }
-    buttonText.onClick { onClick() }
-
-    return button
-}
-
 
