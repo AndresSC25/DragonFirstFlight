@@ -7,6 +7,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.PauseOverlay
+import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
@@ -54,7 +55,6 @@ private const val DRAGON_FRAME_COLUMNS: Int = 6
 private const val DRAGON_FRAME_ROWS: Int = 1
 private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
-private const val BACKGROUND_SCROLL_SPEED: Double = 70.0
 
 
 
@@ -107,11 +107,10 @@ internal suspend fun Container.createGameplayScreen(
     )
 
     return container {
-        lateinit var firstBackground: Image
-        lateinit var secondBackground: Image
         lateinit var dragon: Sprite
         lateinit var obstacle: SolidRect
         lateinit var obstacleLabel: Text
+        lateinit var scrollingBackground: ScrollingBackground
         var isDragonAnimationStopped = false
 
         val backgroundWidth =
@@ -131,33 +130,12 @@ internal suspend fun Container.createGameplayScreen(
             x = DragonGameConfig.GAME_AREA_X
             y = DragonGameConfig.GAME_AREA_Y
 
-            val backgroundScaleX =
-                backgroundWidth /
-                        zoneOneBackground.width.toDouble()
-
-            val backgroundScaleY =
-                GameEngineConfig.GAME_AREA_HEIGHT /
-                        zoneOneBackground.height.toDouble()
-
-            firstBackground = image(
-                texture = zoneOneBackground
-            ) {
-                x = 0.0
-                y = 0.0
-                scaleX = backgroundScaleX
-                scaleY = backgroundScaleY
-                smoothing = false
-            }
-
-            secondBackground = image(
-                texture = zoneOneBackground
-            ) {
-                x = backgroundWidth
-                y = 0.0
-                scaleX = backgroundScaleX
-                scaleY = backgroundScaleY
-                smoothing = false
-            }
+            scrollingBackground = ScrollingBackground.create(
+                container = this,
+                bitmap = zoneOneBackground,
+                width = backgroundWidth,
+                height = GameEngineConfig.GAME_AREA_HEIGHT
+            )
 
             dragon = sprite(
                 initialAnimation = dragonFlightAnimation
@@ -289,24 +267,6 @@ internal suspend fun Container.createGameplayScreen(
         }
 
 
-        fun updateScrollingBackground(elapsedSeconds: Double) {
-            val movement =
-                BACKGROUND_SCROLL_SPEED * elapsedSeconds
-
-            firstBackground.x -= movement
-            secondBackground.x -= movement
-
-            if (firstBackground.x <= -backgroundWidth) {
-                firstBackground.x =
-                    secondBackground.x + backgroundWidth
-            }
-
-            if (secondBackground.x <= -backgroundWidth) {
-                secondBackground.x =
-                    firstBackground.x + backgroundWidth
-            }
-        }
-
         gameArea.addUpdater { delta ->
             val elapsedSeconds =
                 delta.inWholeMilliseconds / 1000.0
@@ -319,7 +279,7 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot.status == GameStatus.RUNNING &&
                 !controller.isPaused
             ) {
-                updateScrollingBackground(elapsedSeconds)
+                scrollingBackground.update(elapsedSeconds)
             }
             updateDragonAnimation(snapshot)
             updateView(snapshot)
