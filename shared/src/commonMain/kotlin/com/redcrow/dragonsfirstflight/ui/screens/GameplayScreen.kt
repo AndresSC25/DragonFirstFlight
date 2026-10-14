@@ -1,10 +1,11 @@
-package com.redcrow.dragonsfirstflight.ui.screens
+﻿package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
+import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
@@ -16,6 +17,7 @@ import korlibs.korge.view.SolidRect
 import korlibs.korge.view.Sprite
 import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.Text
+import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.clipContainer
 import korlibs.korge.view.container
@@ -63,6 +65,7 @@ private const val PAUSE_CONTENT_WIDTH: Double = 430.0
 private const val PAUSE_CONTENT_HEIGHT: Double = 345.0
 
 internal suspend fun Container.createGameplayScreen(
+    views: Views,
     controller: GameController,
     onBackToMenu: () -> Unit
 ): Container {
@@ -120,7 +123,13 @@ internal suspend fun Container.createGameplayScreen(
         val emptyLifeIcons = mutableListOf<Image>()
         var isDragonAnimationStopped = false
 
-        val backgroundWidth = DragonGameConfig.GAME_AREA_WIDTH
+        val backgroundWidth =
+            DragonGameConfig.GAME_AREA_WIDTH
+
+        createResponsiveBackdrop(
+            bitmap = zoneOneBackground,
+            views = views
+        )
 
         val gameArea = clipContainer(
             size = Size(
@@ -526,3 +535,5 @@ private fun Container.createGameplayImageButton(
 
     return button
 }
+
+

@@ -1,6 +1,7 @@
-package com.redcrow.dragonsfirstflight.ui.screens
+﻿package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
+import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
@@ -10,12 +11,14 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.Image
 import korlibs.korge.view.SolidRect
 import korlibs.korge.view.SpriteAnimation
+import korlibs.korge.view.Views
 import korlibs.korge.view.container
 import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.sprite
 import korlibs.korge.view.text
 import korlibs.time.milliseconds
+
 
 private const val MENU_BACKGROUND_PATH =
     "backgrounds/zone1/fortress_courtyard.png"
@@ -41,6 +44,7 @@ private const val MENU_BUTTON_HEIGHT = 76.0
 private const val MENU_DRAGON_DISPLAY_SIZE = 108.0
 
 internal suspend fun Container.createMainMenuScreen(
+    views: Views,
     onPlay: () -> Unit
 ): Container {
     val backgroundBitmap =
@@ -81,6 +85,11 @@ internal suspend fun Container.createMainMenuScreen(
     return container {
         val screenWidth = DragonGameConfig.VIRTUAL_SIZE.width
         val screenHeight = DragonGameConfig.VIRTUAL_SIZE.height
+
+        createResponsiveBackdrop(
+            bitmap = backgroundBitmap,
+            views = views
+        )
 
         image(texture = backgroundBitmap) {
             x = 0.0
@@ -251,3 +260,5 @@ internal fun Container.createGameButton(
 
     return button
 }
+
+
