@@ -21,10 +21,11 @@ private const val HUD_CONTENT_Y: Double = 62.0
 
 internal class GameplayHud private constructor(
     private val fullLifeIcons: List<Image>,
-    private val emptyLifeIcons: List<Image>,
     private val pointsText: Text,
     private val pauseButtonContainer: Container
 ) {
+    private var displayedPoints: Int? = null
+
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean
@@ -33,13 +34,12 @@ internal class GameplayHud private constructor(
             icon.visible = index < snapshot.lives
         }
 
-        emptyLifeIcons.forEach { icon ->
-            icon.visible = true
+        if (displayedPoints != snapshot.points) {
+            pointsText.text =
+                "Points: ${snapshot.points}/" +
+                    GameEngineConfig.POINTS_TO_WIN
+            displayedPoints = snapshot.points
         }
-
-        pointsText.text =
-            "Points: ${snapshot.points}/" +
-                GameEngineConfig.POINTS_TO_WIN
 
         pauseButtonContainer.visible =
             snapshot.status == GameStatus.RUNNING &&
@@ -56,7 +56,6 @@ internal class GameplayHud private constructor(
             onBackToMenu: () -> Unit
         ): GameplayHud {
             val fullLifeIcons = mutableListOf<Image>()
-            val emptyLifeIcons = mutableListOf<Image>()
 
             container.solidRect(
                 width = DragonGameConfig.HUD_WIDTH,
@@ -97,23 +96,22 @@ internal class GameplayHud private constructor(
                         index *
                         (LIFE_ICON_SIZE + LIFE_ICON_GAP)
 
-                val emptyIcon =
-                    container.image(
-                        texture = lifeEmptyBitmap
-                    ) {
-                        x = iconX
-                        y = HUD_CONTENT_Y
+                container.image(
+                    texture = lifeEmptyBitmap
+                ) {
+                    x = iconX
+                    y = HUD_CONTENT_Y
 
-                        scaleX =
-                            LIFE_ICON_SIZE /
-                                lifeEmptyBitmap.width.toDouble()
+                    scaleX =
+                        LIFE_ICON_SIZE /
+                            lifeEmptyBitmap.width.toDouble()
 
-                        scaleY =
-                            LIFE_ICON_SIZE /
-                                lifeEmptyBitmap.height.toDouble()
+                    scaleY =
+                        LIFE_ICON_SIZE /
+                            lifeEmptyBitmap.height.toDouble()
 
-                        smoothing = false
-                    }
+                    smoothing = false
+                }
 
                 val fullIcon =
                     container.image(
@@ -133,7 +131,6 @@ internal class GameplayHud private constructor(
                         smoothing = false
                     }
 
-                emptyLifeIcons += emptyIcon
                 fullLifeIcons += fullIcon
             }
 
@@ -172,7 +169,6 @@ internal class GameplayHud private constructor(
 
             return GameplayHud(
                 fullLifeIcons = fullLifeIcons,
-                emptyLifeIcons = emptyLifeIcons,
                 pointsText = pointsText,
                 pauseButtonContainer = pauseButtonContainer
             )
