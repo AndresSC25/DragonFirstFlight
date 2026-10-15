@@ -3,14 +3,10 @@
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
-import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
-import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
-import korlibs.korge.view.Image
-import korlibs.korge.view.SolidRect
 import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.Views
 import korlibs.korge.view.container
@@ -185,42 +181,4 @@ internal suspend fun Container.createMainMenuScreen(
             (screenWidth - instructionText.width) / 2.0
         instructionText.y = 515.0
     }
-}
-
-internal fun Container.createGameButton(
-    x: Double,
-    y: Double,
-    width: Double = DragonGameConfig.BUTTON_WIDTH,
-    height: Double = DragonGameConfig.BUTTON_HEIGHT,
-    label: String,
-    onClick: () -> Unit
-): SolidRect {
-    require(width > 0.0) {
-        "Button width must be greater than zero."
-    }
-    require(height > 0.0) {
-        "Button height must be greater than zero."
-    }
-
-    val button = solidRect(
-        width = width,
-        height = height,
-        color = Colors["#2563EB"]
-    ) {
-        this.x = x
-        this.y = y
-    }
-
-    val buttonText = text(
-        text = label,
-        textSize = 26.0,
-        color = Colors.WHITE
-    )
-    buttonText.x = x + (width - buttonText.width) / 2.0
-    buttonText.y = y + (height - buttonText.height) / 2.0
-
-    button.onClick { onClick() }
-    buttonText.onClick { onClick() }
-
-    return button
 }
