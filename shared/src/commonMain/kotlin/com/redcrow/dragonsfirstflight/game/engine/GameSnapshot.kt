@@ -10,6 +10,7 @@ data class GameSnapshot(
     val verticalVelocity: Double,
     val lives: Int,
     val points: Int,
+    val isImpactFeedbackActive: Boolean,
     val status: GameStatus
 ) {
     val isRunning: Boolean

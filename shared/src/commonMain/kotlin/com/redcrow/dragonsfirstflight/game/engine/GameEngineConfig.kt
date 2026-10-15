@@ -23,6 +23,7 @@ object GameEngineConfig {
     const val OBSTACLE_SPEED: Double = 120.0
 
     const val MAX_DELTA_SECONDS: Double = 0.05
+    const val IMPACT_FEEDBACK_DURATION_SECONDS: Double = 0.18
 
     init {
         require(INITIAL_LIVES > 0) {
@@ -61,6 +62,10 @@ object GameEngineConfig {
 
         require(MAX_DELTA_SECONDS > 0.0) {
             "MAX_DELTA_SECONDS must be greater than zero."
+        }
+
+        require(IMPACT_FEEDBACK_DURATION_SECONDS > 0.0) {
+            "IMPACT_FEEDBACK_DURATION_SECONDS must be greater than zero."
         }
     }
 }

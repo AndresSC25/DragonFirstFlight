@@ -1,7 +1,8 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
 class GameEngine(
-    gameAreaWidth: Double
+    gameAreaWidth: Double,
+    private val onDamageEvent: (DamageEvent) -> Unit = {}
 ) {
     private var areaWidth: Double =
         validateAreaWidth(gameAreaWidth)
@@ -21,6 +22,7 @@ class GameEngine(
 
     private var collisionRegistered: Boolean = false
     private var pointRegistered: Boolean = false
+    private var impactFeedbackRemainingSeconds: Double = 0.0
 
     val status: GameStatus
         get() = when {
@@ -53,10 +55,6 @@ class GameEngine(
     }
 
     fun update(elapsedSeconds: Double) {
-        if (!isRunning) {
-            return
-        }
-
         if (
             !elapsedSeconds.isFinite() ||
             elapsedSeconds <= 0.0
@@ -68,6 +66,13 @@ class GameEngine(
             GameEngineConfig.MAX_DELTA_SECONDS
         )
 
+        impactFeedbackRemainingSeconds =
+            (impactFeedbackRemainingSeconds - delta).coerceAtLeast(0.0)
+
+        if (!isRunning) {
+            return
+        }
+
         updateDragon(delta)
         updateObstacle(delta)
         evaluateCollisionAndScore()
@@ -78,6 +83,7 @@ class GameEngine(
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
         points = 0
+        impactFeedbackRemainingSeconds = 0.0
 
         resetObstacle()
     }
@@ -93,6 +99,8 @@ class GameEngine(
             verticalVelocity = verticalVelocity,
             lives = lives,
             points = points,
+            isImpactFeedbackActive =
+                impactFeedbackRemainingSeconds > 0.0,
             status = status
         )
     }
@@ -145,22 +153,9 @@ class GameEngine(
     }
 
     private fun evaluateCollisionAndScore() {
-        if (
-            !collisionRegistered &&
-            !pointRegistered &&
-            rectanglesOverlap(
-                firstX = GameEngineConfig.DRAGON_X,
-                firstY = dragonY,
-                firstWidth = GameEngineConfig.DRAGON_SIZE,
-                firstHeight = GameEngineConfig.DRAGON_SIZE,
-                secondX = obstacleX,
-                secondY = GameEngineConfig.OBSTACLE_Y,
-                secondWidth = GameEngineConfig.OBSTACLE_SIZE,
-                secondHeight = GameEngineConfig.OBSTACLE_SIZE
-            )
-        ) {
-            lives = (lives - 1).coerceAtLeast(0)
-            collisionRegistered = true
+        val damageEvent = detectDamageEvent()
+        if (damageEvent != null) {
+            handleDamageEvent(damageEvent)
             return
         }
 
@@ -173,6 +168,41 @@ class GameEngine(
             points += 1
             pointRegistered = true
         }
+    }
+
+    private fun detectDamageEvent(): DamageEvent? {
+        if (collisionRegistered || pointRegistered) {
+            return null
+        }
+
+        val overlapsObstacle = rectanglesOverlap(
+            firstX = GameEngineConfig.DRAGON_X,
+            firstY = dragonY,
+            firstWidth = GameEngineConfig.DRAGON_SIZE,
+            firstHeight = GameEngineConfig.DRAGON_SIZE,
+            secondX = obstacleX,
+            secondY = GameEngineConfig.OBSTACLE_Y,
+            secondWidth = GameEngineConfig.OBSTACLE_SIZE,
+            secondHeight = GameEngineConfig.OBSTACLE_SIZE
+        )
+
+        if (!overlapsObstacle) {
+            return null
+        }
+
+        collisionRegistered = true
+        return DamageEvent
+    }
+
+    internal fun handleDamageEvent(event: DamageEvent) {
+        if (!isRunning) {
+            return
+        }
+
+        onDamageEvent(event)
+        lives = (lives - 1).coerceAtLeast(0)
+        impactFeedbackRemainingSeconds =
+            GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
     }
 
     private fun resetObstacle() {
@@ -203,3 +233,5 @@ class GameEngine(
         return width
     }
 }
+
+object DamageEvent

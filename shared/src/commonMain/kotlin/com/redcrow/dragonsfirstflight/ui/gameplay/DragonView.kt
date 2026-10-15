@@ -28,6 +28,7 @@ internal class DragonView private constructor(
     ) {
         sprite.x = snapshot.dragonX
         sprite.y = snapshot.dragonY
+        sprite.alpha = if (snapshot.isImpactFeedbackActive) 0.45 else 1.0
 
         val shouldAnimate =
             snapshot.status == GameStatus.RUNNING &&
