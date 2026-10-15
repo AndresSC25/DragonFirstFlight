@@ -24,6 +24,8 @@ object GameEngineConfig {
 
     const val MAX_DELTA_SECONDS: Double = 0.05
     const val IMPACT_FEEDBACK_DURATION_SECONDS: Double = 0.18
+    const val INVULNERABILITY_DURATION_SECONDS: Double = 1.5
+    const val BLINK_HALF_PERIOD_SECONDS: Double = 0.2
 
     init {
         require(INITIAL_LIVES > 0) {
@@ -66,6 +68,12 @@ object GameEngineConfig {
 
         require(IMPACT_FEEDBACK_DURATION_SECONDS > 0.0) {
             "IMPACT_FEEDBACK_DURATION_SECONDS must be greater than zero."
+        }
+        require(INVULNERABILITY_DURATION_SECONDS > 0.0) {
+            "INVULNERABILITY_DURATION_SECONDS must be greater than zero."
+        }
+        require(BLINK_HALF_PERIOD_SECONDS > 0.0) {
+            "BLINK_HALF_PERIOD_SECONDS must be greater than zero."
         }
     }
 }

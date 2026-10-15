@@ -101,12 +101,18 @@ class GameEngineDamageTest {
     fun finalHitFlashClearsAfterLoss() {
         val engine = GameEngine(gameAreaWidth = 1280.0)
 
-        repeat(3) {
+        repeat(3) { hit ->
             engine.handleDamageEvent(DamageEvent)
+            if (hit < 2) {
+                repeat(30) {
+                    engine.update(elapsedSeconds = 0.05)
+                }
+            }
         }
 
         assertEquals(GameStatus.LOST, engine.snapshot().status)
         assertTrue(engine.snapshot().isImpactFeedbackActive)
+        assertFalse(engine.snapshot().isInvulnerable)
 
         repeat(4) {
             engine.update(elapsedSeconds = 0.05)

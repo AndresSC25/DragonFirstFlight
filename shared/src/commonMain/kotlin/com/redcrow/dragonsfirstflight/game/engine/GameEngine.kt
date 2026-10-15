@@ -23,6 +23,7 @@ class GameEngine(
     private var collisionRegistered: Boolean = false
     private var pointRegistered: Boolean = false
     private var impactFeedbackRemainingSeconds: Double = 0.0
+    private var invulnerabilityRemainingSeconds: Double = 0.0
 
     val status: GameStatus
         get() = when {
@@ -68,6 +69,8 @@ class GameEngine(
 
         impactFeedbackRemainingSeconds =
             (impactFeedbackRemainingSeconds - delta).coerceAtLeast(0.0)
+        invulnerabilityRemainingSeconds =
+            (invulnerabilityRemainingSeconds - delta).coerceAtLeast(0.0)
 
         if (!isRunning) {
             return
@@ -84,11 +87,18 @@ class GameEngine(
         lives = GameEngineConfig.INITIAL_LIVES
         points = 0
         impactFeedbackRemainingSeconds = 0.0
+        invulnerabilityRemainingSeconds = 0.0
 
         resetObstacle()
     }
 
     fun snapshot(): GameSnapshot {
+        val isInvulnerable = invulnerabilityRemainingSeconds > 0.0
+        val isInvulnerabilityBlinkDim = isInvulnerable &&
+            ((GameEngineConfig.INVULNERABILITY_DURATION_SECONDS -
+                invulnerabilityRemainingSeconds) /
+                GameEngineConfig.BLINK_HALF_PERIOD_SECONDS).toInt() % 2 == 0
+
         return GameSnapshot(
             dragonX = GameEngineConfig.DRAGON_X,
             dragonY = dragonY,
@@ -101,6 +111,8 @@ class GameEngine(
             points = points,
             isImpactFeedbackActive =
                 impactFeedbackRemainingSeconds > 0.0,
+            isInvulnerable = isInvulnerable,
+            isInvulnerabilityBlinkDim = isInvulnerabilityBlinkDim,
             status = status
         )
     }
@@ -200,9 +212,17 @@ class GameEngine(
         }
 
         onDamageEvent(event)
+        if (invulnerabilityRemainingSeconds > 0.0) {
+            return
+        }
+
         lives = (lives - 1).coerceAtLeast(0)
         impactFeedbackRemainingSeconds =
             GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
+        if (lives > 0) {
+            invulnerabilityRemainingSeconds =
+                GameEngineConfig.INVULNERABILITY_DURATION_SECONDS
+        }
     }
 
     private fun resetObstacle() {

@@ -11,6 +11,8 @@ data class GameSnapshot(
     val lives: Int,
     val points: Int,
     val isImpactFeedbackActive: Boolean,
+    val isInvulnerable: Boolean,
+    val isInvulnerabilityBlinkDim: Boolean,
     val status: GameStatus
 ) {
     val isRunning: Boolean
