@@ -27,6 +27,7 @@ import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 import korlibs.math.geom.Size
+import kotlin.time.DurationUnit
 
 private const val DRAGON_SPRITESHEET_PATH: String =
     "sprites/dragon/YoungBrassDragon.png"
@@ -165,9 +166,7 @@ internal suspend fun Container.createGameplayScreen(
                 }
 
                 GameStatus.WON -> {
-                    resultText.text =
-                        "Victory! You avoided " +
-                                "${GameEngineConfig.POINTS_TO_WIN} obstacles."
+                    resultText.text = "Victory!"
                     restartText.text =
                         "Click or tap to play again"
                 }
@@ -182,7 +181,7 @@ internal suspend fun Container.createGameplayScreen(
 
         gameArea.addUpdater { delta ->
             val elapsedSeconds =
-                delta.inWholeMilliseconds / 1000.0
+                delta.toDouble(DurationUnit.SECONDS)
 
             controller.update(elapsedSeconds)
 

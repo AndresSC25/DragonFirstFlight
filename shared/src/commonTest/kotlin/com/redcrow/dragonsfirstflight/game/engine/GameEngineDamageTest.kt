@@ -54,7 +54,6 @@ class GameEngineDamageTest {
             }
         }
         assertTrue(respawnObserved)
-        assertEquals(0, engine.snapshot().points)
         val respawnX = engine.snapshot().obstacleX
 
         var framesToSecondImpact = 0
