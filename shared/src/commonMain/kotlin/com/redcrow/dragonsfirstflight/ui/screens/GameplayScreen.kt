@@ -8,7 +8,8 @@ import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
-import com.redcrow.dragonsfirstflight.ui.gameplay.PlaceholderObstacleView
+import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.format.readBitmap
@@ -40,8 +41,17 @@ private const val LIFE_FULL_PATH: String =
 private const val LIFE_EMPTY_PATH: String =
     "sprites/dragon/lives/dragon_life_empty.png"
 
+private const val HIT_SPARK_PATH: String =
+    "effects/impact/hit_spark.png"
 
-
+private val ZONE_ONE_OBSTACLE_PATHS = listOf(
+    "sprites/obstacles/zone1/broken_cart.png",
+    "sprites/obstacles/zone1/broken_stone_column.png",
+    "sprites/obstacles/zone1/hanging_banner.png",
+    "sprites/obstacles/zone1/training_dummy.png",
+    "sprites/obstacles/zone1/wooden_barrier.png",
+    "sprites/obstacles/zone1/wooden_crates.png"
+)
 
 
 internal suspend fun Container.createGameplayScreen(
@@ -67,10 +77,17 @@ internal suspend fun Container.createGameplayScreen(
     val lifeEmptyBitmap =
         resourcesVfs[LIFE_EMPTY_PATH].readBitmap()
 
+    val hitSparkBitmap =
+        resourcesVfs[HIT_SPARK_PATH].readBitmap()
+
+    val obstacleBitmaps = ZONE_ONE_OBSTACLE_PATHS.associateWith {
+        resourcesVfs[it].readBitmap()
+    }
 
     return container {
         lateinit var dragonView: DragonView
-        lateinit var obstacleView: PlaceholderObstacleView
+        lateinit var hitSparkView: HitSparkView
+        lateinit var obstacleView: ObstacleView
         lateinit var scrollingBackground: ScrollingBackground
         val backgroundWidth =
             DragonGameConfig.GAME_AREA_WIDTH
@@ -101,7 +118,15 @@ internal suspend fun Container.createGameplayScreen(
                 spriteMap = dragonSpriteMap
             )
 
-            obstacleView = PlaceholderObstacleView.create(container = this)
+            hitSparkView = HitSparkView.create(
+                container = this,
+                spriteMap = hitSparkBitmap
+            )
+
+            obstacleView = ObstacleView.create(
+                container = this,
+                obstacleBitmaps = obstacleBitmaps
+            )
         }
 
         gameArea.onClick {
@@ -160,11 +185,19 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused
             )
+            hitSparkView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused
+            )
             updateView(snapshot)
         }
 
         val initialSnapshot = controller.snapshot()
         dragonView.update(
+            snapshot = initialSnapshot,
+            isPaused = controller.isPaused
+        )
+        hitSparkView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused
         )

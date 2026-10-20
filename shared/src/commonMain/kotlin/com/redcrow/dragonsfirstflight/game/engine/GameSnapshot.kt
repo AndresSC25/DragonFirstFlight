@@ -4,17 +4,29 @@ data class GameSnapshot(
     val dragonX: Double,
     val dragonY: Double,
     val dragonSize: Double,
-    val obstacleX: Double,
-    val obstacleY: Double,
-    val obstacleSize: Double,
+    val obstacles: List<Obstacle>,
+    val destroyedObstacleIds: Set<Int>,
     val verticalVelocity: Double,
     val lives: Int,
     val points: Int,
     val isImpactFeedbackActive: Boolean,
+    val impactObstacleId: Int?,
     val isInvulnerable: Boolean,
     val isInvulnerabilityBlinkDim: Boolean,
     val status: GameStatus
 ) {
+    val firstObstacle: Obstacle?
+        get() = obstacles.firstOrNull()
+
+    val obstacleX: Double
+        get() = firstObstacle?.x ?: Double.POSITIVE_INFINITY
+
+    val obstacleY: Double
+        get() = firstObstacle?.y ?: GameEngineConfig.OBSTACLE_Y
+
+    val obstacleSize: Double
+        get() = firstObstacle?.size ?: GameEngineConfig.OBSTACLE_SIZE
+
     val isRunning: Boolean
         get() = status == GameStatus.RUNNING
 }
