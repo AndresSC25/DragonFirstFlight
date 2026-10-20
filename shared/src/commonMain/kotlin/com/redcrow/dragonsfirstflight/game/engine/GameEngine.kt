@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+import com.redcrow.dragonsfirstflight.game.score.ScoreTracker
+
 class GameEngine(
     gameAreaWidth: Double,
     private val onDamageEvent: (DamageEvent) -> Unit = {}
@@ -18,19 +20,17 @@ class GameEngine(
     private var lives: Int =
         GameEngineConfig.INITIAL_LIVES
 
-    private var points: Int = 0
+    private val scoreTracker = ScoreTracker(
+        pointsPerSecond = GameEngineConfig.POINTS_PER_SECOND
+    )
 
     private var collisionRegistered: Boolean = false
-    private var pointRegistered: Boolean = false
     private var impactFeedbackRemainingSeconds: Double = 0.0
     private var invulnerabilityRemainingSeconds: Double = 0.0
 
     val status: GameStatus
         get() = when {
             lives <= 0 -> GameStatus.LOST
-
-            points >= GameEngineConfig.POINTS_TO_WIN ->
-                GameStatus.WON
 
             else -> GameStatus.RUNNING
         }
@@ -78,14 +78,18 @@ class GameEngine(
 
         updateDragon(delta)
         updateObstacle(delta)
-        evaluateCollisionAndScore()
+        scoreTracker.update(elapsedSeconds)
+        val damageEvent = detectDamageEvent()
+        if (damageEvent != null) {
+            handleDamageEvent(damageEvent)
+        }
     }
 
     fun restart() {
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
-        points = 0
+        scoreTracker.reset()
         impactFeedbackRemainingSeconds = 0.0
         invulnerabilityRemainingSeconds = 0.0
 
@@ -108,7 +112,7 @@ class GameEngine(
             obstacleSize = GameEngineConfig.OBSTACLE_SIZE,
             verticalVelocity = verticalVelocity,
             lives = lives,
-            points = points,
+            points = scoreTracker.score.points,
             isImpactFeedbackActive =
                 impactFeedbackRemainingSeconds > 0.0,
             isInvulnerable = isInvulnerable,
@@ -164,26 +168,8 @@ class GameEngine(
         }
     }
 
-    private fun evaluateCollisionAndScore() {
-        val damageEvent = detectDamageEvent()
-        if (damageEvent != null) {
-            handleDamageEvent(damageEvent)
-            return
-        }
-
-        if (
-            !collisionRegistered &&
-            !pointRegistered &&
-            obstacleX + GameEngineConfig.OBSTACLE_SIZE <=
-            GameEngineConfig.DRAGON_X
-        ) {
-            points += 1
-            pointRegistered = true
-        }
-    }
-
     private fun detectDamageEvent(): DamageEvent? {
-        if (collisionRegistered || pointRegistered) {
+        if (collisionRegistered) {
             return null
         }
 
@@ -228,7 +214,6 @@ class GameEngine(
     private fun resetObstacle() {
         obstacleX = initialObstacleX(areaWidth)
         collisionRegistered = false
-        pointRegistered = false
     }
 
     private fun initialObstacleX(width: Double): Double {

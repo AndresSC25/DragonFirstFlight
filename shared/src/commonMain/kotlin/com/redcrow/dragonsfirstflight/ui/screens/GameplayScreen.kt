@@ -6,27 +6,21 @@ import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
-import com.redcrow.dragonsfirstflight.ui.components.PauseOverlay
+import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.PlaceholderObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
-import korlibs.image.bitmap.Bitmap
-import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
-import korlibs.korge.view.Image
-import korlibs.korge.view.Text
 import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.clipContainer
 import korlibs.korge.view.container
-import korlibs.korge.view.image
-import korlibs.korge.view.solidRect
-import korlibs.korge.view.text
 import korlibs.math.geom.Size
+import kotlin.time.DurationUnit
 
 private const val DRAGON_SPRITESHEET_PATH: String =
     "sprites/dragon/YoungBrassDragon.png"
@@ -34,7 +28,7 @@ private const val DRAGON_SPRITESHEET_PATH: String =
 private const val ZONE_ONE_BACKGROUND_PATH: String =
     "backgrounds/zone1/fortress_courtyard.png"
 
-private const val PAUSE_PANEL_PATH: String =
+private const val SESSION_PANEL_PATH: String =
     "ui/panels/panel_medieval.png"
 
 private const val GAME_BUTTON_PATH: String =
@@ -61,8 +55,8 @@ internal suspend fun Container.createGameplayScreen(
     val dragonSpriteMap =
         resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
 
-    val pausePanelBitmap =
-        resourcesVfs[PAUSE_PANEL_PATH].readBitmap()
+    val sessionPanelBitmap =
+        resourcesVfs[SESSION_PANEL_PATH].readBitmap()
 
     val gameButtonBitmap =
         resourcesVfs[GAME_BUTTON_PATH].readBitmap()
@@ -111,7 +105,9 @@ internal suspend fun Container.createGameplayScreen(
         }
 
         gameArea.onClick {
-            controller.handleGameAreaInput()
+            if (controller.isGameRunning) {
+                controller.handleGameAreaInput()
+            }
         }
 
         val gameplayHud = GameplayHud.create(
@@ -123,29 +119,12 @@ internal suspend fun Container.createGameplayScreen(
             onBackToMenu = onBackToMenu
         )
 
-        val resultText = text(
-            text = "",
-            textSize = 38.0,
-            color = Colors["#FBBF24"]
-        ) {
-            x = 40.0
-            y = 610.0
-        }
-
-        val restartText = text(
-            text = "",
-            textSize = 24.0,
-            color = Colors.WHITE
-        ) {
-            x = 40.0
-            y = 660.0
-        }
-
-        val pauseOverlay = PauseOverlay.create(
+        val sessionOverlay = SessionOverlay.create(
             container = this,
-            panelBitmap = pausePanelBitmap,
+            panelBitmap = sessionPanelBitmap,
             buttonBitmap = gameButtonBitmap,
             onResume = controller::resumeGame,
+            onRestart = controller::startGame,
             onBackToMenu = onBackToMenu
         )
 
@@ -157,32 +136,15 @@ internal suspend fun Container.createGameplayScreen(
                 isPaused = controller.isPaused
             )
 
-            pauseOverlay.isVisible = controller.isPaused
-            when (snapshot.status) {
-                GameStatus.RUNNING -> {
-                    resultText.text = ""
-                    restartText.text = ""
-                }
-
-                GameStatus.WON -> {
-                    resultText.text =
-                        "Victory! You avoided " +
-                                "${GameEngineConfig.POINTS_TO_WIN} obstacles."
-                    restartText.text =
-                        "Click or tap to play again"
-                }
-
-                GameStatus.LOST -> {
-                    resultText.text = "Game over"
-                    restartText.text =
-                        "Click or tap to play again"
-                }
-            }
+            sessionOverlay.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused
+            )
         }
 
         gameArea.addUpdater { delta ->
             val elapsedSeconds =
-                delta.inWholeMilliseconds / 1000.0
+                delta.toDouble(DurationUnit.SECONDS)
 
             controller.update(elapsedSeconds)
 
