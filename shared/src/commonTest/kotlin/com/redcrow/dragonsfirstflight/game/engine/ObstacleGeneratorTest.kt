@@ -108,4 +108,23 @@ class ObstacleGeneratorTest {
             }
         }
     }
+
+    @Test
+    fun generatedObstaclesIncludeTheBottomLane() {
+        val generator = ObstacleGenerator(areaWidth = 1280.0)
+        val generatedLanes = mutableSetOf<Double>()
+
+        repeat(120) {
+            generatedLanes += generator.snapshot().map { it.y }
+            generator.update(GameEngineConfig.MAX_DELTA_SECONDS)
+        }
+
+        assertTrue(
+            GameEngineConfig.OBSTACLE_BOTTOM_Y in generatedLanes
+        )
+        assertEquals(
+            GameEngineConfig.DRAGON_MAX_Y,
+            GameEngineConfig.OBSTACLE_BOTTOM_Y
+        )
+    }
 }

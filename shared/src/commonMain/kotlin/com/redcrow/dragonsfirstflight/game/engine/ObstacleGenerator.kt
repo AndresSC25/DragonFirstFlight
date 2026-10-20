@@ -27,6 +27,7 @@ internal class ObstacleGenerator(
     private val spritePaths = mutableListOf<String>()
     private var lastLane: Double? = null
     private var consecutiveLaneCount: Int = 0
+    private val laneUsage = mutableMapOf<Double, Int>()
 
     init {
         reset()
@@ -77,6 +78,7 @@ internal class ObstacleGenerator(
         spritePaths.clear()
         lastLane = null
         consecutiveLaneCount = 0
+        laneUsage.clear()
         spawnObstacle(areaWidth - GameEngineConfig.INITIAL_OBSTACLE_MARGIN)
     }
 
@@ -102,12 +104,21 @@ internal class ObstacleGenerator(
         }
         val lane = if (nextId == 0) {
             GameEngineConfig.OBSTACLE_Y
-        } else if (lanesWithoutConsecutiveRepeat.isNotEmpty()) {
-            lanesWithoutConsecutiveRepeat.random(random)
-        } else if (availableLanes.isNotEmpty()) {
-            availableLanes.random(random)
         } else {
-            obstacleLanes.random(random)
+            val candidates = when {
+                lanesWithoutConsecutiveRepeat.isNotEmpty() ->
+                    lanesWithoutConsecutiveRepeat
+
+                availableLanes.isNotEmpty() -> availableLanes
+
+                else -> obstacleLanes
+            }
+            val leastUsedCount = candidates.minOf {
+                laneUsage[it] ?: 0
+            }
+            candidates.filter {
+                (laneUsage[it] ?: 0) == leastUsedCount
+            }.random(random)
         }
         if (lane == lastLane) {
             consecutiveLaneCount += 1
@@ -115,6 +126,7 @@ internal class ObstacleGenerator(
             lastLane = lane
             consecutiveLaneCount = 1
         }
+        laneUsage[lane] = (laneUsage[lane] ?: 0) + 1
 
         obstacles += Obstacle(
             id = nextId++,

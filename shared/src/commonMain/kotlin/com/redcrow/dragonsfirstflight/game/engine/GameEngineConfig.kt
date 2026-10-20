@@ -23,7 +23,7 @@ object GameEngineConfig {
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
     const val MIN_OBSTACLE_SEPARATION: Double = 300.0
     const val OBSTACLE_TOP_Y: Double = 190.0
-    const val OBSTACLE_BOTTOM_Y: Double = 450.0
+    const val OBSTACLE_BOTTOM_Y: Double = DRAGON_MAX_Y
     const val OBSTACLE_SPEED: Double = 120.0
 
     const val MAX_DELTA_SECONDS: Double = 0.05
