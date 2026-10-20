@@ -16,26 +16,17 @@ class GameEngineScoreTest {
     }
 
     @Test
-    fun passingMoreThanFiveObstaclesDoesNotEndTheGame() {
+    fun reachingConfiguredActiveTimeEndsTheGameWithVictory() {
         val engine = GameEngine(gameAreaWidth = 1280.0)
-        var passedObstacles = 0
-        var previousRightEdge = engine.snapshot().obstacleX + GameEngineConfig.OBSTACLE_SIZE
 
-        repeat(1400) {
-            engine.update(0.05)
-            val rightEdge = engine.snapshot().obstacleX + GameEngineConfig.OBSTACLE_SIZE
-            if (previousRightEdge > GameEngineConfig.DRAGON_X &&
-                rightEdge <= GameEngineConfig.DRAGON_X
-            ) {
-                passedObstacles += 1
-            }
-            previousRightEdge = rightEdge
-        }
+        engine.update(GameEngineConfig.TIME_TO_WIN_SECONDS)
 
-        assertTrue(passedObstacles > 5)
-        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
-        assertEquals(GameEngineConfig.INITIAL_LIVES, engine.snapshot().lives)
-        assertEquals(70 * GameEngineConfig.POINTS_PER_SECOND, engine.snapshot().points)
+        assertEquals(GameStatus.WON, engine.snapshot().status)
+        assertEquals(
+            (GameEngineConfig.TIME_TO_WIN_SECONDS *
+                GameEngineConfig.POINTS_PER_SECOND).toInt(),
+            engine.snapshot().points
+        )
     }
 
     @Test

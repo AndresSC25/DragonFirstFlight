@@ -51,7 +51,7 @@ class GameEngineDamageTest {
             }
         }
         assertTrue(respawnObserved)
-        assertEquals(0, engine.snapshot().points)
+        assertTrue(engine.snapshot().points > 0)
         var framesToSecondImpact = 0
         while (eventObstacleXs.size == 1 && framesToSecondImpact < 100) {
             engine.update(elapsedSeconds = 0.05)

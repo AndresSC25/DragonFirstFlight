@@ -5,10 +5,12 @@ data class GameSnapshot(
     val dragonY: Double,
     val dragonSize: Double,
     val obstacles: List<Obstacle>,
+    val destroyedObstacleIds: Set<Int>,
     val verticalVelocity: Double,
     val lives: Int,
     val points: Int,
     val isImpactFeedbackActive: Boolean,
+    val impactObstacleId: Int?,
     val isInvulnerable: Boolean,
     val isInvulnerabilityBlinkDim: Boolean,
     val status: GameStatus

@@ -3,6 +3,7 @@ package com.redcrow.dragonsfirstflight.game.engine
 object GameEngineConfig {
     const val INITIAL_LIVES: Int = 3
     const val POINTS_PER_SECOND: Int = 1
+    const val TIME_TO_WIN_SECONDS: Double = 20.0
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 
@@ -37,6 +38,10 @@ object GameEngineConfig {
 
         require(POINTS_PER_SECOND > 0) {
             "POINTS_PER_SECOND must be greater than zero."
+        }
+
+        require(TIME_TO_WIN_SECONDS > 0.0) {
+            "TIME_TO_WIN_SECONDS must be greater than zero."
         }
 
         require(GAME_AREA_HEIGHT > 0.0) {

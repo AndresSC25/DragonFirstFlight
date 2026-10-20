@@ -27,6 +27,7 @@ internal class ObstacleView private constructor(
                     it.smoothing = false
                 }
             }
+            view.visible = obstacle.id !in snapshot.destroyedObstacleIds
             updateView(view, obstacle)
         }
     }

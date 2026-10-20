@@ -24,11 +24,16 @@ class GameEngine(
     private val collisionRegistered = mutableSetOf<Int>()
     private val pointRegistered = mutableSetOf<Int>()
     private var impactFeedbackRemainingSeconds: Double = 0.0
+    private var impactObstacleId: Int? = null
     private var invulnerabilityRemainingSeconds: Double = 0.0
 
     val status: GameStatus
         get() = when {
             lives <= 0 -> GameStatus.LOST
+
+            scoreTracker.score.activeTimeSeconds >=
+                GameEngineConfig.TIME_TO_WIN_SECONDS ->
+                GameStatus.WON
 
             else -> GameStatus.RUNNING
         }
@@ -63,6 +68,9 @@ class GameEngine(
 
         impactFeedbackRemainingSeconds =
             (impactFeedbackRemainingSeconds - delta).coerceAtLeast(0.0)
+        if (impactFeedbackRemainingSeconds <= 0.0) {
+            impactObstacleId = null
+        }
         invulnerabilityRemainingSeconds =
             (invulnerabilityRemainingSeconds - delta).coerceAtLeast(0.0)
 
@@ -82,6 +90,7 @@ class GameEngine(
         lives = GameEngineConfig.INITIAL_LIVES
         scoreTracker.reset()
         impactFeedbackRemainingSeconds = 0.0
+        impactObstacleId = null
         invulnerabilityRemainingSeconds = 0.0
 
         obstacleGenerator.reset()
@@ -101,11 +110,13 @@ class GameEngine(
             dragonY = dragonY,
             dragonSize = GameEngineConfig.DRAGON_SIZE,
             obstacles = obstacleGenerator.snapshot(),
+            destroyedObstacleIds = collisionRegistered.toSet(),
             verticalVelocity = verticalVelocity,
             lives = lives,
             points = scoreTracker.score.points,
             isImpactFeedbackActive =
                 impactFeedbackRemainingSeconds > 0.0,
+            impactObstacleId = impactObstacleId,
             isInvulnerable = isInvulnerable,
             isInvulnerabilityBlinkDim = isInvulnerabilityBlinkDim,
             status = status
@@ -184,6 +195,7 @@ class GameEngine(
             if (overlapsObstacle) {
                 collisionRegistered += obstacle.id
                 pointRegistered += obstacle.id
+                impactObstacleId = obstacle.id
                 return DamageEvent
             }
         }
@@ -197,13 +209,13 @@ class GameEngine(
         }
 
         onDamageEvent(event)
+        impactFeedbackRemainingSeconds =
+            GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
         if (invulnerabilityRemainingSeconds > 0.0) {
             return
         }
 
         lives = (lives - 1).coerceAtLeast(0)
-        impactFeedbackRemainingSeconds =
-            GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
         if (lives > 0) {
             invulnerabilityRemainingSeconds =
                 GameEngineConfig.INVULNERABILITY_DURATION_SECONDS
