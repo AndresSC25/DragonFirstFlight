@@ -6,27 +6,22 @@ import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
-import com.redcrow.dragonsfirstflight.ui.components.PauseOverlay
+import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
-import com.redcrow.dragonsfirstflight.ui.gameplay.PlaceholderObstacleView
+import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
-import korlibs.image.bitmap.Bitmap
-import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
-import korlibs.korge.view.Image
-import korlibs.korge.view.Text
 import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.clipContainer
 import korlibs.korge.view.container
-import korlibs.korge.view.image
-import korlibs.korge.view.solidRect
-import korlibs.korge.view.text
 import korlibs.math.geom.Size
+import kotlin.time.DurationUnit
 
 private const val DRAGON_SPRITESHEET_PATH: String =
     "sprites/dragon/YoungBrassDragon.png"
@@ -34,7 +29,7 @@ private const val DRAGON_SPRITESHEET_PATH: String =
 private const val ZONE_ONE_BACKGROUND_PATH: String =
     "backgrounds/zone1/fortress_courtyard.png"
 
-private const val PAUSE_PANEL_PATH: String =
+private const val SESSION_PANEL_PATH: String =
     "ui/panels/panel_medieval.png"
 
 private const val GAME_BUTTON_PATH: String =
@@ -46,8 +41,17 @@ private const val LIFE_FULL_PATH: String =
 private const val LIFE_EMPTY_PATH: String =
     "sprites/dragon/lives/dragon_life_empty.png"
 
+private const val HIT_SPARK_PATH: String =
+    "effects/impact/hit_spark.png"
 
-
+private val ZONE_ONE_OBSTACLE_PATHS = listOf(
+    "sprites/obstacles/zone1/broken_cart.png",
+    "sprites/obstacles/zone1/broken_stone_column.png",
+    "sprites/obstacles/zone1/hanging_banner.png",
+    "sprites/obstacles/zone1/training_dummy.png",
+    "sprites/obstacles/zone1/wooden_barrier.png",
+    "sprites/obstacles/zone1/wooden_crates.png"
+)
 
 
 internal suspend fun Container.createGameplayScreen(
@@ -61,8 +65,8 @@ internal suspend fun Container.createGameplayScreen(
     val dragonSpriteMap =
         resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
 
-    val pausePanelBitmap =
-        resourcesVfs[PAUSE_PANEL_PATH].readBitmap()
+    val sessionPanelBitmap =
+        resourcesVfs[SESSION_PANEL_PATH].readBitmap()
 
     val gameButtonBitmap =
         resourcesVfs[GAME_BUTTON_PATH].readBitmap()
@@ -73,10 +77,17 @@ internal suspend fun Container.createGameplayScreen(
     val lifeEmptyBitmap =
         resourcesVfs[LIFE_EMPTY_PATH].readBitmap()
 
+    val hitSparkBitmap =
+        resourcesVfs[HIT_SPARK_PATH].readBitmap()
+
+    val obstacleBitmaps = ZONE_ONE_OBSTACLE_PATHS.associateWith {
+        resourcesVfs[it].readBitmap()
+    }
 
     return container {
         lateinit var dragonView: DragonView
-        lateinit var obstacleView: PlaceholderObstacleView
+        lateinit var hitSparkView: HitSparkView
+        lateinit var obstacleView: ObstacleView
         lateinit var scrollingBackground: ScrollingBackground
         val backgroundWidth =
             DragonGameConfig.GAME_AREA_WIDTH
@@ -107,11 +118,21 @@ internal suspend fun Container.createGameplayScreen(
                 spriteMap = dragonSpriteMap
             )
 
-            obstacleView = PlaceholderObstacleView.create(container = this)
+            hitSparkView = HitSparkView.create(
+                container = this,
+                spriteMap = hitSparkBitmap
+            )
+
+            obstacleView = ObstacleView.create(
+                container = this,
+                obstacleBitmaps = obstacleBitmaps
+            )
         }
 
         gameArea.onClick {
-            controller.handleGameAreaInput()
+            if (controller.isGameRunning) {
+                controller.handleGameAreaInput()
+            }
         }
 
         val gameplayHud = GameplayHud.create(
@@ -123,29 +144,12 @@ internal suspend fun Container.createGameplayScreen(
             onBackToMenu = onBackToMenu
         )
 
-        val resultText = text(
-            text = "",
-            textSize = 38.0,
-            color = Colors["#FBBF24"]
-        ) {
-            x = 40.0
-            y = 610.0
-        }
-
-        val restartText = text(
-            text = "",
-            textSize = 24.0,
-            color = Colors.WHITE
-        ) {
-            x = 40.0
-            y = 660.0
-        }
-
-        val pauseOverlay = PauseOverlay.create(
+        val sessionOverlay = SessionOverlay.create(
             container = this,
-            panelBitmap = pausePanelBitmap,
+            panelBitmap = sessionPanelBitmap,
             buttonBitmap = gameButtonBitmap,
             onResume = controller::resumeGame,
+            onRestart = controller::startGame,
             onBackToMenu = onBackToMenu
         )
 
@@ -157,32 +161,15 @@ internal suspend fun Container.createGameplayScreen(
                 isPaused = controller.isPaused
             )
 
-            pauseOverlay.isVisible = controller.isPaused
-            when (snapshot.status) {
-                GameStatus.RUNNING -> {
-                    resultText.text = ""
-                    restartText.text = ""
-                }
-
-                GameStatus.WON -> {
-                    resultText.text =
-                        "Victory! You avoided " +
-                                "${GameEngineConfig.POINTS_TO_WIN} obstacles."
-                    restartText.text =
-                        "Click or tap to play again"
-                }
-
-                GameStatus.LOST -> {
-                    resultText.text = "Game over"
-                    restartText.text =
-                        "Click or tap to play again"
-                }
-            }
+            sessionOverlay.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused
+            )
         }
 
         gameArea.addUpdater { delta ->
             val elapsedSeconds =
-                delta.inWholeMilliseconds / 1000.0
+                delta.toDouble(DurationUnit.SECONDS)
 
             controller.update(elapsedSeconds)
 
@@ -198,11 +185,19 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused
             )
+            hitSparkView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused
+            )
             updateView(snapshot)
         }
 
         val initialSnapshot = controller.snapshot()
         dragonView.update(
+            snapshot = initialSnapshot,
+            isPaused = controller.isPaused
+        )
+        hitSparkView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused
         )

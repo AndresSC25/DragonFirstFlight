@@ -2,7 +2,8 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 object GameEngineConfig {
     const val INITIAL_LIVES: Int = 3
-    const val POINTS_TO_WIN: Int = 5
+    const val POINTS_PER_SECOND: Int = 1
+    const val TIME_TO_WIN_SECONDS: Double = 20.0
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 
@@ -20,6 +21,9 @@ object GameEngineConfig {
     const val OBSTACLE_Y: Double = 328.0
     const val OBSTACLE_SIZE: Double = 72.0
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
+    const val MIN_OBSTACLE_SEPARATION: Double = 300.0
+    const val OBSTACLE_TOP_Y: Double = 190.0
+    const val OBSTACLE_BOTTOM_Y: Double = DRAGON_MAX_Y
     const val OBSTACLE_SPEED: Double = 120.0
 
     const val MAX_DELTA_SECONDS: Double = 0.05
@@ -32,8 +36,12 @@ object GameEngineConfig {
             "INITIAL_LIVES must be greater than zero."
         }
 
-        require(POINTS_TO_WIN > 0) {
-            "POINTS_TO_WIN must be greater than zero."
+        require(POINTS_PER_SECOND > 0) {
+            "POINTS_PER_SECOND must be greater than zero."
+        }
+
+        require(TIME_TO_WIN_SECONDS > 0.0) {
+            "TIME_TO_WIN_SECONDS must be greater than zero."
         }
 
         require(GAME_AREA_HEIGHT > 0.0) {
@@ -60,6 +68,20 @@ object GameEngineConfig {
 
         require(OBSTACLE_SIZE > 0.0) {
             "OBSTACLE_SIZE must be greater than zero."
+        }
+
+        require(MIN_OBSTACLE_SEPARATION > OBSTACLE_SIZE) {
+            "MIN_OBSTACLE_SEPARATION must be greater than OBSTACLE_SIZE."
+        }
+
+        require(OBSTACLE_TOP_Y >= DRAGON_MIN_Y) {
+            "OBSTACLE_TOP_Y must be inside the game area."
+        }
+
+        require(
+            OBSTACLE_BOTTOM_Y + OBSTACLE_SIZE <= DRAGON_MAX_Y + DRAGON_SIZE
+        ) {
+            "OBSTACLE_BOTTOM_Y must be inside the game area."
         }
 
         require(MAX_DELTA_SECONDS > 0.0) {

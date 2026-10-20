@@ -1,7 +1,6 @@
 ﻿package com.redcrow.dragonsfirstflight.ui.components
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
-import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import korlibs.image.bitmap.Bitmap
@@ -35,9 +34,7 @@ internal class GameplayHud private constructor(
         }
 
         if (displayedPoints != snapshot.points) {
-            pointsText.text =
-                "Points: ${snapshot.points}/" +
-                    GameEngineConfig.POINTS_TO_WIN
+            pointsText.text = "Points: ${snapshot.points}"
             displayedPoints = snapshot.points
         }
 
