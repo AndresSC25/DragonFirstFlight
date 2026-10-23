@@ -11,9 +11,10 @@ class GameEngineDamageTest {
     fun overlappingObstacleEmitsDamageOnceUntilNextObstacle() {
         val eventObstacleXs = mutableListOf<Double>()
         lateinit var engine: GameEngine
-        engine = GameEngine(gameAreaWidth = 240.0) {
-            eventObstacleXs += engine.snapshot().obstacleX
-        }
+        engine =
+            GameEngine(gameAreaWidth = 240.0) {
+                eventObstacleXs += engine.snapshot().obstacleX
+            }
 
         engine.update(elapsedSeconds = 0.05)
 
@@ -41,7 +42,7 @@ class GameEngineDamageTest {
             if (currentObstacleX > previousObstacleX) {
                 assertTrue(
                     previousObstacleX - GameEngineConfig.OBSTACLE_SPEED * 0.05 <=
-                        -GameEngineConfig.OBSTACLE_SIZE
+                        -GameEngineConfig.OBSTACLE_SIZE,
                 )
                 assertTrue(currentObstacleX > 0.0)
                 previousObstacleX = currentObstacleX
@@ -126,16 +127,17 @@ class GameEngineDamageTest {
         val obstacleY = GameEngineConfig.OBSTACLE_Y
         val obstacleSize = GameEngineConfig.OBSTACLE_SIZE
 
-        fun overlapsAt(dragonY: Double) = rectanglesOverlap(
-            firstX = dragonX,
-            firstY = dragonY,
-            firstWidth = dragonWidth,
-            firstHeight = dragonWidth,
-            secondX = obstacleX,
-            secondY = obstacleY,
-            secondWidth = obstacleSize,
-            secondHeight = obstacleSize
-        )
+        fun overlapsAt(dragonY: Double) =
+            rectanglesOverlap(
+                firstX = dragonX,
+                firstY = dragonY,
+                firstWidth = dragonWidth,
+                firstHeight = dragonWidth,
+                secondX = obstacleX,
+                secondY = obstacleY,
+                secondWidth = obstacleSize,
+                secondHeight = obstacleSize,
+            )
 
         assertFalse(overlapsAt(obstacleY - dragonWidth))
         assertTrue(overlapsAt(obstacleY - dragonWidth + 0.01))
@@ -154,8 +156,8 @@ class GameEngineDamageTest {
                 secondX = 10.0,
                 secondY = 0.0,
                 secondWidth = 10.0,
-                secondHeight = 10.0
-            )
+                secondHeight = 10.0,
+            ),
         )
     }
 }

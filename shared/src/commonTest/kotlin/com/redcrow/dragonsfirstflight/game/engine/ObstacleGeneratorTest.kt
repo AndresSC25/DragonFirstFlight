@@ -16,7 +16,7 @@ class ObstacleGeneratorTest {
         assertTrue(first.y >= GameEngineConfig.DRAGON_MIN_Y)
         assertTrue(
             first.y + first.size <=
-                GameEngineConfig.DRAGON_MAX_Y + GameEngineConfig.DRAGON_SIZE
+                GameEngineConfig.DRAGON_MAX_Y + GameEngineConfig.DRAGON_SIZE,
         )
 
         repeat(211) {
@@ -28,7 +28,7 @@ class ObstacleGeneratorTest {
         assertEquals(1, respawned.id)
         assertTrue(
             respawned.x <=
-                1280.0 - GameEngineConfig.INITIAL_OBSTACLE_MARGIN
+                1280.0 - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
         )
         assertFalse(respawned.x + respawned.size < 0.0)
     }
@@ -45,7 +45,7 @@ class ObstacleGeneratorTest {
         assertEquals(0, generator.snapshot().single().id)
         assertEquals(
             1280.0 - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
-            generator.snapshot().single().x
+            generator.snapshot().single().x,
         )
     }
 
@@ -65,7 +65,7 @@ class ObstacleGeneratorTest {
                 second.x - first.x >=
                     GameEngineConfig.MIN_OBSTACLE_SEPARATION -
                     GameEngineConfig.OBSTACLE_SPEED
-            }
+            },
         )
         assertEquals(6, spritePaths.size)
     }
@@ -81,7 +81,7 @@ class ObstacleGeneratorTest {
         assertTrue(obstacles.size >= 2)
         assertEquals(
             obstacles.size,
-            obstacles.map { it.y }.toSet().size
+            obstacles.map { it.y }.toSet().size,
         )
     }
 
@@ -120,11 +120,11 @@ class ObstacleGeneratorTest {
         }
 
         assertTrue(
-            GameEngineConfig.OBSTACLE_BOTTOM_Y in generatedLanes
+            GameEngineConfig.OBSTACLE_BOTTOM_Y in generatedLanes,
         )
         assertEquals(
             GameEngineConfig.DRAGON_MAX_Y,
-            GameEngineConfig.OBSTACLE_BOTTOM_Y
+            GameEngineConfig.OBSTACLE_BOTTOM_Y,
         )
     }
 }

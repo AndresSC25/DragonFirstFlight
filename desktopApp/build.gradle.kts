@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlinJvm)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.ktlint)
 }
 
 kotlin {
@@ -26,12 +27,9 @@ sourceSets {
 
 dependencies {
     implementation(project(":shared"))
-
     implementation(libs.korge)
-
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
-
     implementation(libs.compose.uiToolingPreview)
 }
 
@@ -49,5 +47,16 @@ compose.desktop {
             packageName = "com.redcrow.dragonsfirstflight"
             packageVersion = "1.0.0"
         }
+    }
+}
+
+ktlint {
+    verbose.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+
+    filter {
+        exclude("**/build/**")
+        exclude("**/generated/**")
     }
 }

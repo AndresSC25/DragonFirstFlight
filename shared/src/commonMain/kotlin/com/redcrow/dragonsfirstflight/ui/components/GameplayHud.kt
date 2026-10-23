@@ -21,13 +21,13 @@ private const val HUD_CONTENT_Y: Double = 62.0
 internal class GameplayHud private constructor(
     private val fullLifeIcons: List<Image>,
     private val pointsText: Text,
-    private val pauseButtonContainer: Container
+    private val pauseButtonContainer: Container,
 ) {
     private var displayedPoints: Int? = null
 
     fun update(
         snapshot: GameSnapshot,
-        isPaused: Boolean
+        isPaused: Boolean,
     ) {
         fullLifeIcons.forEachIndexed { index, icon ->
             icon.visible = index < snapshot.lives
@@ -40,7 +40,7 @@ internal class GameplayHud private constructor(
 
         pauseButtonContainer.visible =
             snapshot.status == GameStatus.RUNNING &&
-                !isPaused
+            !isPaused
     }
 
     companion object {
@@ -50,14 +50,14 @@ internal class GameplayHud private constructor(
             lifeEmptyBitmap: Bitmap,
             gameButtonBitmap: Bitmap,
             onPause: () -> Unit,
-            onBackToMenu: () -> Unit
+            onBackToMenu: () -> Unit,
         ): GameplayHud {
             val fullLifeIcons = mutableListOf<Image>()
 
             container.solidRect(
                 width = DragonGameConfig.HUD_WIDTH,
                 height = DragonGameConfig.HUD_HEIGHT,
-                color = Colors["#101827"]
+                color = Colors["#101827"],
             ) {
                 x = DragonGameConfig.HUD_X
                 y = DragonGameConfig.HUD_Y
@@ -67,13 +67,13 @@ internal class GameplayHud private constructor(
             container.solidRect(
                 width = DragonGameConfig.HUD_WIDTH,
                 height = 3.0,
-                color = Colors["#C9962F"]
+                color = Colors["#C9962F"],
             ) {
                 x = DragonGameConfig.HUD_X
                 y =
                     DragonGameConfig.HUD_Y +
-                        DragonGameConfig.HUD_HEIGHT -
-                        3.0
+                    DragonGameConfig.HUD_HEIGHT -
+                    3.0
 
                 alpha = 0.95
             }
@@ -81,7 +81,7 @@ internal class GameplayHud private constructor(
             container.text(
                 text = "Lives",
                 textSize = 17.0,
-                color = Colors["#F8D66D"]
+                color = Colors["#F8D66D"],
             ) {
                 x = 45.0
                 y = 31.0
@@ -94,36 +94,36 @@ internal class GameplayHud private constructor(
                         (LIFE_ICON_SIZE + LIFE_ICON_GAP)
 
                 container.image(
-                    texture = lifeEmptyBitmap
+                    texture = lifeEmptyBitmap,
                 ) {
                     x = iconX
                     y = HUD_CONTENT_Y
 
                     scaleX =
                         LIFE_ICON_SIZE /
-                            lifeEmptyBitmap.width.toDouble()
+                        lifeEmptyBitmap.width.toDouble()
 
                     scaleY =
                         LIFE_ICON_SIZE /
-                            lifeEmptyBitmap.height.toDouble()
+                        lifeEmptyBitmap.height.toDouble()
 
                     smoothing = false
                 }
 
                 val fullIcon =
                     container.image(
-                        texture = lifeFullBitmap
+                        texture = lifeFullBitmap,
                     ) {
                         x = iconX
                         y = HUD_CONTENT_Y
 
                         scaleX =
                             LIFE_ICON_SIZE /
-                                lifeFullBitmap.width.toDouble()
+                            lifeFullBitmap.width.toDouble()
 
                         scaleY =
                             LIFE_ICON_SIZE /
-                                lifeFullBitmap.height.toDouble()
+                            lifeFullBitmap.height.toDouble()
 
                         smoothing = false
                     }
@@ -135,7 +135,7 @@ internal class GameplayHud private constructor(
                 container.text(
                     text = "",
                     textSize = 25.0,
-                    color = Colors.WHITE
+                    color = Colors.WHITE,
                 ) {
                     x = 235.0
                     y = 69.0
@@ -150,7 +150,7 @@ internal class GameplayHud private constructor(
                         height = 52.0,
                         texture = gameButtonBitmap,
                         label = "Pause",
-                        onClick = onPause
+                        onClick = onPause,
                     )
                 }
 
@@ -161,13 +161,13 @@ internal class GameplayHud private constructor(
                 height = 52.0,
                 texture = gameButtonBitmap,
                 label = "Back to menu",
-                onClick = onBackToMenu
+                onClick = onBackToMenu,
             )
 
             return GameplayHud(
                 fullLifeIcons = fullLifeIcons,
                 pointsText = pointsText,
-                pauseButtonContainer = pauseButtonContainer
+                pauseButtonContainer = pauseButtonContainer,
             )
         }
     }

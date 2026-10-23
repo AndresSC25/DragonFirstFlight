@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.ktlint)
 }
 
 kotlin {
@@ -24,14 +25,17 @@ android {
 
     defaultConfig {
         applicationId = "com.redcrow.dragonsfirstflight"
+
         minSdk =
             libs.versions.android.minSdk
                 .get()
                 .toInt()
+
         targetSdk =
             libs.versions.android.targetSdk
                 .get()
                 .toInt()
+
         versionCode = 1
         versionName = "1.0"
     }
@@ -70,5 +74,16 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }
+}
+
+ktlint {
+    verbose.set(true)
+    outputToConsole.set(true)
+    ignoreFailures.set(false)
+
+    filter {
+        exclude("**/build/**")
+        exclude("**/generated/**")
     }
 }

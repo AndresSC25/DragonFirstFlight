@@ -17,7 +17,7 @@ internal fun Container.createMedievalImageButton(
     label: String,
     textSize: Double = 24.0,
     textVerticalOffset: Double = 3.0,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ): Image {
     require(width > 0.0) {
         "Button width must be greater than zero."
@@ -31,27 +31,29 @@ internal fun Container.createMedievalImageButton(
         "Button text size must be greater than zero."
     }
 
-    val button = image(texture = texture) {
-        this.x = x
-        this.y = y
-        scaleX = width / texture.width.toDouble()
-        scaleY = height / texture.height.toDouble()
-        smoothing = false
-    }
+    val button =
+        image(texture = texture) {
+            this.x = x
+            this.y = y
+            scaleX = width / texture.width.toDouble()
+            scaleY = height / texture.height.toDouble()
+            smoothing = false
+        }
 
-    val buttonText = text(
-        text = label,
-        textSize = textSize,
-        color = Colors.WHITE
-    )
+    val buttonText =
+        text(
+            text = label,
+            textSize = textSize,
+            color = Colors.WHITE,
+        )
 
     buttonText.x =
         x + (width - buttonText.width) / 2.0
 
     buttonText.y =
         y +
-            (height - buttonText.height) / 2.0 +
-            textVerticalOffset
+        (height - buttonText.height) / 2.0 +
+        textVerticalOffset
 
     button.onClick {
         onClick()

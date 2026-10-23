@@ -10,9 +10,10 @@ class GameEngineLivesTest {
     @Test
     fun damageDuringInvulnerabilityDoesNotSpendAnotherLife() {
         val receivedEvents = mutableListOf<DamageEvent>()
-        val engine = GameEngine(gameAreaWidth = 1280.0) {
-            receivedEvents += it
-        }
+        val engine =
+            GameEngine(gameAreaWidth = 1280.0) {
+                receivedEvents += it
+            }
 
         assertEquals(3, engine.snapshot().lives)
         assertFalse(engine.snapshot().isInvulnerable)

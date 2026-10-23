@@ -3,7 +3,7 @@ package com.redcrow.dragonsfirstflight.game.score
 /** Represents the score and accumulated active time of a game session. */
 data class Score(
     val points: Int = 0,
-    val activeTimeSeconds: Double = 0.0
+    val activeTimeSeconds: Double = 0.0,
 ) {
     init {
         require(points >= 0) {

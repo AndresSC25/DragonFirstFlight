@@ -34,7 +34,8 @@ internal class SessionOverlay private constructor(
             snapshot.status != GameStatus.RUNNING
 
         root.visible =
-            isPaused || hasFinished
+            isPaused ||
+            hasFinished
 
         if (!root.visible) {
             return

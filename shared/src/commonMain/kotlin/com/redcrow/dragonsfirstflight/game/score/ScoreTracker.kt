@@ -4,7 +4,9 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
-class ScoreTracker(private val pointsPerSecond: Int) {
+class ScoreTracker(
+    private val pointsPerSecond: Int,
+) {
     private var activeTime: Duration = Duration.ZERO
 
     var score: Score = Score()
@@ -28,10 +30,11 @@ class ScoreTracker(private val pointsPerSecond: Int) {
 
         activeTime = nextActiveTime
         val activeTimeSeconds = activeTime.toDouble(DurationUnit.SECONDS)
-        score = Score(
-            points = (activeTimeSeconds * pointsPerSecond).toInt(),
-            activeTimeSeconds = activeTimeSeconds
-        )
+        score =
+            Score(
+                points = (activeTimeSeconds * pointsPerSecond).toInt(),
+                activeTimeSeconds = activeTimeSeconds,
+            )
     }
 
     fun reset() {
