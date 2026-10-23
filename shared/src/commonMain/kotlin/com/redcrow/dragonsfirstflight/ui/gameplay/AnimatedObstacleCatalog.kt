@@ -15,10 +15,11 @@ internal const val WOODEN_CRATES_SPRITE_PATH: String =
 internal const val BROKEN_STONE_COLUMN_SPRITE_PATH: String =
     "sprites/obstacles/zone1/broken_stone_column.png"
 
-internal val VERTICALLY_FLIPPED_OBSTACLE_PATHS = setOf(
-    WOODEN_CRATES_SPRITE_PATH,
-    BROKEN_STONE_COLUMN_SPRITE_PATH
-)
+internal val VERTICALLY_FLIPPED_OBSTACLE_PATHS =
+    setOf(
+        WOODEN_CRATES_SPRITE_PATH,
+        BROKEN_STONE_COLUMN_SPRITE_PATH,
+    )
 
 internal val ANIMATED_OBSTACLE_CONFIGS = mapOf(
     FLYING_CROWS_SPRITE_PATH to AnimatedSpriteConfig(

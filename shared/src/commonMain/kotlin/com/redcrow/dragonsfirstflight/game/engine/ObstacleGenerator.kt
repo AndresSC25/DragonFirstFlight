@@ -15,10 +15,11 @@ internal class ObstacleGenerator(
             "sprites/obstacles/zone1/wooden_crates.png",
             "sprites/obstacles/zone1/broken_stone_column.png",
         )
-    private val topAndBottomObstaclePaths = setOf(
-        "sprites/obstacles/zone1/wooden_crates.png",
-        "sprites/obstacles/zone1/broken_stone_column.png",
-    )
+    private val topAndBottomObstaclePaths =
+        setOf(
+            "sprites/obstacles/zone1/wooden_crates.png",
+            "sprites/obstacles/zone1/broken_stone_column.png",
+        )
 
     private val obstacleLanes =
         listOf(
@@ -105,7 +106,7 @@ internal class ObstacleGenerator(
                 } ?: (
                     rightBoundary -
                         GameEngineConfig.INITIAL_OBSTACLE_MARGIN
-                    )
+                )
 
             spawnObstacle(
                 x =
