@@ -11,7 +11,14 @@ internal class ObstacleGenerator(
         listOf(
             "sprites/obstacles/zone1/flying_bats.png",
             "sprites/obstacles/zone1/flying_crows.png",
+            "sprites/obstacles/zone1/flying_sword.png",
+            "sprites/obstacles/zone1/wooden_crates.png",
+            "sprites/obstacles/zone1/broken_stone_column.png",
         )
+    private val topAndBottomObstaclePaths = setOf(
+        "sprites/obstacles/zone1/wooden_crates.png",
+        "sprites/obstacles/zone1/broken_stone_column.png",
+    )
 
     private val obstacleLanes =
         listOf(
@@ -55,7 +62,7 @@ internal class ObstacleGenerator(
         rightBoundary = newRightBoundary
 
         obstacles.removeAll { obstacle ->
-            obstacle.x + obstacle.size < leftBoundary
+            obstacle.x + obstacle.width < leftBoundary
         }
 
         if (obstacles.isEmpty()) {
@@ -77,7 +84,7 @@ internal class ObstacleGenerator(
         }
 
         obstacles.removeAll { obstacle ->
-            obstacle.x + obstacle.size < leftBoundary
+            obstacle.x + obstacle.width < leftBoundary
         }
 
         val lastObstacle =
@@ -141,23 +148,38 @@ internal class ObstacleGenerator(
                 lane != lastLane ||
                     consecutiveLaneCount < 2
             }
+        val laneOptions =
+            if (spritePaths.first() in topAndBottomObstaclePaths) {
+                listOf(
+                    GameEngineConfig.OBSTACLE_TOP_Y,
+                    GameEngineConfig.OBSTACLE_BOTTOM_Y,
+                )
+            } else {
+                obstacleLanes
+            }
 
         val lane =
-            if (nextId == 0) {
+            if (
+                nextId == 0 &&
+                spritePaths.first() !in topAndBottomObstaclePaths
+            ) {
                 GameEngineConfig.OBSTACLE_Y
             } else {
                 val candidates =
                     when {
-                        lanesWithoutConsecutiveRepeat.isNotEmpty() -> {
-                            lanesWithoutConsecutiveRepeat
+                        lanesWithoutConsecutiveRepeat
+                            .any { it in laneOptions } -> {
+                            lanesWithoutConsecutiveRepeat.filter {
+                                it in laneOptions
+                            }
                         }
 
-                        availableLanes.isNotEmpty() -> {
-                            availableLanes
+                        availableLanes.any { it in laneOptions } -> {
+                            availableLanes.filter { it in laneOptions }
                         }
 
                         else -> {
-                            obstacleLanes
+                            laneOptions
                         }
                     }
 
@@ -183,13 +205,14 @@ internal class ObstacleGenerator(
         laneUsage[lane] =
             (laneUsage[lane] ?: 0) + 1
 
+        val spritePath = spritePaths.removeAt(0)
         obstacles +=
             Obstacle(
                 id = nextId++,
                 x = x,
                 y = lane,
                 size = GameEngineConfig.OBSTACLE_SIZE,
-                spritePath = spritePaths.removeAt(0),
+                spritePath = spritePath,
             )
     }
 

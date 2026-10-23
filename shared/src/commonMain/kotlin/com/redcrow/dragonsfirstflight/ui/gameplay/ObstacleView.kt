@@ -1,6 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
+import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.Obstacle
 import korlibs.image.bitmap.Bitmap
@@ -23,7 +24,8 @@ internal class ObstacleView private constructor(
     private val container: Container,
     private val obstacleBitmaps: Map<String, Bitmap>,
     private val views: Views,
-    private val animatedObstacleConfigs: Map<String, AnimatedSpriteConfig>
+    private val animatedObstacleConfigs: Map<String, AnimatedSpriteConfig>,
+    private val verticallyFlippedObstaclePaths: Set<String>
 ) {
     private val viewsById = mutableMapOf<Int, RenderedObstacle>()
 
@@ -44,7 +46,13 @@ internal class ObstacleView private constructor(
             rendered.animatedSprite?.update(
                 shouldAnimate = visible && !isPaused
             )
-            updateView(rendered, obstacle)
+            updateView(
+                rendered = rendered,
+                obstacle = obstacle,
+                shouldFlipVertically =
+                    obstacle.spritePath in verticallyFlippedObstaclePaths &&
+                        obstacle.y == GameEngineConfig.OBSTACLE_TOP_Y,
+            )
             if (visible) {
                 rendered.view.alpha = calculateHorizontalAlpha(obstacle)
             }
@@ -80,17 +88,27 @@ internal class ObstacleView private constructor(
         )
     }
 
-    private fun updateView(rendered: RenderedObstacle, obstacle: Obstacle) {
+    private fun updateView(
+        rendered: RenderedObstacle,
+        obstacle: Obstacle,
+        shouldFlipVertically: Boolean,
+    ) {
         rendered.view.x = obstacle.x
-        rendered.view.y = obstacle.y
-        rendered.view.scaleX = obstacle.size / rendered.displayWidth.toDouble()
-        rendered.view.scaleY = obstacle.size / rendered.displayHeight.toDouble()
+        rendered.view.y =
+            if (shouldFlipVertically) obstacle.y + obstacle.height else obstacle.y
+        rendered.view.scaleX = obstacle.width / rendered.displayWidth.toDouble()
+        rendered.view.scaleY =
+            if (shouldFlipVertically) {
+                -obstacle.height / rendered.displayHeight.toDouble()
+            } else {
+                obstacle.height / rendered.displayHeight.toDouble()
+            }
     }
 
     private fun calculateHorizontalAlpha(obstacle: Obstacle): Double {
         val leftBoundary = views.actualVirtualLeft.toDouble()
         val rightBoundary = leftBoundary + views.actualVirtualWidth.toDouble()
-        val obstacleRight = obstacle.x + obstacle.size
+        val obstacleRight = obstacle.x + obstacle.width
         val leftAlpha = ((obstacleRight - leftBoundary) /
             HORIZONTAL_FADE_DISTANCE).coerceIn(0.0, 1.0)
         val rightAlpha = ((rightBoundary - obstacle.x) /
@@ -104,7 +122,8 @@ internal class ObstacleView private constructor(
             obstacleBitmaps: Map<String, Bitmap>,
             views: Views,
             animatedObstacleConfigs: Map<String, AnimatedSpriteConfig> =
-                emptyMap()
+                emptyMap(),
+            verticallyFlippedObstaclePaths: Set<String> = emptySet(),
         ): ObstacleView {
             require(obstacleBitmaps.isNotEmpty()) {
                 "At least one obstacle bitmap is required."
@@ -119,7 +138,9 @@ internal class ObstacleView private constructor(
                 container = container,
                 obstacleBitmaps = obstacleBitmaps,
                 views = views,
-                animatedObstacleConfigs = animatedObstacleConfigs
+                animatedObstacleConfigs = animatedObstacleConfigs,
+                verticallyFlippedObstaclePaths =
+                    verticallyFlippedObstaclePaths,
             )
         }
     }

@@ -209,8 +209,8 @@ class GameEngine(
                     firstHeight = GameEngineConfig.DRAGON_SIZE,
                     secondX = obstacle.x,
                     secondY = obstacle.y,
-                    secondWidth = obstacle.size,
-                    secondHeight = obstacle.size,
+                    secondWidth = obstacle.width,
+                    secondHeight = obstacle.height,
                 )
 
             if (overlapsObstacle) {
