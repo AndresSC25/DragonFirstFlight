@@ -1,7 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.gameplay
 
-import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
+import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.Obstacle
 import korlibs.image.bitmap.Bitmap
@@ -17,7 +17,7 @@ private data class RenderedObstacle(
     val view: View,
     val displayWidth: Int,
     val displayHeight: Int,
-    val animatedSprite: AnimatedSpriteView?
+    val animatedSprite: AnimatedSpriteView?,
 )
 
 internal class ObstacleView private constructor(
@@ -25,26 +25,32 @@ internal class ObstacleView private constructor(
     private val obstacleBitmaps: Map<String, Bitmap>,
     private val views: Views,
     private val animatedObstacleConfigs: Map<String, AnimatedSpriteConfig>,
-    private val verticallyFlippedObstaclePaths: Set<String>
+    private val verticallyFlippedObstaclePaths: Set<String>,
 ) {
     private val viewsById = mutableMapOf<Int, RenderedObstacle>()
 
-    fun update(snapshot: GameSnapshot, isPaused: Boolean) {
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean,
+    ) {
         val activeIds = snapshot.obstacles.mapTo(mutableSetOf()) { it.id }
-        viewsById.keys.toList()
+        viewsById.keys
+            .toList()
             .filter { it !in activeIds }
             .forEach { id -> viewsById.remove(id)?.view?.removeFromParent() }
 
         val hasFinished = snapshot.status != GameStatus.RUNNING
         snapshot.obstacles.forEach { obstacle ->
-            val rendered = viewsById.getOrPut(obstacle.id) {
-                createRenderedObstacle(obstacle.spritePath)
-            }
-            val visible = obstacle.id !in snapshot.destroyedObstacleIds &&
-                !hasFinished
+            val rendered =
+                viewsById.getOrPut(obstacle.id) {
+                    createRenderedObstacle(obstacle.spritePath)
+                }
+            val visible =
+                obstacle.id !in snapshot.destroyedObstacleIds &&
+                    !hasFinished
             rendered.view.visible = visible
             rendered.animatedSprite?.update(
-                shouldAnimate = visible && !isPaused
+                shouldAnimate = visible && !isPaused,
             )
             updateView(
                 rendered = rendered,
@@ -64,27 +70,29 @@ internal class ObstacleView private constructor(
         val config = animatedObstacleConfigs[spritePath]
         if (config == null) {
             return RenderedObstacle(
-                view = container.image(bitmap) {
-                    smoothing = false
-                    alpha = 0.0
-                },
+                view =
+                    container.image(bitmap) {
+                        smoothing = false
+                        alpha = 0.0
+                    },
                 displayWidth = bitmap.width,
                 displayHeight = bitmap.height,
-                animatedSprite = null
+                animatedSprite = null,
             )
         }
 
-        val animatedSprite = AnimatedSpriteView.create(
-            container = container,
-            bitmap = bitmap,
-            config = config
-        )
+        val animatedSprite =
+            AnimatedSpriteView.create(
+                container = container,
+                bitmap = bitmap,
+                config = config,
+            )
         animatedSprite.view.alpha = 0.0
         return RenderedObstacle(
             view = animatedSprite.view,
             displayWidth = config.frameWidth,
             displayHeight = config.frameHeight,
-            animatedSprite = animatedSprite
+            animatedSprite = animatedSprite,
         )
     }
 
@@ -109,10 +117,16 @@ internal class ObstacleView private constructor(
         val leftBoundary = views.actualVirtualLeft.toDouble()
         val rightBoundary = leftBoundary + views.actualVirtualWidth.toDouble()
         val obstacleRight = obstacle.x + obstacle.width
-        val leftAlpha = ((obstacleRight - leftBoundary) /
-            HORIZONTAL_FADE_DISTANCE).coerceIn(0.0, 1.0)
-        val rightAlpha = ((rightBoundary - obstacle.x) /
-            HORIZONTAL_FADE_DISTANCE).coerceIn(0.0, 1.0)
+        val leftAlpha =
+            (
+                (obstacleRight - leftBoundary) /
+                    HORIZONTAL_FADE_DISTANCE
+            ).coerceIn(0.0, 1.0)
+        val rightAlpha =
+            (
+                (rightBoundary - obstacle.x) /
+                    HORIZONTAL_FADE_DISTANCE
+            ).coerceIn(0.0, 1.0)
         return min(leftAlpha, rightAlpha)
     }
 
@@ -140,7 +154,7 @@ internal class ObstacleView private constructor(
                 views = views,
                 animatedObstacleConfigs = animatedObstacleConfigs,
                 verticallyFlippedObstaclePaths =
-                    verticallyFlippedObstaclePaths,
+                verticallyFlippedObstaclePaths,
             )
         }
     }

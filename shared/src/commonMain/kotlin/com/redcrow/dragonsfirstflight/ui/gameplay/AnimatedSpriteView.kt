@@ -12,7 +12,7 @@ internal data class AnimatedSpriteConfig(
     val frameHeight: Int,
     val columns: Int,
     val rows: Int,
-    val frameDurationMs: Int
+    val frameDurationMs: Int,
 ) {
     init {
         require(frameWidth > 0 && frameHeight > 0) {
@@ -30,7 +30,7 @@ internal data class AnimatedSpriteConfig(
 internal class AnimatedSpriteView private constructor(
     private val sprite: Sprite,
     private val animation: SpriteAnimation,
-    private val frameDurationMs: Int
+    private val frameDurationMs: Int,
 ) {
     private var isAnimationStopped = true
 
@@ -41,7 +41,7 @@ internal class AnimatedSpriteView private constructor(
         if (shouldAnimate && isAnimationStopped) {
             sprite.playAnimationLooped(
                 spriteAnimation = animation,
-                spriteDisplayTime = frameDurationMs.milliseconds
+                spriteDisplayTime = frameDurationMs.milliseconds,
             )
             isAnimationStopped = false
         } else if (!shouldAnimate && !isAnimationStopped) {
@@ -54,33 +54,35 @@ internal class AnimatedSpriteView private constructor(
         fun create(
             container: Container,
             bitmap: Bitmap,
-            config: AnimatedSpriteConfig
+            config: AnimatedSpriteConfig,
         ): AnimatedSpriteView {
             require(
                 bitmap.width >= config.frameWidth * config.columns &&
-                    bitmap.height >= config.frameHeight * config.rows
+                    bitmap.height >= config.frameHeight * config.rows,
             ) {
                 "Invalid animated sprite dimensions."
             }
 
-            val animation = SpriteAnimation(
-                spriteMap = bitmap,
-                spriteWidth = config.frameWidth,
-                spriteHeight = config.frameHeight,
-                marginTop = 0,
-                marginLeft = 0,
-                columns = config.columns,
-                rows = config.rows,
-                offsetBetweenColumns = 0,
-                offsetBetweenRows = 0
-            )
-            val sprite = container.sprite(initialAnimation = animation) {
-                smoothing = false
-            }
+            val animation =
+                SpriteAnimation(
+                    spriteMap = bitmap,
+                    spriteWidth = config.frameWidth,
+                    spriteHeight = config.frameHeight,
+                    marginTop = 0,
+                    marginLeft = 0,
+                    columns = config.columns,
+                    rows = config.rows,
+                    offsetBetweenColumns = 0,
+                    offsetBetweenRows = 0,
+                )
+            val sprite =
+                container.sprite(initialAnimation = animation) {
+                    smoothing = false
+                }
             return AnimatedSpriteView(
                 sprite = sprite,
                 animation = animation,
-                frameDurationMs = config.frameDurationMs
+                frameDurationMs = config.frameDurationMs,
             )
         }
     }

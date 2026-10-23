@@ -21,26 +21,30 @@ internal val VERTICALLY_FLIPPED_OBSTACLE_PATHS =
         BROKEN_STONE_COLUMN_SPRITE_PATH,
     )
 
-internal val ANIMATED_OBSTACLE_CONFIGS = mapOf(
-    FLYING_CROWS_SPRITE_PATH to AnimatedSpriteConfig(
-        frameWidth = 384,
-        frameHeight = 384,
-        columns = 8,
-        rows = 1,
-        frameDurationMs = 120
-    ),
-    FLYING_BATS_SPRITE_PATH to AnimatedSpriteConfig(
-        frameWidth = 418,
-        frameHeight = 470,
-        columns = 4,
-        rows = 2,
-        frameDurationMs = 120
-    ),
-    FLYING_SWORD_SPRITE_PATH to AnimatedSpriteConfig(
-        frameWidth = 384,
-        frameHeight = 384,
-        columns = 8,
-        rows = 1,
-        frameDurationMs = 120
+internal val ANIMATED_OBSTACLE_CONFIGS =
+    mapOf(
+        FLYING_CROWS_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        FLYING_BATS_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 418,
+                frameHeight = 470,
+                columns = 4,
+                rows = 2,
+                frameDurationMs = 120,
+            ),
+        FLYING_SWORD_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
     )
-)
