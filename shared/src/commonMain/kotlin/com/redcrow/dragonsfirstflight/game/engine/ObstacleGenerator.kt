@@ -66,7 +66,9 @@ internal class ObstacleGenerator(
         }
 
         if (obstacles.isEmpty()) {
-            spawnObstacle(rightBoundary)
+            spawnObstacle(
+                rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
+            )
         }
     }
 
@@ -100,12 +102,17 @@ internal class ObstacleGenerator(
                 lastObstacle?.let { obstacle ->
                     obstacle.x +
                         GameEngineConfig.MIN_OBSTACLE_SEPARATION
-                } ?: rightBoundary
+                } ?: (
+                    rightBoundary -
+                        GameEngineConfig.INITIAL_OBSTACLE_MARGIN
+                    )
 
             spawnObstacle(
                 x =
                     nextObstacleX.coerceAtLeast(
-                        minimumValue = rightBoundary,
+                        minimumValue =
+                            rightBoundary -
+                                GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
                     ),
             )
         }
@@ -118,7 +125,9 @@ internal class ObstacleGenerator(
         lastLane = null
         consecutiveLaneCount = 0
         laneUsage.clear()
-        spawnObstacle(rightBoundary)
+        spawnObstacle(
+            rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
+        )
     }
 
     fun snapshot(): List<Obstacle> = obstacles.toList()
