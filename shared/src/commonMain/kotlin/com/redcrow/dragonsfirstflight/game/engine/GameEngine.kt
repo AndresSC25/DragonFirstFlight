@@ -188,7 +188,7 @@ class GameEngine(
         for (obstacle in obstacleGenerator.snapshot()) {
             if (
                 obstacle.id !in pointRegistered &&
-                obstacle.x + obstacle.size <= GameEngineConfig.DRAGON_X
+                obstacle.x + obstacle.width <= GameEngineConfig.DRAGON_X
             ) {
                 pointRegistered += obstacle.id
             }

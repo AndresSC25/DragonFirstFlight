@@ -68,9 +68,7 @@ internal class ObstacleGenerator(
         }
 
         if (obstacles.isEmpty()) {
-            spawnObstacle(
-                rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
-            )
+            spawnObstacle(rightBoundary)
         }
     }
 
@@ -139,7 +137,6 @@ internal class ObstacleGenerator(
             spritePaths +=
                 obstacleSpritePaths.shuffled(random)
         }
-        val spritePath = spritePaths.first()
 
         val occupiedLanes =
             obstacles
@@ -160,29 +157,41 @@ internal class ObstacleGenerator(
                 lane != lastLane ||
                     consecutiveLaneCount < 2
             }
+
+        if (
+            obstacles.isEmpty() &&
+            spritePaths.first() in bottomOnlyObstaclePaths
+        ) {
+            val firstFlyingObstacleIndex =
+                spritePaths.indexOfFirst { path ->
+                    path !in bottomOnlyObstaclePaths
+                }
+            if (firstFlyingObstacleIndex >= 0) {
+                val firstFlyingObstacle =
+                    spritePaths.removeAt(firstFlyingObstacleIndex)
+                spritePaths.add(0, firstFlyingObstacle)
+            }
+        }
+
+        val spritePath = spritePaths.first()
         val lane =
             if (spritePath in bottomOnlyObstaclePaths) {
                 GameEngineConfig.OBSTACLE_BOTTOM_Y
+            } else if (obstacles.isEmpty()) {
+                GameEngineConfig.OBSTACLE_Y
             } else {
                 val candidates =
-                    if (
-                        nextId == 0 &&
-                        GameEngineConfig.OBSTACLE_Y in obstacleLanes
-                    ) {
-                        listOf(GameEngineConfig.OBSTACLE_Y)
-                    } else {
-                        when {
-                            lanesWithoutConsecutiveRepeat.isNotEmpty() -> {
-                                lanesWithoutConsecutiveRepeat
-                            }
+                    when {
+                        lanesWithoutConsecutiveRepeat.isNotEmpty() -> {
+                            lanesWithoutConsecutiveRepeat
+                        }
 
-                            availableLanes.isNotEmpty() -> {
-                                availableLanes
-                            }
+                        availableLanes.isNotEmpty() -> {
+                            availableLanes
+                        }
 
-                            else -> {
-                                obstacleLanes
-                            }
+                        else -> {
+                            obstacleLanes
                         }
                     }
 
@@ -193,7 +202,8 @@ internal class ObstacleGenerator(
 
                 candidates
                     .filter { candidate ->
-                        (laneUsage[candidate] ?: 0) == leastUsedCount
+                        (laneUsage[candidate] ?: 0) ==
+                            leastUsedCount
                     }.random(random)
             }
 
@@ -207,12 +217,19 @@ internal class ObstacleGenerator(
         laneUsage[lane] =
             (laneUsage[lane] ?: 0) + 1
 
-        spritePaths.removeAt(0)
         val obstacleSize =
-            if (spritePath == "sprites/obstacles/zone1/knight_sword.png") {
-                GameEngineConfig.KNIGHT_SWORD_SIZE
-            } else {
-                GameEngineConfig.OBSTACLE_SIZE
+            when (spritePath) {
+                "sprites/obstacles/zone1/forest_mage.png" -> {
+                    GameEngineConfig.FOREST_MAGE_SIZE
+                }
+
+                "sprites/obstacles/zone1/knight_sword.png" -> {
+                    GameEngineConfig.KNIGHT_SWORD_SIZE
+                }
+
+                else -> {
+                    GameEngineConfig.OBSTACLE_SIZE
+                }
             }
         obstacles +=
             Obstacle(
@@ -220,7 +237,7 @@ internal class ObstacleGenerator(
                 x = x,
                 y = lane,
                 size = obstacleSize,
-                spritePath = spritePath,
+                spritePath = spritePaths.removeAt(0),
             )
     }
 
