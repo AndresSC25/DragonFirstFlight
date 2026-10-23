@@ -10,7 +10,7 @@ import kotlin.math.max
 
 internal fun Container.createResponsiveBackdrop(
     bitmap: Bitmap,
-    views: Views
+    views: Views,
 ): Image {
     require(bitmap.width > 0) {
         "Responsive backdrop width must be greater than zero."
@@ -20,9 +20,10 @@ internal fun Container.createResponsiveBackdrop(
         "Responsive backdrop height must be greater than zero."
     }
 
-    val backdrop = image(texture = bitmap) {
-        smoothing = false
-    }
+    val backdrop =
+        image(texture = bitmap) {
+            smoothing = false
+        }
 
     var previousLeft = Double.NaN
     var previousTop = Double.NaN
@@ -76,11 +77,11 @@ internal fun Container.createResponsiveBackdrop(
 
         backdrop.x =
             virtualLeft +
-                (virtualWidth - scaledWidth) / 2.0
+            (virtualWidth - scaledWidth) / 2.0
 
         backdrop.y =
             virtualTop +
-                (virtualHeight - scaledHeight) / 2.0
+            (virtualHeight - scaledHeight) / 2.0
     }
 
     updateLayout()

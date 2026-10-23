@@ -8,7 +8,7 @@ internal fun rectanglesOverlap(
     secondX: Double,
     secondY: Double,
     secondWidth: Double,
-    secondHeight: Double
+    secondHeight: Double,
 ): Boolean {
     require(firstWidth >= 0.0) {
         "firstWidth must not be negative."
@@ -27,8 +27,7 @@ internal fun rectanglesOverlap(
     }
 
     return firstX < secondX + secondWidth &&
-            firstX + firstWidth > secondX &&
-            firstY < secondY + secondHeight &&
-            firstY + firstHeight > secondY
+        firstX + firstWidth > secondX &&
+        firstY < secondY + secondHeight &&
+        firstY + firstHeight > secondY
 }
-

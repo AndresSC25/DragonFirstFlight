@@ -9,17 +9,16 @@ import korlibs.korge.view.Container
 import korlibs.korge.view.Views
 import korlibs.korge.view.solidRect
 
-suspend fun Container.createDragonGame(
-    views: Views
-) {
-    val controller = GameController(
-        gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH
-    )
+suspend fun Container.createDragonGame(views: Views) {
+    val controller =
+        GameController(
+            gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH,
+        )
 
     solidRect(
         width = DragonGameConfig.VIRTUAL_SIZE.width,
         height = DragonGameConfig.VIRTUAL_SIZE.height,
-        color = Colors["#101827"]
+        color = Colors["#101827"],
     )
 
     lateinit var menuContainer: Container
@@ -30,22 +29,24 @@ suspend fun Container.createDragonGame(
         gameContainer.visible = controller.isGameVisible
     }
 
-    menuContainer = createMainMenuScreen(
-        views = views,
-        onPlay = {
-            controller.startGame()
-            updateScreenVisibility()
-        }
-    )
+    menuContainer =
+        createMainMenuScreen(
+            views = views,
+            onPlay = {
+                controller.startGame()
+                updateScreenVisibility()
+            },
+        )
 
-    gameContainer = createGameplayScreen(
-        views = views,
-        controller = controller,
-        onBackToMenu = {
-            controller.returnToMenu()
-            updateScreenVisibility()
-        }
-    )
+    gameContainer =
+        createGameplayScreen(
+            views = views,
+            controller = controller,
+            onBackToMenu = {
+                controller.returnToMenu()
+                updateScreenVisibility()
+            },
+        )
 
     updateScreenVisibility()
 }

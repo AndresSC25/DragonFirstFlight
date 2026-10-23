@@ -23,9 +23,11 @@ class GameEngineScoreTest {
 
         assertEquals(GameStatus.WON, engine.snapshot().status)
         assertEquals(
-            (GameEngineConfig.TIME_TO_WIN_SECONDS *
-                GameEngineConfig.POINTS_PER_SECOND).toInt(),
-            engine.snapshot().points
+            (
+                GameEngineConfig.TIME_TO_WIN_SECONDS *
+                    GameEngineConfig.POINTS_PER_SECOND
+            ).toInt(),
+            engine.snapshot().points,
         )
     }
 
@@ -40,7 +42,7 @@ class GameEngineScoreTest {
         assertEquals(9 * GameEngineConfig.POINTS_PER_SECOND, engine.snapshot().points)
         assertTrue(
             engine.snapshot().obstacleX + GameEngineConfig.OBSTACLE_SIZE <=
-                GameEngineConfig.DRAGON_X
+                GameEngineConfig.DRAGON_X,
         )
     }
 }

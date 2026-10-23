@@ -5,11 +5,12 @@ import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.state.GameScreenState
 
 class GameController(
-    gameAreaWidth: Double
+    gameAreaWidth: Double,
 ) {
-    private val engine = GameEngine(
-        gameAreaWidth = gameAreaWidth
-    )
+    private val engine =
+        GameEngine(
+            gameAreaWidth = gameAreaWidth,
+        )
 
     var screenState: GameScreenState =
         GameScreenState.MENU
@@ -78,11 +79,15 @@ class GameController(
         engine.update(elapsedSeconds)
     }
 
-    fun resizeGameArea(width: Double) {
-        engine.resizeGameArea(width)
+    fun resizeGameArea(
+        leftBoundary: Double,
+        rightBoundary: Double,
+    ) {
+        engine.resizeGameArea(
+            leftBoundary = leftBoundary,
+            rightBoundary = rightBoundary,
+        )
     }
 
-    fun snapshot(): GameSnapshot {
-        return engine.snapshot()
-    }
+    fun snapshot(): GameSnapshot = engine.snapshot()
 }

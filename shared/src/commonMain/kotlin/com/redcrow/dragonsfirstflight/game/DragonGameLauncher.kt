@@ -7,19 +7,17 @@ import korlibs.math.geom.Anchor
 import korlibs.math.geom.ScaleMode
 import korlibs.math.geom.Size
 
-suspend fun launchDragonGame(
-    windowSize: Size = DragonGameConfig.VIRTUAL_SIZE
-) {
+suspend fun launchDragonGame(windowSize: Size = DragonGameConfig.VIRTUAL_SIZE) {
     Korge(
         windowSize = windowSize,
         virtualSize = DragonGameConfig.VIRTUAL_SIZE,
         scaleMode = ScaleMode.SHOW_ALL,
         scaleAnchor = Anchor.MIDDLE_CENTER,
         clipBorders = false,
-        backgroundColor = Colors["#101827"]
+        backgroundColor = Colors["#101827"],
     ) {
         createDragonGame(
-            views = views
+            views = views,
         )
     }
 }

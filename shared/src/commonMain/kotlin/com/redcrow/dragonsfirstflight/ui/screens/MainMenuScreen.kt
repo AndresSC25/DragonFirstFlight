@@ -3,6 +3,7 @@
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
+import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
@@ -15,7 +16,6 @@ import korlibs.korge.view.solidRect
 import korlibs.korge.view.sprite
 import korlibs.korge.view.text
 import korlibs.time.milliseconds
-
 
 private const val MENU_BACKGROUND_PATH =
     "backgrounds/zone1/fortress_courtyard.png"
@@ -42,7 +42,7 @@ private const val MENU_DRAGON_DISPLAY_SIZE = 108.0
 
 internal suspend fun Container.createMainMenuScreen(
     views: Views,
-    onPlay: () -> Unit
+    onPlay: () -> Unit,
 ): Container {
     val backgroundBitmap =
         resourcesVfs[MENU_BACKGROUND_PATH].readBitmap()
@@ -55,29 +55,30 @@ internal suspend fun Container.createMainMenuScreen(
 
     require(
         dragonSpriteMap.width ==
-                MENU_DRAGON_FRAME_WIDTH * MENU_DRAGON_FRAME_COLUMNS
+            MENU_DRAGON_FRAME_WIDTH * MENU_DRAGON_FRAME_COLUMNS,
     ) {
         "Invalid menu dragon spritesheet width."
     }
 
     require(
         dragonSpriteMap.height ==
-                MENU_DRAGON_FRAME_HEIGHT * MENU_DRAGON_FRAME_ROWS
+            MENU_DRAGON_FRAME_HEIGHT * MENU_DRAGON_FRAME_ROWS,
     ) {
         "Invalid menu dragon spritesheet height."
     }
 
-    val dragonAnimation = SpriteAnimation(
-        spriteMap = dragonSpriteMap,
-        spriteWidth = MENU_DRAGON_FRAME_WIDTH,
-        spriteHeight = MENU_DRAGON_FRAME_HEIGHT,
-        marginTop = 0,
-        marginLeft = 0,
-        columns = MENU_DRAGON_FRAME_COLUMNS,
-        rows = MENU_DRAGON_FRAME_ROWS,
-        offsetBetweenColumns = 0,
-        offsetBetweenRows = 0
-    )
+    val dragonAnimation =
+        SpriteAnimation(
+            spriteMap = dragonSpriteMap,
+            spriteWidth = MENU_DRAGON_FRAME_WIDTH,
+            spriteHeight = MENU_DRAGON_FRAME_HEIGHT,
+            marginTop = 0,
+            marginLeft = 0,
+            columns = MENU_DRAGON_FRAME_COLUMNS,
+            rows = MENU_DRAGON_FRAME_ROWS,
+            offsetBetweenColumns = 0,
+            offsetBetweenRows = 0,
+        )
 
     return container {
         val screenWidth = DragonGameConfig.VIRTUAL_SIZE.width
@@ -85,26 +86,14 @@ internal suspend fun Container.createMainMenuScreen(
 
         createResponsiveBackdrop(
             bitmap = backgroundBitmap,
-            views = views
+            views = views,
         )
 
-        image(texture = backgroundBitmap) {
-            x = 0.0
-            y = 0.0
-            scaleX = screenWidth / backgroundBitmap.width.toDouble()
-            scaleY = screenHeight / backgroundBitmap.height.toDouble()
-            smoothing = false
-        }
-
-        solidRect(
-            width = screenWidth,
-            height = screenHeight,
-            color = Colors.BLACK
-        ) {
-            x = 0.0
-            y = 0.0
-            alpha = 0.24
-        }
+        createResponsiveShade(
+            views = views,
+            color = Colors.BLACK,
+            shadeAlpha = 0.24,
+        )
 
         val panelX = (screenWidth - MENU_PANEL_WIDTH) / 2.0
         val panelY = (screenHeight - MENU_PANEL_HEIGHT) / 2.0
@@ -112,7 +101,7 @@ internal suspend fun Container.createMainMenuScreen(
         solidRect(
             width = MENU_CONTENT_WIDTH,
             height = MENU_CONTENT_HEIGHT,
-            color = Colors["#101827"]
+            color = Colors["#101827"],
         ) {
             x = (screenWidth - MENU_CONTENT_WIDTH) / 2.0
             y = 178.0
@@ -127,38 +116,41 @@ internal suspend fun Container.createMainMenuScreen(
             smoothing = false
         }
 
-        val titleText = text(
-            text = DragonGameConfig.GAME_TITLE,
-            textSize = 46.0,
-            color = Colors["#F8D66D"]
-        )
+        val titleText =
+            text(
+                text = DragonGameConfig.GAME_TITLE,
+                textSize = 46.0,
+                color = Colors["#F8D66D"],
+            )
         titleText.x = (screenWidth - titleText.width) / 2.0
         titleText.y = 215.0
 
-        val subtitleText = text(
-            text = "Take flight. Avoid danger. Escape the fortress.",
-            textSize = 20.0,
-            color = Colors.WHITE
-        )
+        val subtitleText =
+            text(
+                text = "Take flight. Avoid danger. Escape the fortress.",
+                textSize = 20.0,
+                color = Colors.WHITE,
+            )
         subtitleText.x = (screenWidth - subtitleText.width) / 2.0
         subtitleText.y = 286.0
 
         val dragonScale =
             MENU_DRAGON_DISPLAY_SIZE /
-                    MENU_DRAGON_FRAME_WIDTH.toDouble()
+                MENU_DRAGON_FRAME_WIDTH.toDouble()
 
-        val dragon = sprite(initialAnimation = dragonAnimation) {
-            x = (screenWidth - MENU_DRAGON_DISPLAY_SIZE) / 2.0
-            y = 315.0
-            scaleX = dragonScale
-            scaleY = dragonScale
-            smoothing = false
-        }
+        val dragon =
+            sprite(initialAnimation = dragonAnimation) {
+                x = (screenWidth - MENU_DRAGON_DISPLAY_SIZE) / 2.0
+                y = 315.0
+                scaleX = dragonScale
+                scaleY = dragonScale
+                smoothing = false
+            }
 
         dragon.playAnimationLooped(
             spriteAnimation = dragonAnimation,
             spriteDisplayTime =
-                MENU_DRAGON_FRAME_DURATION_MS.milliseconds
+                MENU_DRAGON_FRAME_DURATION_MS.milliseconds,
         )
 
         createMedievalImageButton(
@@ -169,14 +161,15 @@ internal suspend fun Container.createMainMenuScreen(
             texture = buttonBitmap,
             label = "Play",
             textSize = 28.0,
-            onClick = onPlay
+            onClick = onPlay,
         )
 
-        val instructionText = text(
-            text = "Click or tap during the game to flap",
-            textSize = 18.0,
-            color = Colors.WHITE
-        )
+        val instructionText =
+            text(
+                text = "Click or tap during the game to flap",
+                textSize = 18.0,
+                color = Colors.WHITE,
+            )
         instructionText.x =
             (screenWidth - instructionText.width) / 2.0
         instructionText.y = 515.0
