@@ -11,7 +11,6 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
-import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -53,7 +52,6 @@ private val ZONE_ONE_OBSTACLE_PATHS = listOf(
     "sprites/obstacles/zone1/wooden_crates.png"
 )
 
-
 internal suspend fun Container.createGameplayScreen(
     views: Views,
     controller: GameController,
@@ -80,22 +78,22 @@ internal suspend fun Container.createGameplayScreen(
     val hitSparkBitmap =
         resourcesVfs[HIT_SPARK_PATH].readBitmap()
 
-    val obstacleBitmaps = ZONE_ONE_OBSTACLE_PATHS.associateWith {
-        resourcesVfs[it].readBitmap()
-    }
+    val obstacleBitmaps =
+        ZONE_ONE_OBSTACLE_PATHS.associateWith { path ->
+            resourcesVfs[path].readBitmap()
+        }
 
     return container {
+        val scrollingBackground =
+            ScrollingBackground.create(
+                container = this,
+                bitmap = zoneOneBackground,
+                views = views
+            )
+
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
         lateinit var obstacleView: ObstacleView
-        lateinit var scrollingBackground: ScrollingBackground
-        val backgroundWidth =
-            DragonGameConfig.GAME_AREA_WIDTH
-
-        createResponsiveBackdrop(
-            bitmap = zoneOneBackground,
-            views = views
-        )
 
         val gameArea = clipContainer(
             size = Size(
@@ -106,11 +104,9 @@ internal suspend fun Container.createGameplayScreen(
             x = DragonGameConfig.GAME_AREA_X
             y = DragonGameConfig.GAME_AREA_Y
 
-            scrollingBackground = ScrollingBackground.create(
+            obstacleView = ObstacleView.create(
                 container = this,
-                bitmap = zoneOneBackground,
-                width = backgroundWidth,
-                height = GameEngineConfig.GAME_AREA_HEIGHT
+                obstacleBitmaps = obstacleBitmaps
             )
 
             dragonView = DragonView.create(
@@ -121,11 +117,6 @@ internal suspend fun Container.createGameplayScreen(
             hitSparkView = HitSparkView.create(
                 container = this,
                 spriteMap = hitSparkBitmap
-            )
-
-            obstacleView = ObstacleView.create(
-                container = this,
-                obstacleBitmaps = obstacleBitmaps
             )
         }
 
@@ -154,8 +145,8 @@ internal suspend fun Container.createGameplayScreen(
         )
 
         fun updateView(snapshot: GameSnapshot) {
-
             obstacleView.update(snapshot)
+
             gameplayHud.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused
@@ -167,13 +158,14 @@ internal suspend fun Container.createGameplayScreen(
             )
         }
 
-        gameArea.addUpdater { delta ->
+        addUpdater { delta ->
             val elapsedSeconds =
                 delta.toDouble(DurationUnit.SECONDS)
 
             controller.update(elapsedSeconds)
 
-            val snapshot = controller.snapshot()
+            val snapshot =
+                controller.snapshot()
 
             if (
                 snapshot.status == GameStatus.RUNNING &&
@@ -181,26 +173,33 @@ internal suspend fun Container.createGameplayScreen(
             ) {
                 scrollingBackground.update(elapsedSeconds)
             }
+
             dragonView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused
             )
+
             hitSparkView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused
             )
+
             updateView(snapshot)
         }
 
-        val initialSnapshot = controller.snapshot()
+        val initialSnapshot =
+            controller.snapshot()
+
         dragonView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused
         )
+
         hitSparkView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused
         )
+
         updateView(initialSnapshot)
     }
 }
