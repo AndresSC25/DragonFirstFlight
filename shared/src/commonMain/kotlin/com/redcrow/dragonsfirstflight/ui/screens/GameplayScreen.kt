@@ -8,6 +8,9 @@ import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BATS_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
@@ -45,12 +48,8 @@ private const val HIT_SPARK_PATH: String =
 
 private val ZONE_ONE_OBSTACLE_PATHS =
     listOf(
-        "sprites/obstacles/zone1/broken_cart.png",
-        "sprites/obstacles/zone1/broken_stone_column.png",
-        "sprites/obstacles/zone1/hanging_banner.png",
-        "sprites/obstacles/zone1/training_dummy.png",
-        "sprites/obstacles/zone1/wooden_barrier.png",
-        "sprites/obstacles/zone1/wooden_crates.png",
+        FLYING_BATS_SPRITE_PATH,
+        FLYING_CROWS_SPRITE_PATH,
     )
 
 internal suspend fun Container.createGameplayScreen(
@@ -100,6 +99,7 @@ internal suspend fun Container.createGameplayScreen(
                 container = obstacleLayer,
                 obstacleBitmaps = obstacleBitmaps,
                 views = views,
+                animatedObstacleConfigs = ANIMATED_OBSTACLE_CONFIGS,
             )
 
         lateinit var dragonView: DragonView
@@ -157,7 +157,10 @@ internal suspend fun Container.createGameplayScreen(
             )
 
         fun updateView(snapshot: GameSnapshot) {
-            obstacleView.update(snapshot)
+            obstacleView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
 
             gameplayHud.update(
                 snapshot = snapshot,

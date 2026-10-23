@@ -9,12 +9,8 @@ internal class ObstacleGenerator(
 ) {
     private val obstacleSpritePaths =
         listOf(
-            "sprites/obstacles/zone1/broken_cart.png",
-            "sprites/obstacles/zone1/broken_stone_column.png",
-            "sprites/obstacles/zone1/hanging_banner.png",
-            "sprites/obstacles/zone1/training_dummy.png",
-            "sprites/obstacles/zone1/wooden_barrier.png",
-            "sprites/obstacles/zone1/wooden_crates.png",
+            "sprites/obstacles/zone1/flying_bats.png",
+            "sprites/obstacles/zone1/flying_crows.png",
         )
 
     private val obstacleLanes =

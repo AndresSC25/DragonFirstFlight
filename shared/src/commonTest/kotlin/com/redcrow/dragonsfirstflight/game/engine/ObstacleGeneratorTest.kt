@@ -50,7 +50,7 @@ class ObstacleGeneratorTest {
     }
 
     @Test
-    fun generatedObstaclesUseAllZoneOneSpritesAndKeepSeparation() {
+    fun generatedObstaclesUseAnimatedZoneOneSpritesAndKeepSeparation() {
         val generator = ObstacleGenerator(areaWidth = 1280.0)
         val spritePaths = mutableSetOf<String>()
         repeat(400) {
@@ -67,7 +67,7 @@ class ObstacleGeneratorTest {
                     GameEngineConfig.OBSTACLE_SPEED
             },
         )
-        assertEquals(6, spritePaths.size)
+        assertEquals(2, spritePaths.size)
     }
 
     @Test
