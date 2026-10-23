@@ -13,7 +13,7 @@ data class GameSnapshot(
     val impactObstacleId: Int?,
     val isInvulnerable: Boolean,
     val isInvulnerabilityBlinkDim: Boolean,
-    val status: GameStatus
+    val status: GameStatus,
 ) {
     val firstObstacle: Obstacle?
         get() = obstacles.firstOrNull()

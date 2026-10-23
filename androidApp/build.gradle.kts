@@ -17,12 +17,21 @@ dependencies {
 
 android {
     namespace = "com.redcrow.dragonsfirstflight"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
 
     defaultConfig {
         applicationId = "com.redcrow.dragonsfirstflight"
-        minSdk = libs.versions.android.minSdk.get().toInt()
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -31,10 +40,10 @@ android {
         getByName("main") {
             assets.srcDir(
                 project(
-                    ":shared"
+                    ":shared",
                 ).layout.projectDirectory.dir(
-                    "src/commonMain/resources"
-                )
+                    "src/commonMain/resources",
+                ),
             )
         }
     }
@@ -51,9 +60,9 @@ android {
 
             proguardFiles(
                 getDefaultProguardFile(
-                    "proguard-android-optimize.txt"
+                    "proguard-android-optimize.txt",
                 ),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }

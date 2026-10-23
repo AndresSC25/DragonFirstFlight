@@ -1,11 +1,12 @@
 package com.redcrow.dragonsfirstflight.ui.gameplay
 
-import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
+import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.Obstacle
 import korlibs.image.bitmap.Bitmap
 import korlibs.korge.view.Container
 import korlibs.korge.view.Image
+import korlibs.korge.view.Views
 import korlibs.korge.view.image
 import kotlin.math.min
 
@@ -13,7 +14,8 @@ private const val HORIZONTAL_FADE_DISTANCE: Double = 96.0
 
 internal class ObstacleView private constructor(
     private val container: Container,
-    private val obstacleBitmaps: Map<String, Bitmap>
+    private val obstacleBitmaps: Map<String, Bitmap>,
+    private val views: Views,
 ) {
     private val viewsById =
         mutableMapOf<Int, Image>()
@@ -28,12 +30,14 @@ internal class ObstacleView private constructor(
             .toList()
             .filter { id ->
                 id !in activeIds
-            }
-            .forEach { id ->
+            }.forEach { id ->
                 viewsById
                     .remove(id)
                     ?.removeFromParent()
             }
+
+        val hasFinished =
+            snapshot.status != GameStatus.RUNNING
 
         snapshot.obstacles.forEach { obstacle ->
             val view =
@@ -45,21 +49,20 @@ internal class ObstacleView private constructor(
                 view = view,
                 obstacle = obstacle,
                 isDestroyed =
-                    obstacle.id in snapshot.destroyedObstacleIds
+                    obstacle.id in snapshot.destroyedObstacleIds,
+                hasFinished = hasFinished,
             )
         }
     }
 
-    private fun createObstacleImage(
-        obstacle: Obstacle
-    ): Image {
+    private fun createObstacleImage(obstacle: Obstacle): Image {
         val bitmap =
             obstacleBitmaps.getValue(
-                obstacle.spritePath
+                obstacle.spritePath,
             )
 
         return container.image(
-            texture = bitmap
+            texture = bitmap,
         ) {
             smoothing = false
             alpha = 0.0
@@ -69,11 +72,12 @@ internal class ObstacleView private constructor(
     private fun updateView(
         view: Image,
         obstacle: Obstacle,
-        isDestroyed: Boolean
+        isDestroyed: Boolean,
+        hasFinished: Boolean,
     ) {
         val bitmap =
             obstacleBitmaps.getValue(
-                obstacle.spritePath
+                obstacle.spritePath,
             )
 
         view.x = obstacle.x
@@ -81,13 +85,15 @@ internal class ObstacleView private constructor(
 
         view.scaleX =
             obstacle.size /
-                bitmap.width.toDouble()
+            bitmap.width.toDouble()
 
         view.scaleY =
             obstacle.size /
-                bitmap.height.toDouble()
+            bitmap.height.toDouble()
 
-        view.visible = !isDestroyed
+        view.visible =
+            !isDestroyed &&
+            !hasFinished
 
         if (!view.visible) {
             return
@@ -97,44 +103,46 @@ internal class ObstacleView private constructor(
             calculateHorizontalAlpha(obstacle)
     }
 
-    private fun calculateHorizontalAlpha(
-        obstacle: Obstacle
-    ): Double {
+    private fun calculateHorizontalAlpha(obstacle: Obstacle): Double {
+        val leftBoundary =
+            views.actualVirtualLeft.toDouble()
+
+        val rightBoundary =
+            leftBoundary +
+                views.actualVirtualWidth.toDouble()
+
         val obstacleRight =
             obstacle.x + obstacle.size
 
         val leftEdgeAlpha =
             (
-                obstacleRight /
+                (obstacleRight - leftBoundary) /
                     HORIZONTAL_FADE_DISTANCE
             ).coerceIn(
                 minimumValue = 0.0,
-                maximumValue = 1.0
+                maximumValue = 1.0,
             )
-
-        val distanceFromRightEdge =
-            DragonGameConfig.GAME_AREA_WIDTH -
-                obstacle.x
 
         val rightEdgeAlpha =
             (
-                distanceFromRightEdge /
+                (rightBoundary - obstacle.x) /
                     HORIZONTAL_FADE_DISTANCE
             ).coerceIn(
                 minimumValue = 0.0,
-                maximumValue = 1.0
+                maximumValue = 1.0,
             )
 
         return min(
             leftEdgeAlpha,
-            rightEdgeAlpha
+            rightEdgeAlpha,
         )
     }
 
     companion object {
         fun create(
             container: Container,
-            obstacleBitmaps: Map<String, Bitmap>
+            obstacleBitmaps: Map<String, Bitmap>,
+            views: Views,
         ): ObstacleView {
             require(obstacleBitmaps.isNotEmpty()) {
                 "At least one obstacle bitmap is required."
@@ -144,7 +152,7 @@ internal class ObstacleView private constructor(
                 obstacleBitmaps.values.all { bitmap ->
                     bitmap.width > 0 &&
                         bitmap.height > 0
-                }
+                },
             ) {
                 "Obstacle bitmaps must have positive dimensions."
             }
@@ -155,7 +163,8 @@ internal class ObstacleView private constructor(
 
             return ObstacleView(
                 container = container,
-                obstacleBitmaps = obstacleBitmaps
+                obstacleBitmaps = obstacleBitmaps,
+                views = views,
             )
         }
     }

@@ -13,7 +13,7 @@ internal class ScrollingBackground private constructor(
     private val secondBackground: Image,
     private val bitmap: Bitmap,
     private val views: Views,
-    private val scrollSpeed: Double
+    private val scrollSpeed: Double,
 ) {
     private var backgroundWidth: Double = 0.0
 
@@ -82,9 +82,9 @@ internal class ScrollingBackground private constructor(
 
         val layoutHasNotChanged =
             currentLeft == previousLeft &&
-                    currentTop == previousTop &&
-                    currentWidth == previousWidth &&
-                    currentHeight == previousHeight
+                currentTop == previousTop &&
+                currentWidth == previousWidth &&
+                currentHeight == previousHeight
 
         if (layoutHasNotChanged) {
             return
@@ -121,7 +121,7 @@ internal class ScrollingBackground private constructor(
             container: Container,
             bitmap: Bitmap,
             views: Views,
-            scrollSpeed: Double = DEFAULT_SCROLL_SPEED
+            scrollSpeed: Double = DEFAULT_SCROLL_SPEED,
         ): ScrollingBackground {
             require(bitmap.width > 0) {
                 "Background bitmap width must be greater than zero."
@@ -150,7 +150,7 @@ internal class ScrollingBackground private constructor(
                 secondBackground = secondBackground,
                 bitmap = bitmap,
                 views = views,
-                scrollSpeed = scrollSpeed
+                scrollSpeed = scrollSpeed,
             ).also {
                 it.update(0.0)
             }

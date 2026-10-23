@@ -18,3 +18,8 @@ captures
 **/xcshareddata/WorkspaceSettings.xcsettings
 node_modules/
 .github/skills/
+
+.copilot/
+.copilot-*/
+**/.copilot/
+**/.copilot-*/

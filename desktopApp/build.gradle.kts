@@ -19,7 +19,7 @@ sourceSets {
             project(":shared")
                 .layout
                 .projectDirectory
-                .dir("src/commonMain/resources")
+                .dir("src/commonMain/resources"),
         )
     }
 }
@@ -43,7 +43,7 @@ compose.desktop {
             targetFormats(
                 TargetFormat.Dmg,
                 TargetFormat.Msi,
-                TargetFormat.Deb
+                TargetFormat.Deb,
             )
 
             packageName = "com.redcrow.dragonsfirstflight"

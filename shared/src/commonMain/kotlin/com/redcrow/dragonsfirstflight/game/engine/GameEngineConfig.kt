@@ -61,7 +61,7 @@ object GameEngineConfig {
         }
 
         require(
-            DRAGON_MAX_Y + DRAGON_SIZE <= GAME_AREA_HEIGHT
+            DRAGON_MAX_Y + DRAGON_SIZE <= GAME_AREA_HEIGHT,
         ) {
             "The dragon must remain inside the game area."
         }
@@ -79,7 +79,7 @@ object GameEngineConfig {
         }
 
         require(
-            OBSTACLE_BOTTOM_Y + OBSTACLE_SIZE <= DRAGON_MAX_Y + DRAGON_SIZE
+            OBSTACLE_BOTTOM_Y + OBSTACLE_SIZE <= DRAGON_MAX_Y + DRAGON_SIZE,
         ) {
             "OBSTACLE_BOTTOM_Y must be inside the game area."
         }

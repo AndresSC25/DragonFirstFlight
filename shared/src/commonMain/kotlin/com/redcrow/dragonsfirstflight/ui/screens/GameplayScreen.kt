@@ -43,19 +43,20 @@ private const val LIFE_EMPTY_PATH: String =
 private const val HIT_SPARK_PATH: String =
     "effects/impact/hit_spark.png"
 
-private val ZONE_ONE_OBSTACLE_PATHS = listOf(
-    "sprites/obstacles/zone1/broken_cart.png",
-    "sprites/obstacles/zone1/broken_stone_column.png",
-    "sprites/obstacles/zone1/hanging_banner.png",
-    "sprites/obstacles/zone1/training_dummy.png",
-    "sprites/obstacles/zone1/wooden_barrier.png",
-    "sprites/obstacles/zone1/wooden_crates.png"
-)
+private val ZONE_ONE_OBSTACLE_PATHS =
+    listOf(
+        "sprites/obstacles/zone1/broken_cart.png",
+        "sprites/obstacles/zone1/broken_stone_column.png",
+        "sprites/obstacles/zone1/hanging_banner.png",
+        "sprites/obstacles/zone1/training_dummy.png",
+        "sprites/obstacles/zone1/wooden_barrier.png",
+        "sprites/obstacles/zone1/wooden_crates.png",
+    )
 
 internal suspend fun Container.createGameplayScreen(
     views: Views,
     controller: GameController,
-    onBackToMenu: () -> Unit
+    onBackToMenu: () -> Unit,
 ): Container {
     val zoneOneBackground =
         resourcesVfs[ZONE_ONE_BACKGROUND_PATH].readBitmap()
@@ -88,37 +89,45 @@ internal suspend fun Container.createGameplayScreen(
             ScrollingBackground.create(
                 container = this,
                 bitmap = zoneOneBackground,
-                views = views
+                views = views,
+            )
+
+        val obstacleLayer =
+            container()
+
+        val obstacleView =
+            ObstacleView.create(
+                container = obstacleLayer,
+                obstacleBitmaps = obstacleBitmaps,
+                views = views,
             )
 
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
-        lateinit var obstacleView: ObstacleView
 
-        val gameArea = clipContainer(
-            size = Size(
-                width = DragonGameConfig.GAME_AREA_WIDTH,
-                height = GameEngineConfig.GAME_AREA_HEIGHT
-            )
-        ) {
-            x = DragonGameConfig.GAME_AREA_X
-            y = DragonGameConfig.GAME_AREA_Y
+        val gameArea =
+            clipContainer(
+                size =
+                    Size(
+                        width = DragonGameConfig.GAME_AREA_WIDTH,
+                        height = GameEngineConfig.GAME_AREA_HEIGHT,
+                    ),
+            ) {
+                x = DragonGameConfig.GAME_AREA_X
+                y = DragonGameConfig.GAME_AREA_Y
 
-            obstacleView = ObstacleView.create(
-                container = this,
-                obstacleBitmaps = obstacleBitmaps
-            )
+                dragonView =
+                    DragonView.create(
+                        container = this,
+                        spriteMap = dragonSpriteMap,
+                    )
 
-            dragonView = DragonView.create(
-                container = this,
-                spriteMap = dragonSpriteMap
-            )
-
-            hitSparkView = HitSparkView.create(
-                container = this,
-                spriteMap = hitSparkBitmap
-            )
-        }
+                hitSparkView =
+                    HitSparkView.create(
+                        container = this,
+                        spriteMap = hitSparkBitmap,
+                    )
+            }
 
         gameArea.onClick {
             if (controller.isGameRunning) {
@@ -126,39 +135,54 @@ internal suspend fun Container.createGameplayScreen(
             }
         }
 
-        val gameplayHud = GameplayHud.create(
-            container = this,
-            lifeFullBitmap = lifeFullBitmap,
-            lifeEmptyBitmap = lifeEmptyBitmap,
-            gameButtonBitmap = gameButtonBitmap,
-            onPause = controller::pauseGame,
-            onBackToMenu = onBackToMenu
-        )
+        val gameplayHud =
+            GameplayHud.create(
+                container = this,
+                lifeFullBitmap = lifeFullBitmap,
+                lifeEmptyBitmap = lifeEmptyBitmap,
+                gameButtonBitmap = gameButtonBitmap,
+                onPause = controller::pauseGame,
+                onBackToMenu = onBackToMenu,
+            )
 
-        val sessionOverlay = SessionOverlay.create(
-            container = this,
-            panelBitmap = sessionPanelBitmap,
-            buttonBitmap = gameButtonBitmap,
-            onResume = controller::resumeGame,
-            onRestart = controller::startGame,
-            onBackToMenu = onBackToMenu
-        )
+        val sessionOverlay =
+            SessionOverlay.create(
+                container = this,
+                views = views,
+                panelBitmap = sessionPanelBitmap,
+                buttonBitmap = gameButtonBitmap,
+                onResume = controller::resumeGame,
+                onRestart = controller::startGame,
+                onBackToMenu = onBackToMenu,
+            )
 
         fun updateView(snapshot: GameSnapshot) {
             obstacleView.update(snapshot)
 
             gameplayHud.update(
                 snapshot = snapshot,
-                isPaused = controller.isPaused
+                isPaused = controller.isPaused,
             )
 
             sessionOverlay.update(
                 snapshot = snapshot,
-                isPaused = controller.isPaused
+                isPaused = controller.isPaused,
             )
         }
 
         addUpdater { delta ->
+            val viewportLeft =
+                views.actualVirtualLeft.toDouble()
+
+            val viewportRight =
+                viewportLeft +
+                    views.actualVirtualWidth.toDouble()
+
+            controller.resizeGameArea(
+                leftBoundary = viewportLeft,
+                rightBoundary = viewportRight,
+            )
+
             val elapsedSeconds =
                 delta.toDouble(DurationUnit.SECONDS)
 
@@ -178,16 +202,28 @@ internal suspend fun Container.createGameplayScreen(
 
             dragonView.update(
                 snapshot = snapshot,
-                isPaused = controller.isPaused
+                isPaused = controller.isPaused,
             )
 
             hitSparkView.update(
                 snapshot = snapshot,
-                isPaused = controller.isPaused
+                isPaused = controller.isPaused,
             )
 
             updateView(snapshot)
         }
+
+        val initialViewportLeft =
+            views.actualVirtualLeft.toDouble()
+
+        val initialViewportRight =
+            initialViewportLeft +
+                views.actualVirtualWidth.toDouble()
+
+        controller.resizeGameArea(
+            leftBoundary = initialViewportLeft,
+            rightBoundary = initialViewportRight,
+        )
 
         val initialSnapshot =
             controller.snapshot()
@@ -196,12 +232,12 @@ internal suspend fun Container.createGameplayScreen(
 
         dragonView.update(
             snapshot = initialSnapshot,
-            isPaused = controller.isPaused
+            isPaused = controller.isPaused,
         )
 
         hitSparkView.update(
             snapshot = initialSnapshot,
-            isPaused = controller.isPaused
+            isPaused = controller.isPaused,
         )
 
         updateView(initialSnapshot)

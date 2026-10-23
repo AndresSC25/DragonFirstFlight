@@ -4,7 +4,7 @@ import com.redcrow.dragonsfirstflight.game.score.ScoreTracker
 
 class GameEngine(
     gameAreaWidth: Double,
-    private val onDamageEvent: (DamageEvent) -> Unit = {}
+    private val onDamageEvent: (DamageEvent) -> Unit = {},
 ) {
     private var dragonY: Double =
         GameEngineConfig.DRAGON_INITIAL_Y
@@ -17,9 +17,10 @@ class GameEngine(
     private var lives: Int =
         GameEngineConfig.INITIAL_LIVES
 
-    private val scoreTracker = ScoreTracker(
-        pointsPerSecond = GameEngineConfig.POINTS_PER_SECOND
-    )
+    private val scoreTracker =
+        ScoreTracker(
+            pointsPerSecond = GameEngineConfig.POINTS_PER_SECOND,
+        )
 
     private val collisionRegistered = mutableSetOf<Int>()
     private val pointRegistered = mutableSetOf<Int>()
@@ -28,21 +29,33 @@ class GameEngine(
     private var invulnerabilityRemainingSeconds: Double = 0.0
 
     val status: GameStatus
-        get() = when {
-            lives <= 0 -> GameStatus.LOST
+        get() =
+            when {
+                lives <= 0 -> {
+                    GameStatus.LOST
+                }
 
-            scoreTracker.score.activeTimeSeconds >=
-                GameEngineConfig.TIME_TO_WIN_SECONDS ->
-                GameStatus.WON
+                scoreTracker.score.activeTimeSeconds >=
+                    GameEngineConfig.TIME_TO_WIN_SECONDS -> {
+                    GameStatus.WON
+                }
 
-            else -> GameStatus.RUNNING
-        }
+                else -> {
+                    GameStatus.RUNNING
+                }
+            }
 
     val isRunning: Boolean
         get() = status == GameStatus.RUNNING
 
-    fun resizeGameArea(newWidth: Double) {
-        obstacleGenerator.resize(newWidth)
+    fun resizeGameArea(
+        leftBoundary: Double,
+        rightBoundary: Double,
+    ) {
+        obstacleGenerator.resize(
+            newLeftBoundary = leftBoundary,
+            newRightBoundary = rightBoundary,
+        )
     }
 
     fun flap() {
@@ -62,9 +75,10 @@ class GameEngine(
             return
         }
 
-        val delta = elapsedSeconds.coerceAtMost(
-            GameEngineConfig.MAX_DELTA_SECONDS
-        )
+        val delta =
+            elapsedSeconds.coerceAtMost(
+                GameEngineConfig.MAX_DELTA_SECONDS,
+            )
 
         impactFeedbackRemainingSeconds =
             (impactFeedbackRemainingSeconds - delta).coerceAtLeast(0.0)
@@ -100,10 +114,15 @@ class GameEngine(
 
     fun snapshot(): GameSnapshot {
         val isInvulnerable = invulnerabilityRemainingSeconds > 0.0
-        val isInvulnerabilityBlinkDim = isInvulnerable &&
-            ((GameEngineConfig.INVULNERABILITY_DURATION_SECONDS -
-                invulnerabilityRemainingSeconds) /
-                GameEngineConfig.BLINK_HALF_PERIOD_SECONDS).toInt() % 2 == 0
+        val isInvulnerabilityBlinkDim =
+            isInvulnerable &&
+                (
+                    (
+                        GameEngineConfig.INVULNERABILITY_DURATION_SECONDS -
+                            invulnerabilityRemainingSeconds
+                    ) /
+                        GameEngineConfig.BLINK_HALF_PERIOD_SECONDS
+                ).toInt() % 2 == 0
 
         return GameSnapshot(
             dragonX = GameEngineConfig.DRAGON_X,
@@ -119,24 +138,25 @@ class GameEngine(
             impactObstacleId = impactObstacleId,
             isInvulnerable = isInvulnerable,
             isInvulnerabilityBlinkDim = isInvulnerabilityBlinkDim,
-            status = status
+            status = status,
         )
     }
 
     private fun updateDragon(delta: Double) {
         val previousVelocity = verticalVelocity
 
-        val newVelocity = (
+        val newVelocity =
+            (
                 previousVelocity +
-                        GameEngineConfig.GRAVITY * delta
-                ).coerceAtMost(
-                GameEngineConfig.MAX_FALL_VELOCITY
+                    GameEngineConfig.GRAVITY * delta
+            ).coerceAtMost(
+                GameEngineConfig.MAX_FALL_VELOCITY,
             )
 
         val displacement =
             (
-                    (previousVelocity + newVelocity) / 2.0
-                    ) * delta
+                (previousVelocity + newVelocity) / 2.0
+            ) * delta
 
         val newY = dragonY + displacement
 
@@ -181,16 +201,17 @@ class GameEngine(
                 continue
             }
 
-            val overlapsObstacle = rectanglesOverlap(
-                firstX = GameEngineConfig.DRAGON_X,
-                firstY = dragonY,
-                firstWidth = GameEngineConfig.DRAGON_SIZE,
-                firstHeight = GameEngineConfig.DRAGON_SIZE,
-                secondX = obstacle.x,
-                secondY = obstacle.y,
-                secondWidth = obstacle.size,
-                secondHeight = obstacle.size
-            )
+            val overlapsObstacle =
+                rectanglesOverlap(
+                    firstX = GameEngineConfig.DRAGON_X,
+                    firstY = dragonY,
+                    firstWidth = GameEngineConfig.DRAGON_SIZE,
+                    firstHeight = GameEngineConfig.DRAGON_SIZE,
+                    secondX = obstacle.x,
+                    secondY = obstacle.y,
+                    secondWidth = obstacle.size,
+                    secondHeight = obstacle.size,
+                )
 
             if (overlapsObstacle) {
                 collisionRegistered += obstacle.id
