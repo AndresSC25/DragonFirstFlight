@@ -172,6 +172,8 @@ internal suspend fun Container.createGameplayScreen(
                 !controller.isPaused
             ) {
                 scrollingBackground.update(elapsedSeconds)
+            } else {
+                scrollingBackground.update(0.0)
             }
 
             dragonView.update(
@@ -189,6 +191,8 @@ internal suspend fun Container.createGameplayScreen(
 
         val initialSnapshot =
             controller.snapshot()
+
+        scrollingBackground.update(0.0)
 
         dragonView.update(
             snapshot = initialSnapshot,

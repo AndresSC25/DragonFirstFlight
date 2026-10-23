@@ -20,8 +20,8 @@ internal class ObstacleView private constructor(
 
     fun update(snapshot: GameSnapshot) {
         val activeIds =
-            snapshot.obstacles.mapTo(mutableSetOf()) {
-                it.id
+            snapshot.obstacles.mapTo(mutableSetOf()) { obstacle ->
+                obstacle.id
             }
 
         viewsById.keys
@@ -81,11 +81,11 @@ internal class ObstacleView private constructor(
 
         view.scaleX =
             obstacle.size /
-                    bitmap.width.toDouble()
+                bitmap.width.toDouble()
 
         view.scaleY =
             obstacle.size /
-                    bitmap.height.toDouble()
+                bitmap.height.toDouble()
 
         view.visible = !isDestroyed
 
@@ -105,25 +105,25 @@ internal class ObstacleView private constructor(
 
         val leftEdgeAlpha =
             (
-                    obstacleRight /
-                            HORIZONTAL_FADE_DISTANCE
-                    ).coerceIn(
-                    minimumValue = 0.0,
-                    maximumValue = 1.0
-                )
+                obstacleRight /
+                    HORIZONTAL_FADE_DISTANCE
+            ).coerceIn(
+                minimumValue = 0.0,
+                maximumValue = 1.0
+            )
 
         val distanceFromRightEdge =
             DragonGameConfig.GAME_AREA_WIDTH -
-                    obstacle.x
+                obstacle.x
 
         val rightEdgeAlpha =
             (
-                    distanceFromRightEdge /
-                            HORIZONTAL_FADE_DISTANCE
-                    ).coerceIn(
-                    minimumValue = 0.0,
-                    maximumValue = 1.0
-                )
+                distanceFromRightEdge /
+                    HORIZONTAL_FADE_DISTANCE
+            ).coerceIn(
+                minimumValue = 0.0,
+                maximumValue = 1.0
+            )
 
         return min(
             leftEdgeAlpha,
@@ -143,7 +143,7 @@ internal class ObstacleView private constructor(
             require(
                 obstacleBitmaps.values.all { bitmap ->
                     bitmap.width > 0 &&
-                            bitmap.height > 0
+                        bitmap.height > 0
                 }
             ) {
                 "Obstacle bitmaps must have positive dimensions."
