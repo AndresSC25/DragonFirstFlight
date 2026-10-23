@@ -33,18 +33,27 @@ dependencies {
     implementation(libs.compose.uiToolingPreview)
 }
 
+val isMacOs =
+    providers
+        .systemProperty("os.name")
+        .get()
+        .startsWith("Mac", ignoreCase = true)
+
 val korGeJvmArgs =
-    listOf(
-        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
-        "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED",
-        "--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED",
-        "--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED",
-        "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED",
-        "--add-exports=java.desktop/com.apple.eawt.event=ALL-UNNAMED",
-    )
+    buildList {
+        add("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
+        add("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
+        add("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
+
+        if (isMacOs) {
+            add("--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED")
+            add("--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+            add("--add-opens=java.desktop/com.apple.eawt=ALL-UNNAMED")
+            add("--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED")
+            add("--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED")
+            add("--add-exports=java.desktop/com.apple.eawt.event=ALL-UNNAMED")
+        }
+    }
 
 compose.desktop {
     application {
