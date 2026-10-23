@@ -73,15 +73,18 @@ class ObstacleGeneratorTest {
     @Test
     fun staticObstaclesOnlyUseTopAndBottomLanes() {
         val generator = ObstacleGenerator(areaWidth = 1280.0)
-        val staticPaths = setOf(
-            "sprites/obstacles/zone1/wooden_crates.png",
-            "sprites/obstacles/zone1/broken_stone_column.png"
-        )
+        val staticPaths =
+            setOf(
+                "sprites/obstacles/zone1/wooden_crates.png",
+                "sprites/obstacles/zone1/broken_stone_column.png",
+            )
         val staticObstacles = mutableListOf<Obstacle>()
 
         repeat(500) {
-            staticObstacles += generator.snapshot()
-                .filter { it.spritePath in staticPaths }
+            staticObstacles +=
+                generator
+                    .snapshot()
+                    .filter { it.spritePath in staticPaths }
             generator.update(GameEngineConfig.MAX_DELTA_SECONDS)
         }
 
@@ -90,7 +93,7 @@ class ObstacleGeneratorTest {
             staticObstacles.all {
                 it.y == GameEngineConfig.OBSTACLE_TOP_Y ||
                     it.y == GameEngineConfig.OBSTACLE_BOTTOM_Y
-            }
+            },
         )
     }
 
