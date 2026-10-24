@@ -1,141 +1,133 @@
 package com.redcrow.dragonsfirstflight.ui.gameplay
 
+import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.Obstacle
 import korlibs.image.bitmap.Bitmap
 import korlibs.korge.view.Container
-import korlibs.korge.view.Image
+import korlibs.korge.view.View
 import korlibs.korge.view.Views
 import korlibs.korge.view.image
 import kotlin.math.min
 
 private const val HORIZONTAL_FADE_DISTANCE: Double = 96.0
 
+private data class RenderedObstacle(
+    val view: View,
+    val displayWidth: Int,
+    val displayHeight: Int,
+    val animatedSprite: AnimatedSpriteView?,
+)
+
 internal class ObstacleView private constructor(
     private val container: Container,
     private val obstacleBitmaps: Map<String, Bitmap>,
     private val views: Views,
+    private val animatedObstacleConfigs: Map<String, AnimatedSpriteConfig>,
+    private val verticallyFlippedObstaclePaths: Set<String>,
 ) {
-    private val viewsById =
-        mutableMapOf<Int, Image>()
+    private val viewsById = mutableMapOf<Int, RenderedObstacle>()
 
-    fun update(snapshot: GameSnapshot) {
-        val activeIds =
-            snapshot.obstacles.mapTo(mutableSetOf()) { obstacle ->
-                obstacle.id
-            }
-
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean,
+    ) {
+        val activeIds = snapshot.obstacles.mapTo(mutableSetOf()) { it.id }
         viewsById.keys
             .toList()
-            .filter { id ->
-                id !in activeIds
-            }.forEach { id ->
-                viewsById
-                    .remove(id)
-                    ?.removeFromParent()
-            }
+            .filter { it !in activeIds }
+            .forEach { id -> viewsById.remove(id)?.view?.removeFromParent() }
 
-        val hasFinished =
-            snapshot.status != GameStatus.RUNNING
-
+        val hasFinished = snapshot.status != GameStatus.RUNNING
         snapshot.obstacles.forEach { obstacle ->
-            val view =
+            val rendered =
                 viewsById.getOrPut(obstacle.id) {
-                    createObstacleImage(obstacle)
+                    createRenderedObstacle(obstacle.spritePath)
                 }
-
-            updateView(
-                view = view,
-                obstacle = obstacle,
-                isDestroyed =
-                    obstacle.id in snapshot.destroyedObstacleIds,
-                hasFinished = hasFinished,
+            val visible =
+                obstacle.id !in snapshot.destroyedObstacleIds &&
+                    !hasFinished
+            rendered.view.visible = visible
+            rendered.animatedSprite?.update(
+                shouldAnimate = visible && !isPaused,
             )
+            updateView(
+                rendered = rendered,
+                obstacle = obstacle,
+                shouldFlipVertically =
+                    obstacle.spritePath in verticallyFlippedObstaclePaths &&
+                        obstacle.y == GameEngineConfig.OBSTACLE_TOP_Y,
+            )
+            if (visible) {
+                rendered.view.alpha = calculateHorizontalAlpha(obstacle)
+            }
         }
     }
 
-    private fun createObstacleImage(obstacle: Obstacle): Image {
-        val bitmap =
-            obstacleBitmaps.getValue(
-                obstacle.spritePath,
+    private fun createRenderedObstacle(spritePath: String): RenderedObstacle {
+        val bitmap = obstacleBitmaps.getValue(spritePath)
+        val config = animatedObstacleConfigs[spritePath]
+        if (config == null) {
+            return RenderedObstacle(
+                view =
+                    container.image(bitmap) {
+                        smoothing = false
+                        alpha = 0.0
+                    },
+                displayWidth = bitmap.width,
+                displayHeight = bitmap.height,
+                animatedSprite = null,
             )
-
-        return container.image(
-            texture = bitmap,
-        ) {
-            smoothing = false
-            alpha = 0.0
         }
+
+        val animatedSprite =
+            AnimatedSpriteView.create(
+                container = container,
+                bitmap = bitmap,
+                config = config,
+            )
+        animatedSprite.view.alpha = 0.0
+        return RenderedObstacle(
+            view = animatedSprite.view,
+            displayWidth = config.frameWidth,
+            displayHeight = config.frameHeight,
+            animatedSprite = animatedSprite,
+        )
     }
 
     private fun updateView(
-        view: Image,
+        rendered: RenderedObstacle,
         obstacle: Obstacle,
-        isDestroyed: Boolean,
-        hasFinished: Boolean,
+        shouldFlipVertically: Boolean,
     ) {
-        val bitmap =
-            obstacleBitmaps.getValue(
-                obstacle.spritePath,
-            )
-
-        view.x = obstacle.x
-        view.y = obstacle.y
-
-        view.scaleX =
-            obstacle.size /
-            bitmap.width.toDouble()
-
-        view.scaleY =
-            obstacle.size /
-            bitmap.height.toDouble()
-
-        view.visible =
-            !isDestroyed &&
-            !hasFinished
-
-        if (!view.visible) {
-            return
-        }
-
-        view.alpha =
-            calculateHorizontalAlpha(obstacle)
+        rendered.view.x = obstacle.x
+        rendered.view.y =
+            if (shouldFlipVertically) obstacle.y + obstacle.height else obstacle.y
+        rendered.view.scaleX = obstacle.width / rendered.displayWidth.toDouble()
+        rendered.view.scaleY =
+            if (shouldFlipVertically) {
+                -obstacle.height / rendered.displayHeight.toDouble()
+            } else {
+                obstacle.height / rendered.displayHeight.toDouble()
+            }
     }
 
     private fun calculateHorizontalAlpha(obstacle: Obstacle): Double {
-        val leftBoundary =
-            views.actualVirtualLeft.toDouble()
-
-        val rightBoundary =
-            leftBoundary +
-                views.actualVirtualWidth.toDouble()
-
-        val obstacleRight =
-            obstacle.x + obstacle.size
-
-        val leftEdgeAlpha =
+        val leftBoundary = views.actualVirtualLeft.toDouble()
+        val rightBoundary = leftBoundary + views.actualVirtualWidth.toDouble()
+        val obstacleRight = obstacle.x + obstacle.width
+        val leftAlpha =
             (
                 (obstacleRight - leftBoundary) /
                     HORIZONTAL_FADE_DISTANCE
-            ).coerceIn(
-                minimumValue = 0.0,
-                maximumValue = 1.0,
-            )
-
-        val rightEdgeAlpha =
+            ).coerceIn(0.0, 1.0)
+        val rightAlpha =
             (
                 (rightBoundary - obstacle.x) /
                     HORIZONTAL_FADE_DISTANCE
-            ).coerceIn(
-                minimumValue = 0.0,
-                maximumValue = 1.0,
-            )
-
-        return min(
-            leftEdgeAlpha,
-            rightEdgeAlpha,
-        )
+            ).coerceIn(0.0, 1.0)
+        return min(leftAlpha, rightAlpha)
     }
 
     companion object {
@@ -143,28 +135,26 @@ internal class ObstacleView private constructor(
             container: Container,
             obstacleBitmaps: Map<String, Bitmap>,
             views: Views,
+            animatedObstacleConfigs: Map<String, AnimatedSpriteConfig> =
+                emptyMap(),
+            verticallyFlippedObstaclePaths: Set<String> = emptySet(),
         ): ObstacleView {
             require(obstacleBitmaps.isNotEmpty()) {
                 "At least one obstacle bitmap is required."
             }
-
-            require(
-                obstacleBitmaps.values.all { bitmap ->
-                    bitmap.width > 0 &&
-                        bitmap.height > 0
-                },
-            ) {
+            require(obstacleBitmaps.values.all { it.width > 0 && it.height > 0 }) {
                 "Obstacle bitmaps must have positive dimensions."
             }
-
             require(HORIZONTAL_FADE_DISTANCE > 0.0) {
-                "HORIZONTAL_FADE_DISTANCE must be greater than zero."
+                "Obstacle fade distance must be greater than zero."
             }
-
             return ObstacleView(
                 container = container,
                 obstacleBitmaps = obstacleBitmaps,
                 views = views,
+                animatedObstacleConfigs = animatedObstacleConfigs,
+                verticallyFlippedObstaclePaths =
+                verticallyFlippedObstaclePaths,
             )
         }
     }
