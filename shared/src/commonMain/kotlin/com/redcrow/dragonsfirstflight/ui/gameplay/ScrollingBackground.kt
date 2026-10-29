@@ -1,21 +1,106 @@
 ﻿package com.redcrow.dragonsfirstflight.ui.gameplay
 
+import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import korlibs.image.bitmap.Bitmap
 import korlibs.korge.view.Container
 import korlibs.korge.view.Image
 import korlibs.korge.view.Views
+import korlibs.korge.view.container
 import korlibs.korge.view.image
-
-private const val DEFAULT_SCROLL_SPEED: Double = 70.0
+import kotlin.math.ceil
 
 internal class ScrollingBackground private constructor(
-    private val firstBackground: Image,
-    private val secondBackground: Image,
-    private val bitmap: Bitmap,
-    private val views: Views,
-    private val scrollSpeed: Double,
+    private val layers: List<ScrollingLayer>,
 ) {
-    private var backgroundWidth: Double = 0.0
+    fun update(elapsedSeconds: Double) {
+        require(elapsedSeconds >= 0.0) {
+            "Elapsed time must not be negative."
+        }
+
+        layers.forEach { layer ->
+            layer.update(elapsedSeconds)
+        }
+    }
+
+    class Layer(
+        val bitmap: Bitmap,
+        val speedFactor: Double,
+        val mirrorTiles: Boolean = false,
+        val heightFraction: Double = 1.0,
+        val offsetYFraction: Double = 0.0,
+    ) {
+        init {
+            require(bitmap.width > 0) {
+                "Background layer width must be greater than zero."
+            }
+
+            require(bitmap.height > 0) {
+                "Background layer height must be greater than zero."
+            }
+
+            require(speedFactor >= 0.0) {
+                "Background layer speed factor must not be negative."
+            }
+
+            require(heightFraction > 0.0 && heightFraction <= 1.0) {
+                "Background layer height fraction must be in (0, 1]."
+            }
+
+            require(offsetYFraction >= 0.0 && offsetYFraction < 1.0) {
+                "Background layer vertical offset must be in [0, 1)."
+            }
+        }
+    }
+
+    companion object {
+        fun create(
+            container: Container,
+            layers: List<Layer>,
+            views: Views,
+        ): ScrollingBackground {
+            val scrollingLayers =
+                layers.map { layer ->
+                    ScrollingLayer(
+                        layerContainer = container.container(),
+                        layer = layer,
+                        views = views,
+                        speed = GameEngineConfig.OBSTACLE_SPEED * layer.speedFactor,
+                    )
+                }
+
+            return ScrollingBackground(
+                layers = scrollingLayers,
+            ).also {
+                it.update(0.0)
+            }
+        }
+    }
+}
+
+internal fun tilesToCover(
+    viewportWidth: Double,
+    tileWidth: Double,
+    tilesPerPeriod: Int,
+): Int = ceil(viewportWidth / tileWidth).toInt() + tilesPerPeriod
+
+private class ScrollingLayer(
+    private val layerContainer: Container,
+    private val layer: ScrollingBackground.Layer,
+    private val views: Views,
+    private val speed: Double,
+) {
+    private val tiles =
+        mutableListOf<Image>()
+
+    private val tilesPerPeriod: Int =
+        if (layer.mirrorTiles) 2 else 1
+
+    private val periodBitmapWidth: Double =
+        layer.bitmap.width.toDouble() * tilesPerPeriod
+
+    private var scrolledBitmapPixels: Double = 0.0
+
+    private var scale: Double = 1.0
 
     private var previousLeft: Double = Double.NaN
     private var previousTop: Double = Double.NaN
@@ -23,39 +108,31 @@ internal class ScrollingBackground private constructor(
     private var previousHeight: Double = Double.NaN
 
     fun update(elapsedSeconds: Double) {
-        require(elapsedSeconds >= 0.0) {
-            "Elapsed time must not be negative."
-        }
-
         updateLayoutIfRequired()
 
-        if (backgroundWidth <= 0.0) {
-            return
-        }
+        scrolledBitmapPixels =
+            (scrolledBitmapPixels + speed * elapsedSeconds / scale) %
+            periodBitmapWidth
 
-        val movement =
-            scrollSpeed * elapsedSeconds
+        val tileWidth =
+            layer.bitmap.width * scale
 
-        firstBackground.x -= movement
-        secondBackground.x -= movement
+        val firstTileX =
+            previousLeft - scrolledBitmapPixels * scale
 
-        val leftBoundary =
-            views.actualVirtualLeft.toDouble()
+        tiles.forEachIndexed { index, tile ->
+            val tileX =
+                firstTileX + index * tileWidth
 
-        if (
-            firstBackground.x + backgroundWidth <=
-            leftBoundary
-        ) {
-            firstBackground.x =
-                secondBackground.x + backgroundWidth
-        }
+            val isFlipped =
+                tile.scaleX < 0.0
 
-        if (
-            secondBackground.x + backgroundWidth <=
-            leftBoundary
-        ) {
-            secondBackground.x =
-                firstBackground.x + backgroundWidth
+            tile.x =
+                if (isFlipped) {
+                    tileX + tileWidth
+                } else {
+                    tileX
+                }
         }
     }
 
@@ -95,65 +172,40 @@ internal class ScrollingBackground private constructor(
         previousWidth = currentWidth
         previousHeight = currentHeight
 
-        backgroundWidth = currentWidth
+        val layerHeight =
+            currentHeight * layer.heightFraction
 
-        val backgroundScaleX =
-            currentWidth / bitmap.width.toDouble()
+        val layerTop =
+            currentTop + currentHeight - layerHeight +
+                currentHeight * layer.offsetYFraction
 
-        val backgroundScaleY =
-            currentHeight / bitmap.height.toDouble()
+        scale = layerHeight / layer.bitmap.height
 
-        firstBackground.x = currentLeft
-        firstBackground.y = currentTop
-        firstBackground.scaleX = backgroundScaleX
-        firstBackground.scaleY = backgroundScaleY
+        val requiredTiles =
+            tilesToCover(
+                viewportWidth = currentWidth,
+                tileWidth = layer.bitmap.width * scale,
+                tilesPerPeriod = tilesPerPeriod,
+            )
 
-        secondBackground.x =
-            currentLeft + backgroundWidth
-
-        secondBackground.y = currentTop
-        secondBackground.scaleX = backgroundScaleX
-        secondBackground.scaleY = backgroundScaleY
-    }
-
-    companion object {
-        fun create(
-            container: Container,
-            bitmap: Bitmap,
-            views: Views,
-            scrollSpeed: Double = DEFAULT_SCROLL_SPEED,
-        ): ScrollingBackground {
-            require(bitmap.width > 0) {
-                "Background bitmap width must be greater than zero."
-            }
-
-            require(bitmap.height > 0) {
-                "Background bitmap height must be greater than zero."
-            }
-
-            require(scrollSpeed >= 0.0) {
-                "Background scroll speed must not be negative."
-            }
-
-            val firstBackground =
-                container.image(texture = bitmap) {
+        while (tiles.size < requiredTiles) {
+            tiles +=
+                layerContainer.image(texture = layer.bitmap) {
                     smoothing = false
                 }
+        }
 
-            val secondBackground =
-                container.image(texture = bitmap) {
-                    smoothing = false
-                }
+        while (tiles.size > requiredTiles) {
+            tiles.removeAt(tiles.lastIndex).removeFromParent()
+        }
 
-            return ScrollingBackground(
-                firstBackground = firstBackground,
-                secondBackground = secondBackground,
-                bitmap = bitmap,
-                views = views,
-                scrollSpeed = scrollSpeed,
-            ).also {
-                it.update(0.0)
-            }
+        tiles.forEachIndexed { index, tile ->
+            val isMirrored =
+                layer.mirrorTiles && index % 2 == 1
+
+            tile.scaleX = if (isMirrored) -scale else scale
+            tile.scaleY = scale
+            tile.y = layerTop
         }
     }
 }

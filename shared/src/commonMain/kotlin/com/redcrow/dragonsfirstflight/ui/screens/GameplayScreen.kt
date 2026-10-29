@@ -11,6 +11,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -24,9 +25,6 @@ import kotlin.time.DurationUnit
 
 private const val DRAGON_SPRITESHEET_PATH: String =
     "sprites/dragon/YoungBrassDragon.png"
-
-private const val ZONE_ONE_BACKGROUND_PATH: String =
-    "backgrounds/zone1/fortress_courtyard.png"
 
 private const val SESSION_PANEL_PATH: String =
     "ui/panels/panel_medieval.png"
@@ -58,8 +56,8 @@ internal suspend fun Container.createGameplayScreen(
     controller: GameController,
     onBackToMenu: () -> Unit,
 ): Container {
-    val zoneOneBackground =
-        resourcesVfs[ZONE_ONE_BACKGROUND_PATH].readBitmap()
+    val backgroundLayers =
+        ZoneBackground.FORTRESS_COURTYARD.loadLayers()
 
     val dragonSpriteMap =
         resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
@@ -88,7 +86,7 @@ internal suspend fun Container.createGameplayScreen(
         val scrollingBackground =
             ScrollingBackground.create(
                 container = this,
-                bitmap = zoneOneBackground,
+                layers = backgroundLayers,
                 views = views,
             )
 
