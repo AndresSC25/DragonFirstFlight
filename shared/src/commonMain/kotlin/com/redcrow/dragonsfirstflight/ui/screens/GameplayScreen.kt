@@ -32,6 +32,12 @@ private const val SESSION_PANEL_PATH: String =
 private const val GAME_BUTTON_PATH: String =
     "ui/buttons/button_normal.png"
 
+private const val SCORE_PLATE_PATH: String =
+    "ui/buttons/score_plate.png"
+
+private const val PAUSE_BUTTON_PATH: String =
+    "ui/buttons/button_pause.png"
+
 private const val LIFE_FULL_PATH: String =
     "sprites/dragon/lives/dragon_life_full.png"
 
@@ -67,6 +73,12 @@ internal suspend fun Container.createGameplayScreen(
 
     val gameButtonBitmap =
         resourcesVfs[GAME_BUTTON_PATH].readBitmap()
+
+    val scorePlateBitmap =
+        resourcesVfs[SCORE_PLATE_PATH].readBitmap()
+
+    val pauseButtonBitmap =
+        resourcesVfs[PAUSE_BUTTON_PATH].readBitmap()
 
     val lifeFullBitmap =
         resourcesVfs[LIFE_FULL_PATH].readBitmap()
@@ -136,11 +148,12 @@ internal suspend fun Container.createGameplayScreen(
         val gameplayHud =
             GameplayHud.create(
                 container = this,
+                views = views,
                 lifeFullBitmap = lifeFullBitmap,
                 lifeEmptyBitmap = lifeEmptyBitmap,
-                gameButtonBitmap = gameButtonBitmap,
+                scorePlateBitmap = scorePlateBitmap,
+                pauseButtonBitmap = pauseButtonBitmap,
                 onPause = controller::pauseGame,
-                onBackToMenu = onBackToMenu,
             )
 
         val sessionOverlay =
