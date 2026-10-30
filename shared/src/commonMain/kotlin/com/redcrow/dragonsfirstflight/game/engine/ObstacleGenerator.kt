@@ -9,16 +9,17 @@ internal class ObstacleGenerator(
 ) {
     private val obstacleSpritePaths =
         listOf(
-            "sprites/obstacles/zone1/flying_bats.png",
+            "sprites/obstacles/zone1/flying_bat.png",
             "sprites/obstacles/zone1/flying_crows.png",
             "sprites/obstacles/zone1/flying_sword.png",
-            "sprites/obstacles/zone1/wooden_crates.png",
-            "sprites/obstacles/zone1/broken_stone_column.png",
+            "sprites/obstacles/zone1/flaming_arrow.png",
+            "sprites/obstacles/zone1/forest_mage.png",
+            "sprites/obstacles/zone1/knight_sword.png",
         )
-    private val topAndBottomObstaclePaths =
+    private val bottomOnlyObstaclePaths =
         setOf(
-            "sprites/obstacles/zone1/wooden_crates.png",
-            "sprites/obstacles/zone1/broken_stone_column.png",
+            "sprites/obstacles/zone1/forest_mage.png",
+            "sprites/obstacles/zone1/knight_sword.png",
         )
 
     private val obstacleLanes =
@@ -138,6 +139,7 @@ internal class ObstacleGenerator(
             spritePaths +=
                 obstacleSpritePaths.shuffled(random)
         }
+        val spritePath = spritePaths.first()
 
         val occupiedLanes =
             obstacles
@@ -158,38 +160,29 @@ internal class ObstacleGenerator(
                 lane != lastLane ||
                     consecutiveLaneCount < 2
             }
-        val laneOptions =
-            if (spritePaths.first() in topAndBottomObstaclePaths) {
-                listOf(
-                    GameEngineConfig.OBSTACLE_TOP_Y,
-                    GameEngineConfig.OBSTACLE_BOTTOM_Y,
-                )
-            } else {
-                obstacleLanes
-            }
-
         val lane =
-            if (
-                nextId == 0 &&
-                spritePaths.first() !in topAndBottomObstaclePaths
-            ) {
-                GameEngineConfig.OBSTACLE_Y
+            if (spritePath in bottomOnlyObstaclePaths) {
+                GameEngineConfig.OBSTACLE_BOTTOM_Y
             } else {
                 val candidates =
-                    when {
-                        lanesWithoutConsecutiveRepeat
-                            .any { it in laneOptions } -> {
-                            lanesWithoutConsecutiveRepeat.filter {
-                                it in laneOptions
+                    if (
+                        nextId == 0 &&
+                        GameEngineConfig.OBSTACLE_Y in obstacleLanes
+                    ) {
+                        listOf(GameEngineConfig.OBSTACLE_Y)
+                    } else {
+                        when {
+                            lanesWithoutConsecutiveRepeat.isNotEmpty() -> {
+                                lanesWithoutConsecutiveRepeat
                             }
-                        }
 
-                        availableLanes.any { it in laneOptions } -> {
-                            availableLanes.filter { it in laneOptions }
-                        }
+                            availableLanes.isNotEmpty() -> {
+                                availableLanes
+                            }
 
-                        else -> {
-                            laneOptions
+                            else -> {
+                                obstacleLanes
+                            }
                         }
                     }
 
@@ -200,8 +193,7 @@ internal class ObstacleGenerator(
 
                 candidates
                     .filter { candidate ->
-                        (laneUsage[candidate] ?: 0) ==
-                            leastUsedCount
+                        (laneUsage[candidate] ?: 0) == leastUsedCount
                     }.random(random)
             }
 
@@ -215,13 +207,19 @@ internal class ObstacleGenerator(
         laneUsage[lane] =
             (laneUsage[lane] ?: 0) + 1
 
-        val spritePath = spritePaths.removeAt(0)
+        spritePaths.removeAt(0)
+        val obstacleSize =
+            if (spritePath == "sprites/obstacles/zone1/knight_sword.png") {
+                GameEngineConfig.KNIGHT_SWORD_SIZE
+            } else {
+                GameEngineConfig.OBSTACLE_SIZE
+            }
         obstacles +=
             Obstacle(
                 id = nextId++,
                 x = x,
                 y = lane,
-                size = GameEngineConfig.OBSTACLE_SIZE,
+                size = obstacleSize,
                 spritePath = spritePath,
             )
     }

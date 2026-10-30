@@ -8,16 +8,16 @@ import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
-import com.redcrow.dragonsfirstflight.ui.gameplay.BROKEN_STONE_COLUMN_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
-import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BATS_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
+import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
-import com.redcrow.dragonsfirstflight.ui.gameplay.VERTICALLY_FLIPPED_OBSTACLE_PATHS
-import com.redcrow.dragonsfirstflight.ui.gameplay.WOODEN_CRATES_SPRITE_PATH
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -52,11 +52,12 @@ private const val HIT_SPARK_PATH: String =
 
 private val ZONE_ONE_OBSTACLE_PATHS =
     listOf(
-        FLYING_BATS_SPRITE_PATH,
+        FLYING_BAT_SPRITE_PATH,
         FLYING_CROWS_SPRITE_PATH,
         FLYING_SWORD_SPRITE_PATH,
-        WOODEN_CRATES_SPRITE_PATH,
-        BROKEN_STONE_COLUMN_SPRITE_PATH,
+        FLAMING_ARROW_SPRITE_PATH,
+        FOREST_MAGE_SPRITE_PATH,
+        KNIGHT_SWORD_SPRITE_PATH,
     )
 
 internal suspend fun Container.createGameplayScreen(
@@ -107,8 +108,6 @@ internal suspend fun Container.createGameplayScreen(
                 obstacleBitmaps = obstacleBitmaps,
                 views = views,
                 animatedObstacleConfigs = ANIMATED_OBSTACLE_CONFIGS,
-                verticallyFlippedObstaclePaths =
-                VERTICALLY_FLIPPED_OBSTACLE_PATHS,
             )
 
         lateinit var dragonView: DragonView
