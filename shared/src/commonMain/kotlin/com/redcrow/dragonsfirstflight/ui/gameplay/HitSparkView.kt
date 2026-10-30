@@ -39,9 +39,9 @@ internal class HitSparkView private constructor(
             return
         }
 
-        sprite.x = impactObstacle.x + impactObstacle.size / 2.0 -
+        sprite.x = impactObstacle.x + impactObstacle.width / 2.0 -
             HIT_SPARK_FRAME_SIZE / 2.0
-        sprite.y = impactObstacle.y + impactObstacle.size / 2.0 -
+        sprite.y = impactObstacle.y + impactObstacle.height / 2.0 -
             HIT_SPARK_FRAME_SIZE / 2.0
         sprite.visible = true
 
