@@ -9,12 +9,17 @@ internal class ObstacleGenerator(
 ) {
     private val obstacleSpritePaths =
         listOf(
-            "sprites/obstacles/zone1/broken_cart.png",
-            "sprites/obstacles/zone1/broken_stone_column.png",
-            "sprites/obstacles/zone1/hanging_banner.png",
-            "sprites/obstacles/zone1/training_dummy.png",
-            "sprites/obstacles/zone1/wooden_barrier.png",
-            "sprites/obstacles/zone1/wooden_crates.png",
+            "sprites/obstacles/zone1/flying_bat.png",
+            "sprites/obstacles/zone1/flying_crows.png",
+            "sprites/obstacles/zone1/flying_sword.png",
+            "sprites/obstacles/zone1/flaming_arrow.png",
+            "sprites/obstacles/zone1/forest_mage.png",
+            "sprites/obstacles/zone1/knight_sword.png",
+        )
+    private val bottomOnlyObstaclePaths =
+        setOf(
+            "sprites/obstacles/zone1/forest_mage.png",
+            "sprites/obstacles/zone1/knight_sword.png",
         )
 
     private val obstacleLanes =
@@ -59,7 +64,7 @@ internal class ObstacleGenerator(
         rightBoundary = newRightBoundary
 
         obstacles.removeAll { obstacle ->
-            obstacle.x + obstacle.size < leftBoundary
+            obstacle.x + obstacle.width < leftBoundary
         }
 
         if (obstacles.isEmpty()) {
@@ -81,7 +86,7 @@ internal class ObstacleGenerator(
         }
 
         obstacles.removeAll { obstacle ->
-            obstacle.x + obstacle.size < leftBoundary
+            obstacle.x + obstacle.width < leftBoundary
         }
 
         val lastObstacle =
@@ -97,12 +102,17 @@ internal class ObstacleGenerator(
                 lastObstacle?.let { obstacle ->
                     obstacle.x +
                         GameEngineConfig.MIN_OBSTACLE_SEPARATION
-                } ?: rightBoundary
+                } ?: (
+                    rightBoundary -
+                        GameEngineConfig.INITIAL_OBSTACLE_MARGIN
+                )
 
             spawnObstacle(
                 x =
                     nextObstacleX.coerceAtLeast(
-                        minimumValue = rightBoundary,
+                        minimumValue =
+                            rightBoundary -
+                                GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
                     ),
             )
         }
@@ -115,7 +125,9 @@ internal class ObstacleGenerator(
         lastLane = null
         consecutiveLaneCount = 0
         laneUsage.clear()
-        spawnObstacle(rightBoundary)
+        spawnObstacle(
+            rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
+        )
     }
 
     fun snapshot(): List<Obstacle> = obstacles.toList()
@@ -146,8 +158,26 @@ internal class ObstacleGenerator(
                     consecutiveLaneCount < 2
             }
 
+        if (
+            obstacles.isEmpty() &&
+            spritePaths.first() in bottomOnlyObstaclePaths
+        ) {
+            val firstFlyingObstacleIndex =
+                spritePaths.indexOfFirst { path ->
+                    path !in bottomOnlyObstaclePaths
+                }
+            if (firstFlyingObstacleIndex >= 0) {
+                val firstFlyingObstacle =
+                    spritePaths.removeAt(firstFlyingObstacleIndex)
+                spritePaths.add(0, firstFlyingObstacle)
+            }
+        }
+
+        val spritePath = spritePaths.first()
         val lane =
-            if (nextId == 0) {
+            if (spritePath in bottomOnlyObstaclePaths) {
+                GameEngineConfig.OBSTACLE_BOTTOM_Y
+            } else if (obstacles.isEmpty()) {
                 GameEngineConfig.OBSTACLE_Y
             } else {
                 val candidates =
@@ -187,12 +217,26 @@ internal class ObstacleGenerator(
         laneUsage[lane] =
             (laneUsage[lane] ?: 0) + 1
 
+        val obstacleSize =
+            when (spritePath) {
+                "sprites/obstacles/zone1/forest_mage.png" -> {
+                    GameEngineConfig.FOREST_MAGE_SIZE
+                }
+
+                "sprites/obstacles/zone1/knight_sword.png" -> {
+                    GameEngineConfig.KNIGHT_SWORD_SIZE
+                }
+
+                else -> {
+                    GameEngineConfig.OBSTACLE_SIZE
+                }
+            }
         obstacles +=
             Obstacle(
                 id = nextId++,
                 x = x,
                 y = lane,
-                size = GameEngineConfig.OBSTACLE_SIZE,
+                size = obstacleSize,
                 spritePath = spritePaths.removeAt(0),
             )
     }

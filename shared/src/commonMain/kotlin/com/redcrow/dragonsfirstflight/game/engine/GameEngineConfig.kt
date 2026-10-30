@@ -20,10 +20,12 @@ object GameEngineConfig {
 
     const val OBSTACLE_Y: Double = 328.0
     const val OBSTACLE_SIZE: Double = 72.0
+    const val FOREST_MAGE_SIZE: Double = 120.0
+    const val KNIGHT_SWORD_SIZE: Double = 120.0
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
     const val MIN_OBSTACLE_SEPARATION: Double = 300.0
     const val OBSTACLE_TOP_Y: Double = 190.0
-    const val OBSTACLE_BOTTOM_Y: Double = DRAGON_MAX_Y
+    const val OBSTACLE_BOTTOM_Y: Double = 580.0
     const val OBSTACLE_SPEED: Double = 120.0
 
     const val MAX_DELTA_SECONDS: Double = 0.05
@@ -79,7 +81,7 @@ object GameEngineConfig {
         }
 
         require(
-            OBSTACLE_BOTTOM_Y + OBSTACLE_SIZE <= DRAGON_MAX_Y + DRAGON_SIZE,
+            OBSTACLE_BOTTOM_Y + FOREST_MAGE_SIZE <= GAME_AREA_HEIGHT,
         ) {
             "OBSTACLE_BOTTOM_Y must be inside the game area."
         }

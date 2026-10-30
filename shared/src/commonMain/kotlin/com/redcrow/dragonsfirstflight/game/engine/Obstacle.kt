@@ -6,4 +6,6 @@ data class Obstacle(
     val y: Double,
     val size: Double,
     val spritePath: String,
+    val width: Double = size,
+    val height: Double = size,
 )

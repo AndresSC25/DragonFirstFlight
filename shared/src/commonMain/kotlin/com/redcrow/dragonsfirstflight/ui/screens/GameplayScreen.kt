@@ -7,10 +7,18 @@ import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
+import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
+import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -25,14 +33,17 @@ import kotlin.time.DurationUnit
 private const val DRAGON_SPRITESHEET_PATH: String =
     "sprites/dragon/YoungBrassDragon.png"
 
-private const val ZONE_ONE_BACKGROUND_PATH: String =
-    "backgrounds/zone1/fortress_courtyard.png"
-
 private const val SESSION_PANEL_PATH: String =
     "ui/panels/panel_medieval.png"
 
 private const val GAME_BUTTON_PATH: String =
     "ui/buttons/button_normal.png"
+
+private const val SCORE_PLATE_PATH: String =
+    "ui/buttons/score_plate.png"
+
+private const val PAUSE_BUTTON_PATH: String =
+    "ui/buttons/button_pause.png"
 
 private const val LIFE_FULL_PATH: String =
     "sprites/dragon/lives/dragon_life_full.png"
@@ -45,12 +56,12 @@ private const val HIT_SPARK_PATH: String =
 
 private val ZONE_ONE_OBSTACLE_PATHS =
     listOf(
-        "sprites/obstacles/zone1/broken_cart.png",
-        "sprites/obstacles/zone1/broken_stone_column.png",
-        "sprites/obstacles/zone1/hanging_banner.png",
-        "sprites/obstacles/zone1/training_dummy.png",
-        "sprites/obstacles/zone1/wooden_barrier.png",
-        "sprites/obstacles/zone1/wooden_crates.png",
+        FLYING_BAT_SPRITE_PATH,
+        FLYING_CROWS_SPRITE_PATH,
+        FLYING_SWORD_SPRITE_PATH,
+        FLAMING_ARROW_SPRITE_PATH,
+        FOREST_MAGE_SPRITE_PATH,
+        KNIGHT_SWORD_SPRITE_PATH,
     )
 
 internal suspend fun Container.createGameplayScreen(
@@ -58,8 +69,8 @@ internal suspend fun Container.createGameplayScreen(
     controller: GameController,
     onBackToMenu: () -> Unit,
 ): Container {
-    val zoneOneBackground =
-        resourcesVfs[ZONE_ONE_BACKGROUND_PATH].readBitmap()
+    val backgroundLayers =
+        ZoneBackground.FORTRESS_COURTYARD.loadLayers()
 
     val dragonSpriteMap =
         resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
@@ -69,6 +80,12 @@ internal suspend fun Container.createGameplayScreen(
 
     val gameButtonBitmap =
         resourcesVfs[GAME_BUTTON_PATH].readBitmap()
+
+    val scorePlateBitmap =
+        resourcesVfs[SCORE_PLATE_PATH].readBitmap()
+
+    val pauseButtonBitmap =
+        resourcesVfs[PAUSE_BUTTON_PATH].readBitmap()
 
     val lifeFullBitmap =
         resourcesVfs[LIFE_FULL_PATH].readBitmap()
@@ -88,7 +105,7 @@ internal suspend fun Container.createGameplayScreen(
         val scrollingBackground =
             ScrollingBackground.create(
                 container = this,
-                bitmap = zoneOneBackground,
+                layers = backgroundLayers,
                 views = views,
             )
 
@@ -100,6 +117,7 @@ internal suspend fun Container.createGameplayScreen(
                 container = obstacleLayer,
                 obstacleBitmaps = obstacleBitmaps,
                 views = views,
+                animatedObstacleConfigs = ANIMATED_OBSTACLE_CONFIGS,
             )
 
         lateinit var dragonView: DragonView
@@ -138,11 +156,12 @@ internal suspend fun Container.createGameplayScreen(
         val gameplayHud =
             GameplayHud.create(
                 container = this,
+                views = views,
                 lifeFullBitmap = lifeFullBitmap,
                 lifeEmptyBitmap = lifeEmptyBitmap,
-                gameButtonBitmap = gameButtonBitmap,
+                scorePlateBitmap = scorePlateBitmap,
+                pauseButtonBitmap = pauseButtonBitmap,
                 onPause = controller::pauseGame,
-                onBackToMenu = onBackToMenu,
             )
 
         val sessionOverlay =
@@ -157,7 +176,10 @@ internal suspend fun Container.createGameplayScreen(
             )
 
         fun updateView(snapshot: GameSnapshot) {
-            obstacleView.update(snapshot)
+            obstacleView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
 
             gameplayHud.update(
                 snapshot = snapshot,
