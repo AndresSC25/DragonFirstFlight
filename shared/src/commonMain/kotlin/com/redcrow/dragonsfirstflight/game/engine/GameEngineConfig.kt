@@ -27,6 +27,7 @@ object GameEngineConfig {
     const val OBSTACLE_TOP_Y: Double = 190.0
     const val OBSTACLE_BOTTOM_Y: Double = 580.0
     const val OBSTACLE_SPEED: Double = 120.0
+    const val MAX_OBSTACLE_SPEED: Double = 240.0
 
     const val MAX_DELTA_SECONDS: Double = 0.05
     const val IMPACT_FEEDBACK_DURATION_SECONDS: Double = 0.18
@@ -72,6 +73,10 @@ object GameEngineConfig {
             "OBSTACLE_SIZE must be greater than zero."
         }
 
+        require(MAX_OBSTACLE_SPEED >= OBSTACLE_SPEED) {
+            "MAX_OBSTACLE_SPEED must not be less than OBSTACLE_SPEED."
+        }
+
         require(MIN_OBSTACLE_SEPARATION > OBSTACLE_SIZE) {
             "MIN_OBSTACLE_SEPARATION must be greater than OBSTACLE_SIZE."
         }
@@ -99,5 +104,18 @@ object GameEngineConfig {
         require(BLINK_HALF_PERIOD_SECONDS > 0.0) {
             "BLINK_HALF_PERIOD_SECONDS must be greater than zero."
         }
+    }
+
+    fun obstacleSpeedAt(activeTimeSeconds: Double): Double {
+        require(activeTimeSeconds.isFinite() && activeTimeSeconds >= 0.0) {
+            "Active time must be finite and must not be negative."
+        }
+
+        val progress =
+            (activeTimeSeconds / TIME_TO_WIN_SECONDS)
+                .coerceIn(0.0, 1.0)
+
+        return OBSTACLE_SPEED +
+            (MAX_OBSTACLE_SPEED - OBSTACLE_SPEED) * progress
     }
 }
