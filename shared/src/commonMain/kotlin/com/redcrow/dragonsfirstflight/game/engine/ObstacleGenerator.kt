@@ -26,6 +26,11 @@ internal class ObstacleGenerator(
                 "sprites/obstacles/zone1/flying_crows.png",
             ),
         )
+    private val laterZoneObstaclePaths =
+        setOf(
+            "sprites/obstacles/zone1/flying_bat.png",
+            "sprites/obstacles/zone1/flying_crows.png",
+        )
 
     private val obstacleLanes =
         listOf(
@@ -101,12 +106,7 @@ internal class ObstacleGenerator(
             GameEngineConfig.zoneAt(activeTimeSeconds)
 
         if (zone != currentZone) {
-            obstacles.clear()
-            spritePaths.clear()
-            lastLane = null
-            consecutiveLaneCount = 0
-            laneUsage.clear()
-            currentZone = zone
+            beginZoneTransition(zone)
         }
 
         for (index in obstacles.indices) {
@@ -184,10 +184,17 @@ internal class ObstacleGenerator(
         activeTimeSeconds: Double,
     ) {
         if (spritePaths.isEmpty()) {
-            val zoneIndex =
-                GameEngineConfig.zoneAt(activeTimeSeconds).ordinal
+            val zoneIndex = currentZone.ordinal
             spritePaths +=
                 obstacleSpritePathsByZone[zoneIndex].shuffled(random)
+            if (
+                currentZone != GameZone.ZONE_ONE &&
+                spritePaths.any { path ->
+                    path !in laterZoneObstaclePaths
+                }
+            ) {
+                error("Later zones may only generate crow and bat obstacles.")
+            }
             if (
                 obstacles.isEmpty() &&
                 spritePaths.first() in bottomOnlyObstaclePaths
