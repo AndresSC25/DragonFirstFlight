@@ -27,6 +27,7 @@ class GameEngine(
     private var impactFeedbackRemainingSeconds: Double = 0.0
     private var impactObstacleId: Int? = null
     private var invulnerabilityRemainingSeconds: Double = 0.0
+    private var zoneTransitionRemainingSeconds: Double = 0.0
 
     val status: GameStatus
         get() =
@@ -55,11 +56,12 @@ class GameEngine(
         obstacleGenerator.resize(
             newLeftBoundary = leftBoundary,
             newRightBoundary = rightBoundary,
+            spawnIfEmpty = !isZoneTransitioning,
         )
     }
 
     fun flap() {
-        if (!isRunning) {
+        if (!isRunning || isZoneTransitioning) {
             return
         }
 
@@ -92,9 +94,38 @@ class GameEngine(
             return
         }
 
+        if (isZoneTransitioning) {
+            zoneTransitionRemainingSeconds =
+                (
+                    zoneTransitionRemainingSeconds - delta
+                ).coerceAtLeast(0.0)
+            return
+        }
+
         updateDragon(delta)
         evaluateCollisionAndScore()
         scoreTracker.update(elapsedSeconds)
+        val currentZone =
+            GameEngineConfig.zoneAt(
+                scoreTracker.score.activeTimeSeconds,
+            )
+        val previousZone =
+            GameEngineConfig.zoneAt(
+                (
+                    scoreTracker.score.activeTimeSeconds -
+                        elapsedSeconds
+                ).coerceAtLeast(0.0),
+            )
+        if (
+            currentZone != previousZone &&
+            scoreTracker.score.activeTimeSeconds <
+                GameEngineConfig.TIME_TO_WIN_SECONDS
+        ) {
+            zoneTransitionRemainingSeconds =
+                GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
+            obstacleGenerator.beginZoneTransition(currentZone)
+            return
+        }
         obstacleGenerator.update(
             delta = delta,
             activeTimeSeconds = scoreTracker.score.activeTimeSeconds,
@@ -109,6 +140,7 @@ class GameEngine(
         impactFeedbackRemainingSeconds = 0.0
         impactObstacleId = null
         invulnerabilityRemainingSeconds = 0.0
+        zoneTransitionRemainingSeconds = 0.0
 
         obstacleGenerator.reset()
         collisionRegistered.clear()
@@ -145,9 +177,19 @@ class GameEngine(
                 GameEngineConfig.zoneAt(
                     scoreTracker.score.activeTimeSeconds,
                 ),
+            isZoneTransitioning = isZoneTransitioning,
+            zoneTransitionProgress =
+                (
+                    1.0 -
+                        zoneTransitionRemainingSeconds /
+                            GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
+                ).coerceIn(0.0, 1.0),
             status = status,
         )
     }
+
+    private val isZoneTransitioning: Boolean
+        get() = zoneTransitionRemainingSeconds > 0.0
 
     private fun updateDragon(delta: Double) {
         val previousVelocity = verticalVelocity

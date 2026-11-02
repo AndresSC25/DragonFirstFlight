@@ -3,6 +3,8 @@ package com.redcrow.dragonsfirstflight.game.engine
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class GameEngineScoreTest {
     @Test
@@ -61,11 +63,36 @@ class GameEngineScoreTest {
         engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
         assertEquals(GameZone.ZONE_TWO, engine.snapshot().zone)
         assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+        assertTrue(engine.snapshot().isZoneTransitioning)
+        assertTrue(engine.snapshot().obstacles.isEmpty())
+        assertEquals(
+            (
+                GameEngineConfig.ZONE_DURATION_SECONDS *
+                    GameEngineConfig.POINTS_PER_SECOND
+            ).toInt(),
+            engine.snapshot().points,
+        )
+
+        repeat(30) {
+            engine.update(0.05)
+        }
+        assertFalse(engine.snapshot().isZoneTransitioning)
+        assertEquals(
+            (
+                GameEngineConfig.ZONE_DURATION_SECONDS *
+                    GameEngineConfig.POINTS_PER_SECOND
+            ).toInt(),
+            engine.snapshot().points,
+        )
 
         engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
         assertEquals(GameZone.ZONE_THREE, engine.snapshot().zone)
         assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+        assertTrue(engine.snapshot().isZoneTransitioning)
 
+        repeat(30) {
+            engine.update(0.05)
+        }
         engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
         assertEquals(GameZone.ZONE_THREE, engine.snapshot().zone)
         assertEquals(GameStatus.WON, engine.snapshot().status)

@@ -67,6 +67,7 @@ internal class ObstacleGenerator(
     fun resize(
         newLeftBoundary: Double,
         newRightBoundary: Double,
+        spawnIfEmpty: Boolean = true,
     ) {
         validateBoundaries(
             left = newLeftBoundary,
@@ -80,7 +81,7 @@ internal class ObstacleGenerator(
             obstacle.x + obstacle.width < leftBoundary
         }
 
-        if (obstacles.isEmpty()) {
+        if (spawnIfEmpty && obstacles.isEmpty()) {
             spawnObstacle(
                 x = rightBoundary,
                 activeTimeSeconds = 0.0,
@@ -168,6 +169,15 @@ internal class ObstacleGenerator(
     }
 
     fun snapshot(): List<Obstacle> = obstacles.toList()
+
+    fun beginZoneTransition(zone: GameZone) {
+        obstacles.clear()
+        spritePaths.clear()
+        currentZone = zone
+        lastLane = null
+        consecutiveLaneCount = 0
+        laneUsage.clear()
+    }
 
     private fun spawnObstacle(
         x: Double,

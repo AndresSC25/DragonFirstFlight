@@ -29,6 +29,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FIRE_BRAZIER_SPRITE_P
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WALL_SPIKES_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WOODEN_BEAM_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneTransitionOverlay
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -198,6 +199,12 @@ internal suspend fun Container.createGameplayScreen(
                 onBackToMenu = onBackToMenu,
             )
 
+        val zoneTransitionOverlay =
+            ZoneTransitionOverlay.create(
+                container = this,
+                views = views,
+            )
+
         fun updateView(snapshot: GameSnapshot) {
             obstacleView.update(
                 snapshot = snapshot,
@@ -213,6 +220,7 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
             )
+            zoneTransitionOverlay.update(snapshot)
         }
 
         addUpdater { delta ->

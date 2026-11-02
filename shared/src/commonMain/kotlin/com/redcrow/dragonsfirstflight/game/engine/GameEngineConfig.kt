@@ -7,6 +7,7 @@ object GameEngineConfig {
     const val ZONE_COUNT: Int = 3
     const val TIME_TO_WIN_SECONDS: Double =
         ZONE_DURATION_SECONDS * ZONE_COUNT
+    const val ZONE_TRANSITION_DURATION_SECONDS: Double = 1.5
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 
@@ -60,6 +61,10 @@ object GameEngineConfig {
 
         require(ZONE_DURATION_SECONDS > 0.0) {
             "ZONE_DURATION_SECONDS must be greater than zero."
+        }
+
+        require(ZONE_TRANSITION_DURATION_SECONDS > 0.0) {
+            "ZONE_TRANSITION_DURATION_SECONDS must be greater than zero."
         }
 
         require(ZONE_COUNT == GameZone.values().size) {
