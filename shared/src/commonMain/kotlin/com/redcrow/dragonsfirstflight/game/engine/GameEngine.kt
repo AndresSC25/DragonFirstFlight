@@ -141,6 +141,10 @@ class GameEngine(
             impactObstacleId = impactObstacleId,
             isInvulnerable = isInvulnerable,
             isInvulnerabilityBlinkDim = isInvulnerabilityBlinkDim,
+            zone =
+                GameEngineConfig.zoneAt(
+                    scoreTracker.score.activeTimeSeconds,
+                ),
             status = status,
         )
     }

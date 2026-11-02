@@ -12,6 +12,12 @@ import kotlin.math.ceil
 internal class ScrollingBackground private constructor(
     private val layers: List<ScrollingLayer>,
 ) {
+    var visible: Boolean = true
+        set(value) {
+            field = value
+            layers.forEach { it.visible = value }
+        }
+
     fun update(elapsedSeconds: Double) {
         require(elapsedSeconds >= 0.0) {
             "Elapsed time must not be negative."
@@ -89,6 +95,12 @@ private class ScrollingLayer(
     private val views: Views,
     private val speed: Double,
 ) {
+    var visible: Boolean = true
+        set(value) {
+            field = value
+            layerContainer.visible = value
+        }
+
     private val tiles =
         mutableListOf<Image>()
 

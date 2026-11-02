@@ -17,21 +17,58 @@ class GameEngineScoreTest {
                     GameEngineConfig.MAX_OBSTACLE_SPEED
             ) / 2.0,
             GameEngineConfig.obstacleSpeedAt(
-                GameEngineConfig.TIME_TO_WIN_SECONDS / 2.0,
+                GameEngineConfig.ZONE_DURATION_SECONDS / 2.0,
             ),
         )
         assertEquals(
             GameEngineConfig.MAX_OBSTACLE_SPEED,
+            GameEngineConfig.obstacleSpeedAt(
+                GameEngineConfig.ZONE_DURATION_SECONDS,
+            ),
+        )
+        assertEquals(
+            GameEngineConfig.ZONE_TWO_MAX_OBSTACLE_SPEED,
+            GameEngineConfig.obstacleSpeedAt(
+                GameEngineConfig.ZONE_DURATION_SECONDS * 2.0,
+            ),
+        )
+        assertEquals(
+            GameEngineConfig.ZONE_THREE_MAX_OBSTACLE_SPEED,
             GameEngineConfig.obstacleSpeedAt(
                 GameEngineConfig.TIME_TO_WIN_SECONDS,
             ),
         )
         assertEquals(
-            GameEngineConfig.MAX_OBSTACLE_SPEED,
+            GameEngineConfig.ZONE_TWO_OBSTACLE_SPEED,
             GameEngineConfig.obstacleSpeedAt(
-                GameEngineConfig.TIME_TO_WIN_SECONDS * 2.0,
+                GameEngineConfig.ZONE_DURATION_SECONDS,
             ),
         )
+        assertEquals(
+            GameEngineConfig.ZONE_THREE_OBSTACLE_SPEED,
+            GameEngineConfig.obstacleSpeedAt(
+                GameEngineConfig.ZONE_DURATION_SECONDS * 2.0,
+            ),
+        )
+    }
+
+    @Test
+    fun activeTimeProgressesThroughZonesBeforeVictory() {
+        val engine = GameEngine(gameAreaWidth = 1280.0)
+
+        assertEquals(GameZone.ZONE_ONE, engine.snapshot().zone)
+
+        engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+        assertEquals(GameZone.ZONE_TWO, engine.snapshot().zone)
+        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+
+        engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+        assertEquals(GameZone.ZONE_THREE, engine.snapshot().zone)
+        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+
+        engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+        assertEquals(GameZone.ZONE_THREE, engine.snapshot().zone)
+        assertEquals(GameStatus.WON, engine.snapshot().status)
     }
 
     @Test
