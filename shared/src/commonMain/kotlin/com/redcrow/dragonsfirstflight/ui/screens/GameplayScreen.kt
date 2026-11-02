@@ -30,6 +30,8 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WALL_SPIKES_SPRITE_PA
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WOODEN_BEAM_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneTransitionOverlay
+import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
+import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -147,31 +149,37 @@ internal suspend fun Container.createGameplayScreen(
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
 
-        val gameArea =
-            clipContainer(
-                size =
-                    Size(
-                        width = DragonGameConfig.GAME_AREA_WIDTH,
-                        height = GameEngineConfig.GAME_AREA_HEIGHT,
-                    ),
-            ) {
-                x = DragonGameConfig.GAME_AREA_X
-                y = DragonGameConfig.GAME_AREA_Y
+        clipContainer(
+            size =
+                Size(
+                    width = DragonGameConfig.GAME_AREA_WIDTH,
+                    height = GameEngineConfig.GAME_AREA_HEIGHT,
+                ),
+        ) {
+            x = DragonGameConfig.GAME_AREA_X
+            y = DragonGameConfig.GAME_AREA_Y
 
-                dragonView =
-                    DragonView.create(
-                        container = this,
-                        spriteMap = dragonSpriteMap,
-                    )
+            dragonView =
+                DragonView.create(
+                    container = this,
+                    spriteMap = dragonSpriteMap,
+                )
 
-                hitSparkView =
-                    HitSparkView.create(
-                        container = this,
-                        spriteMap = hitSparkBitmap,
-                    )
-            }
+            hitSparkView =
+                HitSparkView.create(
+                    container = this,
+                    spriteMap = hitSparkBitmap,
+                )
+        }
 
-        gameArea.onClick {
+        val gameplayInputSurface =
+            createResponsiveShade(
+                views = views,
+                color = Colors.TRANSPARENT,
+                shadeAlpha = 0.0,
+            )
+
+        gameplayInputSurface.onClick {
             if (controller.isGameRunning) {
                 controller.handleGameAreaInput()
             }
