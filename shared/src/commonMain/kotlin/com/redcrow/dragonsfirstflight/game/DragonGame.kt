@@ -22,11 +22,11 @@ suspend fun Container.createDragonGame(views: Views) {
     )
 
     lateinit var menuContainer: Container
-    lateinit var gameContainer: Container
+    var gameContainer: Container? = null
 
     fun updateScreenVisibility() {
         menuContainer.visible = controller.isMenuVisible
-        gameContainer.visible = controller.isGameVisible
+        gameContainer?.visible = controller.isGameVisible
     }
 
     menuContainer =

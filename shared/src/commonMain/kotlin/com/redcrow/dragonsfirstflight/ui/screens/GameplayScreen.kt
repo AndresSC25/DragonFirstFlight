@@ -5,6 +5,7 @@ import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
+import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
@@ -18,7 +19,17 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FALLEN_LOG_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_HANGING_VINES_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_ROCK_CLUSTER_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_THORN_BUSH_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_TREE_BRANCH_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_BROKEN_TOWER_ARCH_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FIRE_BRAZIER_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WALL_SPIKES_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WOODEN_BEAM_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneTransitionOverlay
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
@@ -54,7 +65,7 @@ private const val LIFE_EMPTY_PATH: String =
 private const val HIT_SPARK_PATH: String =
     "effects/impact/hit_spark.png"
 
-private val ZONE_ONE_OBSTACLE_PATHS =
+private val OBSTACLE_PATHS =
     listOf(
         FLYING_BAT_SPRITE_PATH,
         FLYING_CROWS_SPRITE_PATH,
@@ -62,6 +73,15 @@ private val ZONE_ONE_OBSTACLE_PATHS =
         FLAMING_ARROW_SPRITE_PATH,
         FOREST_MAGE_SPRITE_PATH,
         KNIGHT_SWORD_SPRITE_PATH,
+        ZONE_TWO_BROKEN_TOWER_ARCH_SPRITE_PATH,
+        ZONE_TWO_FIRE_BRAZIER_SPRITE_PATH,
+        ZONE_TWO_WALL_SPIKES_SPRITE_PATH,
+        ZONE_TWO_WOODEN_BEAM_SPRITE_PATH,
+        ZONE_THREE_FALLEN_LOG_SPRITE_PATH,
+        ZONE_THREE_HANGING_VINES_SPRITE_PATH,
+        ZONE_THREE_ROCK_CLUSTER_SPRITE_PATH,
+        ZONE_THREE_THORN_BUSH_SPRITE_PATH,
+        ZONE_THREE_TREE_BRANCH_SPRITE_PATH,
     )
 
 internal suspend fun Container.createGameplayScreen(
@@ -70,7 +90,7 @@ internal suspend fun Container.createGameplayScreen(
     onBackToMenu: () -> Unit,
 ): Container {
     val backgroundLayers =
-        ZoneBackground.FORTRESS_COURTYARD.loadLayers()
+        ZoneBackground.values().associateWith { it.loadLayers() }
 
     val dragonSpriteMap =
         resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
@@ -97,17 +117,21 @@ internal suspend fun Container.createGameplayScreen(
         resourcesVfs[HIT_SPARK_PATH].readBitmap()
 
     val obstacleBitmaps =
-        ZONE_ONE_OBSTACLE_PATHS.associateWith { path ->
+        OBSTACLE_PATHS.associateWith { path ->
             resourcesVfs[path].readBitmap()
         }
 
     return container {
-        val scrollingBackground =
-            ScrollingBackground.create(
-                container = this,
-                layers = backgroundLayers,
-                views = views,
-            )
+        val scrollingBackgrounds =
+            ZoneBackground.values().associateWith { zone ->
+                ScrollingBackground.create(
+                    container = this,
+                    layers = backgroundLayers.getValue(zone),
+                    views = views,
+                )
+            }
+        scrollingBackgrounds.values.forEach { it.visible = false }
+        scrollingBackgrounds.getValue(ZoneBackground.FORTRESS_COURTYARD).visible = true
 
         val obstacleLayer =
             container()
@@ -175,6 +199,12 @@ internal suspend fun Container.createGameplayScreen(
                 onBackToMenu = onBackToMenu,
             )
 
+        val zoneTransitionOverlay =
+            ZoneTransitionOverlay.create(
+                container = this,
+                views = views,
+            )
+
         fun updateView(snapshot: GameSnapshot) {
             obstacleView.update(
                 snapshot = snapshot,
@@ -190,6 +220,7 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
             )
+            zoneTransitionOverlay.update(snapshot)
         }
 
         addUpdater { delta ->
@@ -213,13 +244,25 @@ internal suspend fun Container.createGameplayScreen(
             val snapshot =
                 controller.snapshot()
 
-            if (
-                snapshot.status == GameStatus.RUNNING &&
-                !controller.isPaused
-            ) {
-                scrollingBackground.update(elapsedSeconds)
-            } else {
-                scrollingBackground.update(0.0)
+            val activeBackground =
+                when (snapshot.zone) {
+                    GameZone.ZONE_ONE -> ZoneBackground.FORTRESS_COURTYARD
+                    GameZone.ZONE_TWO -> ZoneBackground.TOWERS_AND_WALLS
+                    GameZone.ZONE_THREE -> ZoneBackground.OUTER_FOREST
+                }
+            scrollingBackgrounds.forEach { (zone, background) ->
+                background.visible = zone == activeBackground
+                background.update(
+                    if (
+                        zone == activeBackground &&
+                        snapshot.status == GameStatus.RUNNING &&
+                        !controller.isPaused
+                    ) {
+                        elapsedSeconds
+                    } else {
+                        0.0
+                    },
+                )
             }
 
             dragonView.update(
@@ -250,7 +293,7 @@ internal suspend fun Container.createGameplayScreen(
         val initialSnapshot =
             controller.snapshot()
 
-        scrollingBackground.update(0.0)
+        scrollingBackgrounds.values.forEach { it.update(0.0) }
 
         dragonView.update(
             snapshot = initialSnapshot,
