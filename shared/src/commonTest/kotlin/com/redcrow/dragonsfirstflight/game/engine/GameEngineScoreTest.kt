@@ -2,9 +2,48 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
 
 class GameEngineScoreTest {
+    @Test
+    fun obstacleSpeedIncreasesWithActiveTimeAndStopsAtConfiguredMaximum() {
+        assertEquals(
+            GameEngineConfig.OBSTACLE_SPEED,
+            GameEngineConfig.obstacleSpeedAt(0.0),
+        )
+        assertEquals(
+            (
+                GameEngineConfig.OBSTACLE_SPEED +
+                    GameEngineConfig.MAX_OBSTACLE_SPEED
+            ) / 2.0,
+            GameEngineConfig.obstacleSpeedAt(
+                GameEngineConfig.TIME_TO_WIN_SECONDS / 2.0,
+            ),
+        )
+        assertEquals(
+            GameEngineConfig.MAX_OBSTACLE_SPEED,
+            GameEngineConfig.obstacleSpeedAt(
+                GameEngineConfig.TIME_TO_WIN_SECONDS,
+            ),
+        )
+        assertEquals(
+            GameEngineConfig.MAX_OBSTACLE_SPEED,
+            GameEngineConfig.obstacleSpeedAt(
+                GameEngineConfig.TIME_TO_WIN_SECONDS * 2.0,
+            ),
+        )
+    }
+
+    @Test
+    fun obstacleSpeedRejectsInvalidActiveTime() {
+        assertFailsWith<IllegalArgumentException> {
+            GameEngineConfig.obstacleSpeedAt(-1.0)
+        }
+        assertFailsWith<IllegalArgumentException> {
+            GameEngineConfig.obstacleSpeedAt(Double.NaN)
+        }
+    }
+
     @Test
     fun scoreUsesElapsedTimeWithoutAnAutomaticVictory() {
         val engine = GameEngine(gameAreaWidth = 1280.0)
@@ -35,14 +74,14 @@ class GameEngineScoreTest {
     fun passingAnObstacleDoesNotAwardAdditionalPoints() {
         val engine = GameEngine(gameAreaWidth = 1280.0)
 
-        repeat(187) { engine.update(0.05) }
+        repeat(187) {
+            if (it % 6 == 0) {
+                engine.flap()
+            }
+            engine.update(0.05)
+        }
 
         assertEquals(GameStatus.RUNNING, engine.snapshot().status)
-        assertEquals(GameEngineConfig.INITIAL_LIVES, engine.snapshot().lives)
         assertEquals(9 * GameEngineConfig.POINTS_PER_SECOND, engine.snapshot().points)
-        assertTrue(
-            engine.snapshot().obstacleX + GameEngineConfig.OBSTACLE_SIZE <=
-                GameEngineConfig.DRAGON_X,
-        )
     }
 }

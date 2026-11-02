@@ -72,7 +72,13 @@ internal class ObstacleGenerator(
         }
     }
 
-    fun update(delta: Double) {
+    fun update(
+        delta: Double,
+        activeTimeSeconds: Double,
+    ) {
+        val obstacleSpeed =
+            GameEngineConfig.obstacleSpeedAt(activeTimeSeconds)
+
         for (index in obstacles.indices) {
             val obstacle = obstacles[index]
 
@@ -80,7 +86,7 @@ internal class ObstacleGenerator(
                 obstacle.copy(
                     x =
                         obstacle.x -
-                            GameEngineConfig.OBSTACLE_SPEED *
+                            obstacleSpeed *
                             delta,
                 )
         }

@@ -94,8 +94,11 @@ class GameEngine(
 
         updateDragon(delta)
         evaluateCollisionAndScore()
-        obstacleGenerator.update(delta)
         scoreTracker.update(elapsedSeconds)
+        obstacleGenerator.update(
+            delta = delta,
+            activeTimeSeconds = scoreTracker.score.activeTimeSeconds,
+        )
     }
 
     fun restart() {
