@@ -119,7 +119,7 @@ class GameEngine(
         if (
             currentZone != previousZone &&
             scoreTracker.score.activeTimeSeconds <
-                GameEngineConfig.TIME_TO_WIN_SECONDS
+            GameEngineConfig.TIME_TO_WIN_SECONDS
         ) {
             zoneTransitionRemainingSeconds =
                 GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
@@ -182,7 +182,7 @@ class GameEngine(
                 (
                     1.0 -
                         zoneTransitionRemainingSeconds /
-                            GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
+                        GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
                 ).coerceIn(0.0, 1.0),
             status = status,
         )

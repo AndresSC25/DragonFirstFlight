@@ -49,7 +49,8 @@ class ObstacleGeneratorTest {
                 delta = 0.05,
                 activeTimeSeconds = frame * 0.05,
             )
-            generator.snapshot()
+            generator
+                .snapshot()
                 .filter {
                     it.spritePath.endsWith("forest_mage.png") ||
                         it.spritePath.endsWith("knight_sword.png")
