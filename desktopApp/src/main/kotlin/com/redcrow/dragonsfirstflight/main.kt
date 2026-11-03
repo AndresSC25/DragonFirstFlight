@@ -1,9 +1,9 @@
 ﻿package com.redcrow.dragonsfirstflight
 
 import com.redcrow.dragonsfirstflight.game.launchDragonGame
-import java.awt.Dimension
-import korlibs.render.awt.BaseAwtGameWindow
 import korlibs.render.GameWindowCreationConfig
+import korlibs.render.awt.BaseAwtGameWindow
+import java.awt.Dimension
 
 private const val MINIMUM_WINDOW_WIDTH: Int = 1280
 private const val MINIMUM_WINDOW_HEIGHT: Int = 720
