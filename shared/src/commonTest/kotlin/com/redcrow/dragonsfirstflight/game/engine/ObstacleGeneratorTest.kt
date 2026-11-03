@@ -63,19 +63,22 @@ class ObstacleGeneratorTest {
     }
 
     @Test
-    fun laterZonesUseOnlyCrowAndBatObstacles() {
+    fun zoneTwoUsesItsConfiguredObstacles() {
         val generator =
             ObstacleGenerator(
                 areaWidth = 1280.0,
                 random = Random(7),
             )
-        val allowedPaths =
+        val zoneTwoPaths =
             setOf(
-                "sprites/obstacles/zone1/flying_bat.png",
-                "sprites/obstacles/zone1/flying_crows.png",
+                "sprites/obstacles/zone2/flying _skull_wisp.png",
+                "sprites/obstacles/zone2/flying_cursed_book.png",
+                "sprites/obstacles/zone2/flying_gargoyle.png",
+                "sprites/obstacles/zone2/ghost_knight.png",
+                "sprites/obstacles/zone2/winged_imp.png",
             )
 
-        repeat(420) { frame ->
+        repeat(300) { frame ->
             generator.update(
                 delta = 0.05,
                 activeTimeSeconds =
@@ -84,8 +87,59 @@ class ObstacleGeneratorTest {
             )
         }
         assertTrue(
-            generator.snapshot().all { it.spritePath in allowedPaths },
+            generator.snapshot().all { it.spritePath in zoneTwoPaths },
         )
+        assertTrue(generator.snapshot().isNotEmpty())
+    }
+
+    @Test
+    fun selectedZoneTwoObstaclesUseTheirLargerSizes() {
+        val generator =
+            ObstacleGenerator(
+                areaWidth = 1280.0,
+                random = Random(7),
+            )
+
+        repeat(300) { frame ->
+            generator.update(
+                delta = 0.05,
+                activeTimeSeconds =
+                    GameEngineConfig.ZONE_DURATION_SECONDS +
+                        frame * 0.05,
+            )
+        }
+
+        generator
+            .snapshot()
+            .filter {
+                it.spritePath.endsWith("flying_gargoyle.png") ||
+                    it.spritePath.endsWith("ghost_knight.png")
+            }.forEach { obstacle ->
+                assertTrue(
+                    obstacle.size ==
+                        if (obstacle.spritePath.endsWith("flying_gargoyle.png")) {
+                            GameEngineConfig.ZONE_TWO_FLYING_GARGOYLE_SIZE
+                        } else {
+                            GameEngineConfig.ZONE_TWO_GHOST_KNIGHT_SIZE
+                        },
+                )
+            }
+    }
+
+    @Test
+    fun zoneThreeUsesItsConfiguredObstacles() {
+        val generator =
+            ObstacleGenerator(
+                areaWidth = 1280.0,
+                random = Random(7),
+            )
+        val zoneThreePaths =
+            setOf(
+                "sprites/obstacles/zone3/fairy_sprite.png",
+                "sprites/obstacles/zone3/flying_forest_monster.png",
+                "sprites/obstacles/zone3/giant_hornet.png",
+                "sprites/obstacles/zone3/wind_spirit.png",
+            )
 
         repeat(420) { frame ->
             generator.update(
@@ -96,7 +150,7 @@ class ObstacleGeneratorTest {
             )
         }
         assertTrue(
-            generator.snapshot().all { it.spritePath in allowedPaths },
+            generator.snapshot().all { it.spritePath in zoneThreePaths },
         )
     }
 }

@@ -18,18 +18,18 @@ internal class ObstacleGenerator(
                 "sprites/obstacles/zone1/knight_sword.png",
             ),
             listOf(
-                "sprites/obstacles/zone1/flying_bat.png",
-                "sprites/obstacles/zone1/flying_crows.png",
+                "sprites/obstacles/zone2/flying _skull_wisp.png",
+                "sprites/obstacles/zone2/flying_cursed_book.png",
+                "sprites/obstacles/zone2/flying_gargoyle.png",
+                "sprites/obstacles/zone2/ghost_knight.png",
+                "sprites/obstacles/zone2/winged_imp.png",
             ),
             listOf(
-                "sprites/obstacles/zone1/flying_bat.png",
-                "sprites/obstacles/zone1/flying_crows.png",
+                "sprites/obstacles/zone3/fairy_sprite.png",
+                "sprites/obstacles/zone3/flying_forest_monster.png",
+                "sprites/obstacles/zone3/giant_hornet.png",
+                "sprites/obstacles/zone3/wind_spirit.png",
             ),
-        )
-    private val laterZoneObstaclePaths =
-        setOf(
-            "sprites/obstacles/zone1/flying_bat.png",
-            "sprites/obstacles/zone1/flying_crows.png",
         )
 
     private val obstacleLanes =
@@ -188,14 +188,6 @@ internal class ObstacleGenerator(
             spritePaths +=
                 obstacleSpritePathsByZone[zoneIndex].shuffled(random)
             if (
-                currentZone != GameZone.ZONE_ONE &&
-                spritePaths.any { path ->
-                    path !in laterZoneObstaclePaths
-                }
-            ) {
-                error("Later zones may only generate crow and bat obstacles.")
-            }
-            if (
                 obstacles.isEmpty() &&
                 spritePaths.first() in bottomOnlyObstaclePaths
             ) {
@@ -285,6 +277,14 @@ internal class ObstacleGenerator(
 
                 "sprites/obstacles/zone1/knight_sword.png" -> {
                     GameEngineConfig.KNIGHT_SWORD_SIZE
+                }
+
+                "sprites/obstacles/zone2/flying_gargoyle.png" -> {
+                    GameEngineConfig.ZONE_TWO_FLYING_GARGOYLE_SIZE
+                }
+
+                "sprites/obstacles/zone2/ghost_knight.png" -> {
+                    GameEngineConfig.ZONE_TWO_GHOST_KNIGHT_SIZE
                 }
 
                 else -> {

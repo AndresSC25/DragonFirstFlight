@@ -18,32 +18,32 @@ internal const val KNIGHT_SWORD_SPRITE_PATH: String =
 internal const val FLYING_SWORD_SPRITE_PATH: String =
     "sprites/obstacles/zone1/flying_sword.png"
 
-internal const val ZONE_TWO_BROKEN_TOWER_ARCH_SPRITE_PATH: String =
-    "sprites/obstacles/zone2/broken_tower_arch.png"
+internal const val ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH: String =
+    "sprites/obstacles/zone2/flying _skull_wisp.png"
 
-internal const val ZONE_TWO_FIRE_BRAZIER_SPRITE_PATH: String =
-    "sprites/obstacles/zone2/fire_brazier.png"
+internal const val ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH: String =
+    "sprites/obstacles/zone2/flying_cursed_book.png"
 
-internal const val ZONE_TWO_WALL_SPIKES_SPRITE_PATH: String =
-    "sprites/obstacles/zone2/wall_spikes.png"
+internal const val ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH: String =
+    "sprites/obstacles/zone2/flying_gargoyle.png"
 
-internal const val ZONE_TWO_WOODEN_BEAM_SPRITE_PATH: String =
-    "sprites/obstacles/zone2/wooden_beam.png"
+internal const val ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH: String =
+    "sprites/obstacles/zone2/ghost_knight.png"
 
-internal const val ZONE_THREE_FALLEN_LOG_SPRITE_PATH: String =
-    "sprites/obstacles/zone3/fallen_log.png"
+internal const val ZONE_TWO_WINGED_IMP_SPRITE_PATH: String =
+    "sprites/obstacles/zone2/winged_imp.png"
 
-internal const val ZONE_THREE_HANGING_VINES_SPRITE_PATH: String =
-    "sprites/obstacles/zone3/hanging_vines.png"
+internal const val ZONE_THREE_FAIRY_SPRITE_PATH: String =
+    "sprites/obstacles/zone3/fairy_sprite.png"
 
-internal const val ZONE_THREE_ROCK_CLUSTER_SPRITE_PATH: String =
-    "sprites/obstacles/zone3/rock_cluster.png"
+internal const val ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH: String =
+    "sprites/obstacles/zone3/flying_forest_monster.png"
 
-internal const val ZONE_THREE_THORN_BUSH_SPRITE_PATH: String =
-    "sprites/obstacles/zone3/thorn_bush.png"
+internal const val ZONE_THREE_GIANT_HORNET_SPRITE_PATH: String =
+    "sprites/obstacles/zone3/giant_hornet.png"
 
-internal const val ZONE_THREE_TREE_BRANCH_SPRITE_PATH: String =
-    "sprites/obstacles/zone3/tree_branch.png"
+internal const val ZONE_THREE_WIND_SPIRIT_SPRITE_PATH: String =
+    "sprites/obstacles/zone3/wind_spirit.png"
 
 internal val ANIMATED_OBSTACLE_CONFIGS =
     mapOf(
@@ -88,6 +88,78 @@ internal val ANIMATED_OBSTACLE_CONFIGS =
                 frameDurationMs = 120,
             ),
         KNIGHT_SWORD_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_TWO_WINGED_IMP_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_THREE_FAIRY_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_THREE_GIANT_HORNET_SPRITE_PATH to
+            AnimatedSpriteConfig(
+                frameWidth = 384,
+                frameHeight = 384,
+                columns = 8,
+                rows = 1,
+                frameDurationMs = 120,
+            ),
+        ZONE_THREE_WIND_SPIRIT_SPRITE_PATH to
             AnimatedSpriteConfig(
                 frameWidth = 384,
                 frameHeight = 384,

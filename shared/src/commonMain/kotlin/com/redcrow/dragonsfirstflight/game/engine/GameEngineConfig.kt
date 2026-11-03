@@ -24,6 +24,8 @@ object GameEngineConfig {
 
     const val OBSTACLE_Y: Double = 328.0
     const val OBSTACLE_SIZE: Double = 72.0
+    const val ZONE_TWO_FLYING_GARGOYLE_SIZE: Double = 96.0
+    const val ZONE_TWO_GHOST_KNIGHT_SIZE: Double = 96.0
     const val FOREST_MAGE_SIZE: Double = 120.0
     const val KNIGHT_SWORD_SIZE: Double = 120.0
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
@@ -229,6 +231,8 @@ object GameEngineConfig {
     private fun maxObstacleSize(): Double =
         maxOf(
             OBSTACLE_SIZE,
+            ZONE_TWO_FLYING_GARGOYLE_SIZE,
+            ZONE_TWO_GHOST_KNIGHT_SIZE,
             FOREST_MAGE_SIZE,
             KNIGHT_SWORD_SIZE,
         )
