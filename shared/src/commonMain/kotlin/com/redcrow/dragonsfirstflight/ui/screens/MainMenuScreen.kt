@@ -30,7 +30,7 @@ private const val MENU_DRAGON_FRAME_WIDTH = 32
 private const val MENU_DRAGON_FRAME_DURATION_MS = 140
 
 private const val MENU_PANEL_WIDTH = 600.0
-private const val MENU_PANEL_HEIGHT = 480.0
+private const val MENU_PANEL_HEIGHT = 560.0
 private const val MENU_PADDING = 24.0
 private const val MENU_BUTTON_GAP = 20.0
 private const val MENU_BUTTON_HEIGHT = 64.0
@@ -41,6 +41,7 @@ internal suspend fun Container.createMainMenuScreen(
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
     onPlay: () -> Unit,
+    onShop: () -> Unit,
     onInventory: () -> Unit,
 ): Container {
     val backgroundBitmap =
@@ -100,7 +101,7 @@ internal suspend fun Container.createMainMenuScreen(
                 color = Colors.WHITE,
             )
         subtitleText.x = (screenWidth - subtitleText.width) / 2.0
-        subtitleText.y = innerY + 78.0
+        subtitleText.y = innerY + 85.0
 
         val dragonScale =
             MENU_DRAGON_DISPLAY_SIZE /
@@ -112,7 +113,7 @@ internal suspend fun Container.createMainMenuScreen(
         val dragon =
             sprite(initialAnimation = dragonAnimation) {
                 x = (screenWidth - MENU_DRAGON_DISPLAY_SIZE) / 2.0
-                y = innerY + 106.0
+                y = innerY + 118.0
                 scaleX = dragonScale
                 scaleY = dragonScale
                 smoothing = false
@@ -136,9 +137,9 @@ internal suspend fun Container.createMainMenuScreen(
         }
 
         createMedievalImageButton(
-            x = (screenWidth - MENU_BUTTON_GAP) / 2.0 - buttonWidth,
-            y = innerY + 214.0,
-            width = buttonWidth,
+            x = innerX + MENU_PADDING,
+            y = innerY + 226.0,
+            width = innerWidth - 2.0 * MENU_PADDING,
             height = MENU_BUTTON_HEIGHT,
             texture = buttonBitmap,
             label = "Play",
@@ -147,8 +148,19 @@ internal suspend fun Container.createMainMenuScreen(
         )
 
         createMedievalImageButton(
+            x = (screenWidth - MENU_BUTTON_GAP) / 2.0 - buttonWidth,
+            y = innerY + 310.0,
+            width = buttonWidth,
+            height = MENU_BUTTON_HEIGHT,
+            texture = buttonBitmap,
+            label = "Shop",
+            textSize = 28.0,
+            onClick = onShop,
+        )
+
+        createMedievalImageButton(
             x = (screenWidth + MENU_BUTTON_GAP) / 2.0,
-            y = innerY + 214.0,
+            y = innerY + 310.0,
             width = buttonWidth,
             height = MENU_BUTTON_HEIGHT,
             texture = buttonBitmap,
