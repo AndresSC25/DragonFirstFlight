@@ -180,6 +180,9 @@ internal class ObstacleGenerator(
         )
     }
 
+    val activeObstacles: List<Obstacle>
+        get() = obstacles
+
     fun snapshot(): List<Obstacle> = obstacles.toList()
 
     fun beginZoneTransition(zone: GameZone) {
