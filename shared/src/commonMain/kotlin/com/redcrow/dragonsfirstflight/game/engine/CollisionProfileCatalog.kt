@@ -32,8 +32,7 @@ internal object CollisionProfileCatalog {
         obstacleMarginsBySpritePath[spritePath]
             ?: error("Missing collision profile for obstacle: $spritePath")
 
-    internal fun configuredObstaclePaths(): Set<String> =
-        obstacleMarginsBySpritePath.keys
+    internal fun configuredObstaclePaths(): Set<String> = obstacleMarginsBySpritePath.keys
 
     private fun margins(
         left: Int,
@@ -50,4 +49,3 @@ internal object CollisionProfileCatalog {
 
     private const val OBSTACLE_FRAME_SIZE: Double = 384.0
 }
-

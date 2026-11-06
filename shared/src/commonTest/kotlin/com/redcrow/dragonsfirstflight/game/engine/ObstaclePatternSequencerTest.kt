@@ -49,4 +49,3 @@ class ObstaclePatternSequencerTest {
         override fun nextBits(bitCount: Int): Int = 0
     }
 }
-

@@ -9,13 +9,14 @@ class ObstacleMovementSelectorTest {
     @Test
     fun zoneOneIntroducesModerateBobMovement() {
         val movements =
-            (0 until 200).map { seed ->
-                ObstacleMovementSelector.select(
-                    zone = GameZone.ZONE_ONE,
-                    isBottomOnly = false,
-                    random = Random(seed),
-                )
-            }.toSet()
+            (0 until 200)
+                .map { seed ->
+                    ObstacleMovementSelector.select(
+                        zone = GameZone.ZONE_ONE,
+                        isBottomOnly = false,
+                        random = Random(seed),
+                    )
+                }.toSet()
 
         assertTrue(ObstacleMovement.STATIC in movements)
         assertTrue(ObstacleMovement.BOB in movements)
@@ -41,13 +42,14 @@ class ObstacleMovementSelectorTest {
     @Test
     fun zoneTwoIntroducesBobMovement() {
         val movements =
-            (0 until 100).map { seed ->
-                ObstacleMovementSelector.select(
-                    zone = GameZone.ZONE_TWO,
-                    isBottomOnly = false,
-                    random = Random(seed),
-                )
-            }.toSet()
+            (0 until 100)
+                .map { seed ->
+                    ObstacleMovementSelector.select(
+                        zone = GameZone.ZONE_TWO,
+                        isBottomOnly = false,
+                        random = Random(seed),
+                    )
+                }.toSet()
 
         assertTrue(ObstacleMovement.STATIC in movements)
         assertTrue(ObstacleMovement.BOB in movements)
@@ -57,13 +59,14 @@ class ObstacleMovementSelectorTest {
     @Test
     fun zoneThreeIntroducesAllMovementTypes() {
         val movements =
-            (0 until 200).map { seed ->
-                ObstacleMovementSelector.select(
-                    zone = GameZone.ZONE_THREE,
-                    isBottomOnly = false,
-                    random = Random(seed),
-                )
-            }.toSet()
+            (0 until 200)
+                .map { seed ->
+                    ObstacleMovementSelector.select(
+                        zone = GameZone.ZONE_THREE,
+                        isBottomOnly = false,
+                        random = Random(seed),
+                    )
+                }.toSet()
 
         assertEquals(ObstacleMovement.entries.toSet(), movements)
     }

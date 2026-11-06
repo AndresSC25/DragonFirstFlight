@@ -30,5 +30,4 @@ internal data class CollisionMargins(
     }
 }
 
-private fun Double.isValidRatio(): Boolean =
-    isFinite() && this >= 0.0 && this < 1.0
+private fun Double.isValidRatio(): Boolean = isFinite() && this >= 0.0 && this < 1.0

@@ -49,7 +49,5 @@ internal object ObstaclePatternPlanner {
         }
     }
 
-    fun allLanes(): List<Double> =
-        listOf(top, middle, lowerMiddle, bottom)
+    fun allLanes(): List<Double> = listOf(top, middle, lowerMiddle, bottom)
 }
-

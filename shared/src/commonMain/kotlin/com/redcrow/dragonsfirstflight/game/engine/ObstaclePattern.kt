@@ -7,4 +7,3 @@ internal enum class ObstaclePattern {
     ZIGZAG,
     DIAMOND,
 }
-

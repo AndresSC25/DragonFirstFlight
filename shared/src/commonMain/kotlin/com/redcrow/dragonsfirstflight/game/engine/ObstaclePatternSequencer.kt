@@ -35,4 +35,3 @@ internal class ObstaclePatternSequencer(
         lastPattern = null
     }
 }
-
