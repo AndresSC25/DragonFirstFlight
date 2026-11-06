@@ -1,10 +1,12 @@
 ﻿package com.redcrow.dragonsfirstflight.game
 
+import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.ui.screens.createGameplayScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createMainMenuScreen
 import korlibs.image.color.Colors
+import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Container
 import korlibs.korge.view.Views
 import korlibs.korge.view.solidRect
@@ -13,6 +15,7 @@ suspend fun Container.createDragonGame(views: Views) {
     val controller =
         GameController(
             gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH,
+            coinWallet = CoinWallet(views.storage),
         )
 
     solidRect(
