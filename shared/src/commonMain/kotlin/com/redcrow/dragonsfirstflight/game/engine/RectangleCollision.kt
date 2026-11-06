@@ -1,4 +1,19 @@
-package com.redcrow.dragonsfirstflight.game.engine
+﻿package com.redcrow.dragonsfirstflight.game.engine
+
+internal fun collisionBoundsOverlap(
+    first: CollisionBounds,
+    second: CollisionBounds,
+): Boolean =
+    rectanglesOverlap(
+        firstX = first.x,
+        firstY = first.y,
+        firstWidth = first.width,
+        firstHeight = first.height,
+        secondX = second.x,
+        secondY = second.y,
+        secondWidth = second.width,
+        secondHeight = second.height,
+    )
 
 internal fun rectanglesOverlap(
     firstX: Double,

@@ -1,4 +1,4 @@
-package com.redcrow.dragonsfirstflight.game.engine
+﻿package com.redcrow.dragonsfirstflight.game.engine
 
 import com.redcrow.dragonsfirstflight.game.score.ScoreTracker
 
@@ -245,24 +245,33 @@ class GameEngine(
     }
 
     private fun detectDamageEvent(): DamageEvent? {
+        val dragonBounds =
+            CollisionBoundsCalculator.calculate(
+                x = GameEngineConfig.DRAGON_X,
+                y = dragonY,
+                width = GameEngineConfig.DRAGON_SIZE,
+                height = GameEngineConfig.DRAGON_SIZE,
+                margins = CollisionProfileCatalog.dragonMargins,
+            )
+
         for (obstacle in obstacleGenerator.snapshot()) {
             if (obstacle.id in collisionRegistered) {
                 continue
             }
 
-            val overlapsObstacle =
-                rectanglesOverlap(
-                    firstX = GameEngineConfig.DRAGON_X,
-                    firstY = dragonY,
-                    firstWidth = GameEngineConfig.DRAGON_SIZE,
-                    firstHeight = GameEngineConfig.DRAGON_SIZE,
-                    secondX = obstacle.x,
-                    secondY = obstacle.y,
-                    secondWidth = obstacle.width,
-                    secondHeight = obstacle.height,
+            val obstacleBounds =
+                CollisionBoundsCalculator.calculate(
+                    x = obstacle.x,
+                    y = obstacle.y,
+                    width = obstacle.width,
+                    height = obstacle.height,
+                    margins =
+                        CollisionProfileCatalog.obstacleMargins(
+                            obstacle.spritePath,
+                        ),
                 )
 
-            if (overlapsObstacle) {
+            if (collisionBoundsOverlap(dragonBounds, obstacleBounds)) {
                 collisionRegistered += obstacle.id
                 pointRegistered += obstacle.id
                 impactObstacleId = obstacle.id
