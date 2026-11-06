@@ -36,6 +36,9 @@ class GameController(
     val isInventoryVisible: Boolean
         get() = screenState == GameScreenState.INVENTORY
 
+    val isShopVisible: Boolean
+        get() = screenState == GameScreenState.SHOP
+
     val isGameVisible: Boolean
         get() = screenState == GameScreenState.PLAYING
 
@@ -48,6 +51,12 @@ class GameController(
     fun openInventory() {
         if (isMenuVisible) {
             screenState = GameScreenState.INVENTORY
+        }
+    }
+
+    fun openShop() {
+        if (isMenuVisible) {
+            screenState = GameScreenState.SHOP
         }
     }
 

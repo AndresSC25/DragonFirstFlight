@@ -3,6 +3,8 @@ package com.redcrow.dragonsfirstflight.game.coins
 import korlibs.korge.service.storage.InmemoryStorage
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class CoinWalletTest {
     @Test
@@ -23,5 +25,28 @@ class CoinWalletTest {
 
         assertEquals(15, wallet.balance)
         assertEquals(15, CoinWallet(storage).balance)
+    }
+
+    @Test
+    fun spendDeductsAndPersists() {
+        val storage = InmemoryStorage()
+        val wallet = CoinWallet(storage)
+        wallet.deposit(15)
+
+        assertTrue(wallet.spend(10))
+        assertEquals(5, wallet.balance)
+        assertEquals(5, CoinWallet(storage).balance)
+    }
+
+    @Test
+    fun overspendLeavesBalanceAndStorageUnchanged() {
+        val storage = InmemoryStorage()
+        val wallet = CoinWallet(storage)
+        wallet.deposit(5)
+        val storedBalance = storage.getOrNull("coins.balance")
+
+        assertFalse(wallet.spend(6))
+        assertEquals(5, wallet.balance)
+        assertEquals(storedBalance, storage.getOrNull("coins.balance"))
     }
 }

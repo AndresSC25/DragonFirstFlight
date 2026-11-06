@@ -6,6 +6,7 @@ import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
 import com.redcrow.dragonsfirstflight.ui.components.MEDIEVAL_PANEL_BORDER
 import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.components.medievalPanel
+import com.redcrow.dragonsfirstflight.ui.components.skinCard
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
 import korlibs.image.color.Colors
@@ -17,9 +18,7 @@ import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.container
 import korlibs.korge.view.solidRect
-import korlibs.korge.view.sprite
 import korlibs.korge.view.text
-import korlibs.time.milliseconds
 
 private const val BACKGROUND_PATH = "backgrounds/zone1/fortress_courtyard.png"
 private const val PANEL_PATH = "ui/panels/panel_medieval.png"
@@ -96,35 +95,13 @@ internal suspend fun Container.createInventoryScreen(
                             index * (cardWidth + CARD_GAP)
                         y = innerY + 85.0
                     }
-                card.solidRect(
-                    width = cardWidth,
-                    height = CARD_HEIGHT,
-                    color = Colors["#101827"],
-                ) {
-                    alpha = 0.6
-                }
-                val animation = skinAnimations.getValue(skin.spritePath)
                 val preview =
-                    card.sprite(initialAnimation = animation) {
-                        x = (cardWidth - 96.0) / 2.0
-                        y = 12.0
-                        scaleX = 3.0
-                        scaleY = 3.0
-                        smoothing = false
-                    }
-                preview.playAnimationLooped(
-                    spriteAnimation = animation,
-                    spriteDisplayTime = 140.milliseconds,
-                )
-
-                val name =
-                    card.text(
-                        text = skin.displayName,
-                        textSize = 24.0,
-                        color = Colors.WHITE,
+                    card.skinCard(
+                        skin = skin,
+                        animation = skinAnimations.getValue(skin.spritePath),
+                        width = cardWidth,
+                        height = CARD_HEIGHT,
                     )
-                name.x = (cardWidth - name.width) / 2.0
-                name.y = 120.0
 
                 val equipped =
                     card.text(
