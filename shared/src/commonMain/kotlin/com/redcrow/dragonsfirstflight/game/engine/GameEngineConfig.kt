@@ -1,4 +1,4 @@
-package com.redcrow.dragonsfirstflight.game.engine
+﻿package com.redcrow.dragonsfirstflight.game.engine
 
 object GameEngineConfig {
     const val INITIAL_LIVES: Int = 3
@@ -7,7 +7,7 @@ object GameEngineConfig {
     const val ZONE_COUNT: Int = 3
     const val TIME_TO_WIN_SECONDS: Double =
         ZONE_DURATION_SECONDS * ZONE_COUNT
-    const val ZONE_TRANSITION_DURATION_SECONDS: Double = 1.5
+    const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 
@@ -29,14 +29,14 @@ object GameEngineConfig {
     const val FOREST_MAGE_SIZE: Double = 120.0
     const val KNIGHT_SWORD_SIZE: Double = 120.0
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
-    const val MIN_OBSTACLE_SEPARATION: Double = 300.0
+    const val MIN_OBSTACLE_SEPARATION: Double = 285.0
     const val ZONE_TWO_MIN_OBSTACLE_SEPARATION: Double = 270.0
     const val ZONE_THREE_MIN_OBSTACLE_SEPARATION: Double = 240.0
     const val OBSTACLE_TOP_Y: Double = 190.0
     const val OBSTACLE_BOTTOM_Y: Double = 580.0
     const val OBSTACLE_LOWER_MIDDLE_Y: Double = 454.0
-    const val OBSTACLE_SPEED: Double = 120.0
-    const val MAX_OBSTACLE_SPEED: Double = 180.0
+    const val OBSTACLE_SPEED: Double = 135.0
+    const val MAX_OBSTACLE_SPEED: Double = 195.0
     const val ZONE_TWO_OBSTACLE_SPEED: Double = MAX_OBSTACLE_SPEED
     const val ZONE_TWO_MAX_OBSTACLE_SPEED: Double = 240.0
     const val ZONE_THREE_OBSTACLE_SPEED: Double =

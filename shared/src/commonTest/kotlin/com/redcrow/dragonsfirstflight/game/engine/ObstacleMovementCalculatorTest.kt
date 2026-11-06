@@ -34,7 +34,7 @@ class ObstacleMovementCalculatorTest {
             }
 
         assertTrue(positions.any { it != obstacle.baseY })
-        assertTrue(positions.all { it in 310.0..346.0 })
+        assertTrue(positions.all { it in 306.0..350.0 })
     }
 
     @Test

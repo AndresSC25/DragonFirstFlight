@@ -7,17 +7,19 @@ import kotlin.test.assertTrue
 
 class ObstacleMovementSelectorTest {
     @Test
-    fun zoneOneUsesOnlyStaticMovement() {
-        repeat(50) { seed ->
-            assertEquals(
-                ObstacleMovement.STATIC,
+    fun zoneOneIntroducesModerateBobMovement() {
+        val movements =
+            (0 until 200).map { seed ->
                 ObstacleMovementSelector.select(
                     zone = GameZone.ZONE_ONE,
                     isBottomOnly = false,
                     random = Random(seed),
-                ),
-            )
-        }
+                )
+            }.toSet()
+
+        assertTrue(ObstacleMovement.STATIC in movements)
+        assertTrue(ObstacleMovement.BOB in movements)
+        assertTrue(ObstacleMovement.WAVE !in movements)
     }
 
     @Test

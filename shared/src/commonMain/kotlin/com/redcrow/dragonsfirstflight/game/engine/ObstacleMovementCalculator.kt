@@ -4,10 +4,10 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 internal object ObstacleMovementCalculator {
-    private const val BOB_AMPLITUDE: Double = 18.0
-    private const val BOB_CYCLES_PER_SECOND: Double = 0.45
-    private const val WAVE_AMPLITUDE: Double = 32.0
-    private const val WAVE_CYCLES_PER_SECOND: Double = 0.65
+    private const val BOB_AMPLITUDE: Double = 22.0
+    private const val BOB_CYCLES_PER_SECOND: Double = 0.52
+    private const val WAVE_AMPLITUDE: Double = 36.0
+    private const val WAVE_CYCLES_PER_SECOND: Double = 0.72
 
     fun yAt(
         obstacle: Obstacle,

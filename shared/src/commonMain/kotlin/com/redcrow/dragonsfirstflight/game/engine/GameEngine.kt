@@ -1,9 +1,11 @@
 ﻿package com.redcrow.dragonsfirstflight.game.engine
 
 import com.redcrow.dragonsfirstflight.game.score.ScoreTracker
+import kotlin.random.Random
 
 class GameEngine(
     gameAreaWidth: Double,
+    random: Random = Random.Default,
     private val onDamageEvent: (DamageEvent) -> Unit = {},
 ) {
     private var dragonY: Double =
@@ -12,7 +14,10 @@ class GameEngine(
     private var verticalVelocity: Double = 0.0
 
     private val obstacleGenerator =
-        ObstacleGenerator(gameAreaWidth)
+        ObstacleGenerator(
+            areaWidth = gameAreaWidth,
+            random = random,
+        )
 
     private var lives: Int =
         GameEngineConfig.INITIAL_LIVES

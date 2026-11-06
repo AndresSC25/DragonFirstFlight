@@ -1,6 +1,7 @@
-package com.redcrow.dragonsfirstflight.game.engine
+﻿package com.redcrow.dragonsfirstflight.game.engine
 
 import com.redcrow.dragonsfirstflight.game.controller.GameController
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -8,11 +9,14 @@ import kotlin.test.assertTrue
 
 class GameEngineDamageTest {
     @Test
-    fun overlappingObstacleEmitsDamageOnceUntilNextObstacle() {
+    fun overlappingObstacleEmitsDamageOnlyOnceAndRestartClearsRegistration() {
         val eventObstacleXs = mutableListOf<Double>()
         lateinit var engine: GameEngine
         engine =
-            GameEngine(gameAreaWidth = 240.0) {
+            GameEngine(
+                gameAreaWidth = 240.0,
+                random = Random(7),
+            ) {
                 eventObstacleXs += engine.snapshot().obstacleX
             }
 
@@ -53,20 +57,24 @@ class GameEngineDamageTest {
         }
         assertTrue(respawnObserved)
         assertTrue(engine.snapshot().points > 0)
-        var framesToSecondImpact = 0
-        while (eventObstacleXs.size == 1 && framesToSecondImpact < 100) {
+        engine.restart()
+
+        assertEquals(3, engine.snapshot().lives)
+        assertFalse(engine.snapshot().isImpactFeedbackActive)
+        assertEquals(1, eventObstacleXs.size)
+
+        engine.update(elapsedSeconds = 0.05)
+
+        assertEquals(2, eventObstacleXs.size)
+        assertEquals(2, engine.snapshot().lives)
+        assertTrue(engine.snapshot().isImpactFeedbackActive)
+
+        repeat(4) {
             engine.update(elapsedSeconds = 0.05)
-            framesToSecondImpact += 1
         }
 
         assertEquals(2, eventObstacleXs.size)
-        assertTrue(eventObstacleXs.last() > 0.0)
-        assertEquals(1, engine.snapshot().lives)
-        assertTrue(engine.snapshot().isImpactFeedbackActive)
-
-        engine.restart()
-        assertEquals(3, engine.snapshot().lives)
-        assertFalse(engine.snapshot().isImpactFeedbackActive)
+        assertEquals(2, engine.snapshot().lives)
     }
 
     @Test
