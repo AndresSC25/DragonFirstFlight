@@ -1,7 +1,6 @@
 ﻿package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
-import com.redcrow.dragonsfirstflight.game.skins.DragonSkin
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
 import com.redcrow.dragonsfirstflight.ui.components.MEDIEVAL_PANEL_BORDER
 import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
@@ -40,7 +39,7 @@ private const val MENU_DRAGON_DISPLAY_SIZE = 96.0
 internal suspend fun Container.createMainMenuScreen(
     views: Views,
     skinInventory: SkinInventory,
-    skinAnimations: Map<DragonSkin, SpriteAnimation>,
+    skinAnimations: Map<String, SpriteAnimation>,
     onPlay: () -> Unit,
     onInventory: () -> Unit,
 ): Container {
@@ -108,7 +107,7 @@ internal suspend fun Container.createMainMenuScreen(
                 MENU_DRAGON_FRAME_WIDTH.toDouble()
 
         var displayedSkin = skinInventory.equipped
-        val dragonAnimation = skinAnimations.getValue(displayedSkin)
+        val dragonAnimation = skinAnimations.getValue(displayedSkin.spritePath)
 
         val dragon =
             sprite(initialAnimation = dragonAnimation) {
@@ -129,7 +128,7 @@ internal suspend fun Container.createMainMenuScreen(
             if (skinInventory.equipped != displayedSkin) {
                 displayedSkin = skinInventory.equipped
                 dragon.playAnimationLooped(
-                    spriteAnimation = skinAnimations.getValue(displayedSkin),
+                    spriteAnimation = skinAnimations.getValue(displayedSkin.spritePath),
                     spriteDisplayTime = MENU_DRAGON_FRAME_DURATION_MS.milliseconds,
                     startFrame = 0,
                 )

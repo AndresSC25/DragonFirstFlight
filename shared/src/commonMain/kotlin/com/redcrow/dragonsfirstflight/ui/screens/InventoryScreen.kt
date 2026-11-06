@@ -33,7 +33,7 @@ private const val CARD_GAP = 14.0
 internal suspend fun Container.createInventoryScreen(
     views: Views,
     skinInventory: SkinInventory,
-    skinAnimations: Map<DragonSkin, SpriteAnimation>,
+    skinAnimations: Map<String, SpriteAnimation>,
     onBack: () -> Unit,
 ): Container {
     val backgroundBitmap = resourcesVfs[BACKGROUND_PATH].readBitmap()
@@ -103,7 +103,7 @@ internal suspend fun Container.createInventoryScreen(
                 ) {
                     alpha = 0.6
                 }
-                val animation = skinAnimations.getValue(skin)
+                val animation = skinAnimations.getValue(skin.spritePath)
                 val preview =
                     card.sprite(initialAnimation = animation) {
                         x = (cardWidth - 96.0) / 2.0

@@ -4,6 +4,7 @@ import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.skins.DragonSkin
+import com.redcrow.dragonsfirstflight.game.skins.NyanSkin
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
 import com.redcrow.dragonsfirstflight.ui.gameplay.createDragonFlightAnimation
 import com.redcrow.dragonsfirstflight.ui.screens.createGameplayScreen
@@ -25,14 +26,12 @@ suspend fun Container.createDragonGame(views: Views) {
         )
 
     val skinInventory = SkinInventory(views.storage)
-    val spriteMaps =
-        DragonSkin.entries.map { it.spritePath }.distinct().associateWith { path ->
-            resourcesVfs[path].readBitmap()
-        }
     val skinAnimations =
-        DragonSkin.entries.associateWith { skin ->
-            createDragonFlightAnimation(spriteMaps.getValue(skin.spritePath))
-        }
+        (DragonSkin.entries.map { it.spritePath } + NyanSkin.entries.map { it.spritePath })
+            .distinct()
+            .associateWith { path ->
+                createDragonFlightAnimation(resourcesVfs[path].readBitmap())
+            }
 
     solidRect(
         width = DragonGameConfig.VIRTUAL_SIZE.width,

@@ -6,8 +6,8 @@ import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.GameZone
-import com.redcrow.dragonsfirstflight.game.skins.DragonSkin
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
+import com.redcrow.dragonsfirstflight.game.skins.rollFlightSpritePath
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
@@ -45,6 +45,7 @@ import korlibs.korge.view.addUpdater
 import korlibs.korge.view.clipContainer
 import korlibs.korge.view.container
 import korlibs.math.geom.Size
+import kotlin.random.Random
 import kotlin.time.DurationUnit
 
 private const val SESSION_PANEL_PATH: String =
@@ -97,7 +98,7 @@ internal suspend fun Container.createGameplayScreen(
     views: Views,
     controller: GameController,
     skinInventory: SkinInventory,
-    skinAnimations: Map<DragonSkin, SpriteAnimation>,
+    skinAnimations: Map<String, SpriteAnimation>,
     onBackToMenu: () -> Unit,
 ): Container {
     val backgroundLayers =
@@ -171,7 +172,7 @@ internal suspend fun Container.createGameplayScreen(
                 views = views,
             )
 
-        var appliedSkin = skinInventory.equipped
+        var appliedRunNumber = controller.runNumber
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
 
@@ -188,7 +189,7 @@ internal suspend fun Container.createGameplayScreen(
             dragonView =
                 DragonView.create(
                     container = this,
-                    animation = skinAnimations.getValue(appliedSkin),
+                    animation = skinAnimations.getValue(skinInventory.equipped.spritePath),
                 )
 
             hitSparkView =
@@ -270,9 +271,10 @@ internal suspend fun Container.createGameplayScreen(
         }
 
         addUpdater { delta ->
-            if (skinInventory.equipped != appliedSkin) {
-                appliedSkin = skinInventory.equipped
-                dragonView.setAnimation(skinAnimations.getValue(appliedSkin))
+            if (controller.runNumber != appliedRunNumber) {
+                appliedRunNumber = controller.runNumber
+                val path = rollFlightSpritePath(skinInventory.equipped, Random.Default)
+                dragonView.setAnimation(skinAnimations.getValue(path))
             }
 
             val viewportLeft =

@@ -20,6 +20,9 @@ class GameController(
 
     private var bankedRunCoins = 0
 
+    var runNumber: Int = 0
+        private set
+
     var screenState: GameScreenState =
         GameScreenState.MENU
         private set
@@ -128,6 +131,7 @@ class GameController(
     private fun restartRun() {
         bankRunCoins()
         engine.restart()
+        runNumber++
         bankedRunCoins = 0
     }
 }
