@@ -6,6 +6,8 @@ import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.GameZone
+import com.redcrow.dragonsfirstflight.game.skins.DragonSkin
+import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
@@ -37,15 +39,13 @@ import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
+import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.clipContainer
 import korlibs.korge.view.container
 import korlibs.math.geom.Size
 import kotlin.time.DurationUnit
-
-private const val DRAGON_SPRITESHEET_PATH: String =
-    "sprites/dragon/YoungBrassDragon.png"
 
 private const val SESSION_PANEL_PATH: String =
     "ui/panels/panel_medieval.png"
@@ -96,13 +96,12 @@ private val OBSTACLE_PATHS =
 internal suspend fun Container.createGameplayScreen(
     views: Views,
     controller: GameController,
+    skinInventory: SkinInventory,
+    skinAnimations: Map<DragonSkin, SpriteAnimation>,
     onBackToMenu: () -> Unit,
 ): Container {
     val backgroundLayers =
         ZoneBackground.values().associateWith { it.loadLayers() }
-
-    val dragonSpriteMap =
-        resourcesVfs[DRAGON_SPRITESHEET_PATH].readBitmap()
 
     val sessionPanelBitmap =
         resourcesVfs[SESSION_PANEL_PATH].readBitmap()
@@ -172,6 +171,7 @@ internal suspend fun Container.createGameplayScreen(
                 views = views,
             )
 
+        var appliedSkin = skinInventory.equipped
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
 
@@ -188,7 +188,7 @@ internal suspend fun Container.createGameplayScreen(
             dragonView =
                 DragonView.create(
                     container = this,
-                    spriteMap = dragonSpriteMap,
+                    animation = skinAnimations.getValue(appliedSkin),
                 )
 
             hitSparkView =
@@ -270,6 +270,11 @@ internal suspend fun Container.createGameplayScreen(
         }
 
         addUpdater { delta ->
+            if (skinInventory.equipped != appliedSkin) {
+                appliedSkin = skinInventory.equipped
+                dragonView.setAnimation(skinAnimations.getValue(appliedSkin))
+            }
+
             val viewportLeft =
                 views.actualVirtualLeft.toDouble()
 
