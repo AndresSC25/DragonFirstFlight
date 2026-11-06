@@ -1,6 +1,5 @@
-package com.redcrow.dragonsfirstflight.game.engine
+﻿package com.redcrow.dragonsfirstflight.game.engine
 
-import kotlin.math.abs
 import kotlin.random.Random
 
 internal class ObstacleGenerator(
@@ -65,6 +64,9 @@ internal class ObstacleGenerator(
     private val laneUsage =
         mutableMapOf<Double, Int>()
 
+    private val patternSequencer =
+        ObstaclePatternSequencer(random)
+
     init {
         reset()
     }
@@ -112,12 +114,21 @@ internal class ObstacleGenerator(
         for (index in obstacles.indices) {
             val obstacle = obstacles[index]
 
-            obstacles[index] =
+            val movedObstacle =
                 obstacle.copy(
                     x =
                         obstacle.x -
                             obstacleSpeed *
                             delta,
+                )
+
+            obstacles[index] =
+                movedObstacle.copy(
+                    y =
+                        ObstacleMovementCalculator.yAt(
+                            obstacle = movedObstacle,
+                            activeTimeSeconds = activeTimeSeconds,
+                        ),
                 )
         }
 
@@ -162,6 +173,7 @@ internal class ObstacleGenerator(
         lastLane = null
         consecutiveLaneCount = 0
         laneUsage.clear()
+        patternSequencer.reset()
         spawnObstacle(
             x = rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
             activeTimeSeconds = 0.0,
@@ -177,6 +189,7 @@ internal class ObstacleGenerator(
         lastLane = null
         consecutiveLaneCount = 0
         laneUsage.clear()
+        patternSequencer.reset()
     }
 
     private fun spawnObstacle(
@@ -203,60 +216,39 @@ internal class ObstacleGenerator(
             }
         }
 
-        val occupiedLanes =
-            obstacles
-                .filter { obstacle ->
-                    abs(obstacle.x - x) <=
-                        GameEngineConfig.obstacleSeparationAt(
-                            activeTimeSeconds,
-                        )
-                }.map { obstacle ->
-                    obstacle.y
-                }.toSet()
-
-        val availableLanes =
+        val singleLaneCandidates =
             obstacleLanes.filter { lane ->
-                lane !in occupiedLanes
+                lane != lastLane || consecutiveLaneCount < 2
             }
 
-        val lanesWithoutConsecutiveRepeat =
-            availableLanes.filter { lane ->
-                lane != lastLane ||
-                    consecutiveLaneCount < 2
+        val leastUsedCount =
+            singleLaneCandidates.minOf { candidate ->
+                laneUsage[candidate] ?: 0
             }
+
+        val balancedSingleLane =
+            singleLaneCandidates
+                .filter { candidate ->
+                    (laneUsage[candidate] ?: 0) == leastUsedCount
+                }.random(random)
 
         val spritePath = spritePaths.first()
         val lane =
-            if (spritePath in bottomOnlyObstaclePaths) {
-                GameEngineConfig.OBSTACLE_BOTTOM_Y
-            } else if (obstacles.isEmpty()) {
-                GameEngineConfig.OBSTACLE_Y
-            } else {
-                val candidates =
-                    when {
-                        lanesWithoutConsecutiveRepeat.isNotEmpty() -> {
-                            lanesWithoutConsecutiveRepeat
-                        }
+            when {
+                spritePath in bottomOnlyObstaclePaths -> {
+                    GameEngineConfig.OBSTACLE_BOTTOM_Y
+                }
 
-                        availableLanes.isNotEmpty() -> {
-                            availableLanes
-                        }
+                obstacles.isEmpty() -> {
+                    GameEngineConfig.OBSTACLE_Y
+                }
 
-                        else -> {
-                            obstacleLanes
-                        }
-                    }
-
-                val leastUsedCount =
-                    candidates.minOf { candidate ->
-                        laneUsage[candidate] ?: 0
-                    }
-
-                candidates
-                    .filter { candidate ->
-                        (laneUsage[candidate] ?: 0) ==
-                            leastUsedCount
-                    }.random(random)
+                else -> {
+                    patternSequencer.nextLane(
+                        zone = currentZone,
+                        singleLane = balancedSingleLane,
+                    )
+                }
             }
 
         if (lane == lastLane) {
@@ -291,6 +283,14 @@ internal class ObstacleGenerator(
                     GameEngineConfig.OBSTACLE_SIZE
                 }
             }
+        val isBottomOnly = spritePath in bottomOnlyObstaclePaths
+        val movement =
+            ObstacleMovementSelector.select(
+                zone = currentZone,
+                isBottomOnly = isBottomOnly,
+                random = random,
+            )
+
         obstacles +=
             Obstacle(
                 id = nextId++,
@@ -298,6 +298,9 @@ internal class ObstacleGenerator(
                 y = lane,
                 size = obstacleSize,
                 spritePath = spritePaths.removeAt(0),
+                baseY = lane,
+                movement = movement,
+                movementPhase = random.nextDouble() * 2.0 * kotlin.math.PI,
             )
     }
 
