@@ -1,4 +1,4 @@
-package com.redcrow.dragonsfirstflight.ui.screens
+﻿package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
@@ -148,6 +148,9 @@ internal suspend fun Container.createGameplayScreen(
         scrollingBackgrounds.values.forEach { it.visible = false }
         scrollingBackgrounds.getValue(ZoneBackground.FORTRESS_COURTYARD).visible = true
 
+        var displayedBackground =
+            ZoneBackground.FORTRESS_COURTYARD
+
         val obstacleLayer =
             container()
 
@@ -235,6 +238,7 @@ internal suspend fun Container.createGameplayScreen(
             ZoneTransitionOverlay.create(
                 container = this,
                 views = views,
+                panelBitmap = sessionPanelBitmap,
             )
 
         fun updateView(
@@ -286,18 +290,28 @@ internal suspend fun Container.createGameplayScreen(
             val snapshot =
                 controller.snapshot()
 
-            val activeBackground =
+            val targetBackground =
                 when (snapshot.zone) {
                     GameZone.ZONE_ONE -> ZoneBackground.FORTRESS_COURTYARD
                     GameZone.ZONE_TWO -> ZoneBackground.TOWERS_AND_WALLS
                     GameZone.ZONE_THREE -> ZoneBackground.OUTER_FOREST
                 }
+
+            if (
+                !snapshot.isZoneTransitioning ||
+                snapshot.zoneTransitionProgress >=
+                ZoneTransitionOverlay.TRANSITION_MIDPOINT
+            ) {
+                displayedBackground = targetBackground
+            }
+
             scrollingBackgrounds.forEach { (zone, background) ->
-                background.visible = zone == activeBackground
+                background.visible = zone == displayedBackground
                 background.update(
                     if (
-                        zone == activeBackground &&
+                        zone == displayedBackground &&
                         snapshot.status == GameStatus.RUNNING &&
+                        !snapshot.isZoneTransitioning &&
                         !controller.isPaused
                     ) {
                         elapsedSeconds
