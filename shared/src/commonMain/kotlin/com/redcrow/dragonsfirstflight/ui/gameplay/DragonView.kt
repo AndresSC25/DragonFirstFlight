@@ -16,11 +16,51 @@ private const val DRAGON_FRAME_COLUMNS: Int = 6
 private const val DRAGON_FRAME_ROWS: Int = 1
 private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
+internal fun createDragonFlightAnimation(spriteMap: Bitmap): SpriteAnimation {
+    require(
+        spriteMap.width ==
+            DRAGON_FRAME_WIDTH *
+            DRAGON_FRAME_COLUMNS,
+    ) {
+        "Invalid dragon spritesheet width."
+    }
+
+    require(
+        spriteMap.height == DRAGON_FRAME_HEIGHT,
+    ) {
+        "Invalid dragon spritesheet height."
+    }
+
+    return SpriteAnimation(
+        spriteMap = spriteMap,
+        spriteWidth = DRAGON_FRAME_WIDTH,
+        spriteHeight = DRAGON_FRAME_HEIGHT,
+        marginTop = 0,
+        marginLeft = 0,
+        columns = DRAGON_FRAME_COLUMNS,
+        rows = DRAGON_FRAME_ROWS,
+        offsetBetweenColumns = 0,
+        offsetBetweenRows = 0,
+    )
+}
+
 internal class DragonView private constructor(
     private val sprite: Sprite,
-    private val flightAnimation: SpriteAnimation,
+    private var flightAnimation: SpriteAnimation,
 ) {
     private var isAnimationStopped: Boolean = false
+
+    fun setAnimation(animation: SpriteAnimation) {
+        flightAnimation = animation
+        sprite.playAnimationLooped(
+            spriteAnimation = animation,
+            spriteDisplayTime = DRAGON_FRAME_DURATION_MS.milliseconds,
+            startFrame = 0,
+        )
+        if (isAnimationStopped) {
+            sprite.stopAnimation()
+        }
+    }
 
     fun update(
         snapshot: GameSnapshot,
@@ -59,38 +99,11 @@ internal class DragonView private constructor(
     companion object {
         fun create(
             container: Container,
-            spriteMap: Bitmap,
+            animation: SpriteAnimation,
         ): DragonView {
-            require(
-                spriteMap.width ==
-                    DRAGON_FRAME_WIDTH *
-                    DRAGON_FRAME_COLUMNS,
-            ) {
-                "Invalid dragon spritesheet width."
-            }
-
-            require(
-                spriteMap.height == DRAGON_FRAME_HEIGHT,
-            ) {
-                "Invalid dragon spritesheet height."
-            }
-
-            val flightAnimation =
-                SpriteAnimation(
-                    spriteMap = spriteMap,
-                    spriteWidth = DRAGON_FRAME_WIDTH,
-                    spriteHeight = DRAGON_FRAME_HEIGHT,
-                    marginTop = 0,
-                    marginLeft = 0,
-                    columns = DRAGON_FRAME_COLUMNS,
-                    rows = DRAGON_FRAME_ROWS,
-                    offsetBetweenColumns = 0,
-                    offsetBetweenRows = 0,
-                )
-
             val sprite =
                 container.sprite(
-                    initialAnimation = flightAnimation,
+                    initialAnimation = animation,
                 )
 
             val dragonScale =
@@ -102,14 +115,14 @@ internal class DragonView private constructor(
             sprite.smoothing = false
 
             sprite.playAnimationLooped(
-                spriteAnimation = flightAnimation,
+                spriteAnimation = animation,
                 spriteDisplayTime =
                     DRAGON_FRAME_DURATION_MS.milliseconds,
             )
 
             return DragonView(
                 sprite = sprite,
-                flightAnimation = flightAnimation,
+                flightAnimation = animation,
             )
         }
     }
