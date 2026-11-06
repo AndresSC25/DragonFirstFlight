@@ -114,12 +114,21 @@ internal class ObstacleGenerator(
         for (index in obstacles.indices) {
             val obstacle = obstacles[index]
 
-            obstacles[index] =
+            val movedObstacle =
                 obstacle.copy(
                     x =
                         obstacle.x -
                             obstacleSpeed *
                             delta,
+                )
+
+            obstacles[index] =
+                movedObstacle.copy(
+                    y =
+                        ObstacleMovementCalculator.yAt(
+                            obstacle = movedObstacle,
+                            activeTimeSeconds = activeTimeSeconds,
+                        ),
                 )
         }
 
@@ -274,6 +283,14 @@ internal class ObstacleGenerator(
                     GameEngineConfig.OBSTACLE_SIZE
                 }
             }
+        val isBottomOnly = spritePath in bottomOnlyObstaclePaths
+        val movement =
+            ObstacleMovementSelector.select(
+                zone = currentZone,
+                isBottomOnly = isBottomOnly,
+                random = random,
+            )
+
         obstacles +=
             Obstacle(
                 id = nextId++,
@@ -281,6 +298,9 @@ internal class ObstacleGenerator(
                 y = lane,
                 size = obstacleSize,
                 spritePath = spritePaths.removeAt(0),
+                baseY = lane,
+                movement = movement,
+                movementPhase = random.nextDouble() * 2.0 * kotlin.math.PI,
             )
     }
 
