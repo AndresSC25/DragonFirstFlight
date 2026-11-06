@@ -9,6 +9,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
+import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
@@ -67,6 +68,12 @@ private const val LIFE_EMPTY_PATH: String =
 private const val HIT_SPARK_PATH: String =
     "effects/impact/hit_spark.png"
 
+private const val COIN_ATLAS_PATH: String =
+    "sprites/coins/coin_spin.png"
+
+private const val COIN_ICON_PATH: String =
+    "sprites/coins/coin_icon.png"
+
 private val OBSTACLE_PATHS =
     listOf(
         FLYING_BAT_SPRITE_PATH,
@@ -118,6 +125,12 @@ internal suspend fun Container.createGameplayScreen(
     val hitSparkBitmap =
         resourcesVfs[HIT_SPARK_PATH].readBitmap()
 
+    val coinAtlasBitmap =
+        resourcesVfs[COIN_ATLAS_PATH].readBitmap()
+
+    val coinIconBitmap =
+        resourcesVfs[COIN_ICON_PATH].readBitmap()
+
     val obstacleBitmaps =
         OBSTACLE_PATHS.associateWith { path ->
             resourcesVfs[path].readBitmap()
@@ -144,6 +157,16 @@ internal suspend fun Container.createGameplayScreen(
                 obstacleBitmaps = obstacleBitmaps,
                 views = views,
                 animatedObstacleConfigs = ANIMATED_OBSTACLE_CONFIGS,
+            )
+
+        val coinLayer =
+            container()
+
+        val coinView =
+            CoinView.create(
+                container = coinLayer,
+                atlas = coinAtlasBitmap,
+                views = views,
             )
 
         lateinit var dragonView: DragonView
@@ -192,6 +215,7 @@ internal suspend fun Container.createGameplayScreen(
                 lifeFullBitmap = lifeFullBitmap,
                 lifeEmptyBitmap = lifeEmptyBitmap,
                 scorePlateBitmap = scorePlateBitmap,
+                coinIcon = coinIconBitmap,
                 pauseButtonBitmap = pauseButtonBitmap,
                 onPause = controller::pauseGame,
             )
@@ -213,10 +237,19 @@ internal suspend fun Container.createGameplayScreen(
                 views = views,
             )
 
-        fun updateView(snapshot: GameSnapshot) {
+        fun updateView(
+            snapshot: GameSnapshot,
+            elapsedSeconds: Double,
+        ) {
             obstacleView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
+            )
+
+            coinView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+                elapsedSeconds = elapsedSeconds,
             )
 
             gameplayHud.update(
@@ -227,6 +260,7 @@ internal suspend fun Container.createGameplayScreen(
             sessionOverlay.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
+                coinBalance = controller.coinBalance,
             )
             zoneTransitionOverlay.update(snapshot)
         }
@@ -283,7 +317,7 @@ internal suspend fun Container.createGameplayScreen(
                 isPaused = controller.isPaused,
             )
 
-            updateView(snapshot)
+            updateView(snapshot, elapsedSeconds)
         }
 
         val initialViewportLeft =
@@ -313,6 +347,6 @@ internal suspend fun Container.createGameplayScreen(
             isPaused = controller.isPaused,
         )
 
-        updateView(initialSnapshot)
+        updateView(initialSnapshot, 0.0)
     }
 }

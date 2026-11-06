@@ -23,12 +23,17 @@ internal class SessionOverlay private constructor(
     private val root: Container,
     private val title: Text,
     private val subtitle: Text,
+    private val coinsLine: Text,
     private val resumeButton: Container,
     private val restartButton: Container,
 ) {
+    private var displayedRunCoins: Int? = null
+    private var displayedCoinBalance: Int? = null
+
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,
+        coinBalance: Int,
     ) {
         val hasFinished =
             snapshot.status != GameStatus.RUNNING
@@ -83,6 +88,14 @@ internal class SessionOverlay private constructor(
                 ) / 2.0
         }
 
+        coinsLine.visible = hasFinished && !isPaused
+        if (coinsLine.visible && (displayedRunCoins != snapshot.runCoins || displayedCoinBalance != coinBalance)) {
+            displayedRunCoins = snapshot.runCoins
+            displayedCoinBalance = coinBalance
+            coinsLine.text = "Coins: +${snapshot.runCoins}   Total: $coinBalance"
+            coinsLine.x = (DragonGameConfig.VIRTUAL_SIZE.width - coinsLine.width) / 2.0
+        }
+
         resumeButton.visible =
             !hasFinished
 
@@ -118,6 +131,7 @@ internal class SessionOverlay private constructor(
 
             lateinit var title: Text
             lateinit var subtitle: Text
+            lateinit var coinsLine: Text
             lateinit var resumeButton: Container
             lateinit var restartButton: Container
 
@@ -208,6 +222,16 @@ internal class SessionOverlay private constructor(
 
                     subtitle.y = 295.0
 
+                    coinsLine =
+                        text(
+                            text = "",
+                            textSize = 17.0,
+                            color = Colors["#F8D66D"],
+                        )
+
+                    coinsLine.y = 319.0
+                    coinsLine.visible = false
+
                     resumeButton =
                         container {
                             createMedievalImageButton(
@@ -251,6 +275,7 @@ internal class SessionOverlay private constructor(
                 root = root,
                 title = title,
                 subtitle = subtitle,
+                coinsLine = coinsLine,
                 resumeButton = resumeButton,
                 restartButton = restartButton,
             )
