@@ -1,4 +1,4 @@
-package com.redcrow.dragonsfirstflight.ui.gameplay
+﻿package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
@@ -12,32 +12,34 @@ internal class ZoneTransitionOverlay private constructor(
 ) {
     fun update(snapshot: GameSnapshot) {
         if (!snapshot.isZoneTransitioning) {
+            shade.alpha = 0.0
             shade.visible = false
             return
         }
 
-        val progress = snapshot.zoneTransitionProgress
-        val flashIndex = (progress / FLASH_PERIOD).toInt()
-        shade.color =
-            if (flashIndex % 2 == 0) {
-                Colors.WHITE
-            } else {
-                Colors.BLACK
-            }
-        shade.alpha =
-            when {
-                progress < FADE_OUT_START -> 1.0
-                else ->
-                    (
-                        1.0 - progress
-                    ) / (1.0 - FADE_OUT_START)
-            }.coerceIn(0.0, 1.0)
+        val progress = snapshot.zoneTransitionProgress.coerceIn(0.0, 1.0)
+        shade.color = Colors.BLACK
+        shade.alpha = transitionAlpha(progress)
         shade.visible = shade.alpha > 0.0
     }
 
+    private fun transitionAlpha(progress: Double): Double =
+        when {
+            progress < FADE_IN_END ->
+                MAX_SHADE_ALPHA * (progress / FADE_IN_END)
+
+            progress <= FADE_OUT_START ->
+                MAX_SHADE_ALPHA
+
+            else ->
+                MAX_SHADE_ALPHA *
+                    ((1.0 - progress) / (1.0 - FADE_OUT_START))
+        }.coerceIn(0.0, MAX_SHADE_ALPHA)
+
     companion object {
-        private const val FLASH_PERIOD: Double = 0.12
-        private const val FADE_OUT_START: Double = 0.72
+        private const val FADE_IN_END: Double = 0.30
+        private const val FADE_OUT_START: Double = 0.65
+        private const val MAX_SHADE_ALPHA: Double = 0.68
 
         fun create(
             container: Container,
@@ -47,7 +49,7 @@ internal class ZoneTransitionOverlay private constructor(
                 shade =
                     container.createResponsiveShade(
                         views = views,
-                        color = Colors.WHITE,
+                        color = Colors.BLACK,
                         shadeAlpha = 0.0,
                     ),
             )
