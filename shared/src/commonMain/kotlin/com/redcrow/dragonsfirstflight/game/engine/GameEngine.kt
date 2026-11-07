@@ -34,6 +34,13 @@ class GameEngine(
     private var invulnerabilityRemainingSeconds: Double = 0.0
     private var zoneTransitionRemainingSeconds: Double = 0.0
 
+    var runCoins: Int = 0
+        private set
+
+    private val coinField = CoinField(random)
+    private var leftBoundary: Double = 0.0
+    private var rightBoundary: Double = gameAreaWidth
+
     val status: GameStatus
         get() =
             when {
@@ -58,6 +65,8 @@ class GameEngine(
         leftBoundary: Double,
         rightBoundary: Double,
     ) {
+        this.leftBoundary = leftBoundary
+        this.rightBoundary = rightBoundary
         obstacleGenerator.resize(
             newLeftBoundary = leftBoundary,
             newRightBoundary = rightBoundary,
@@ -109,6 +118,9 @@ class GameEngine(
 
         updateDragon(delta)
         evaluateCollisionAndScore()
+        if (isRunning) {
+            runCoins += coinField.collect(dragonY)
+        }
         scoreTracker.update(elapsedSeconds)
         val currentZone =
             GameEngineConfig.zoneAt(
@@ -129,11 +141,25 @@ class GameEngine(
             zoneTransitionRemainingSeconds =
                 GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
             obstacleGenerator.beginZoneTransition(currentZone)
+            coinField.clear()
             return
         }
+        val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
         obstacleGenerator.update(
             delta = delta,
-            activeTimeSeconds = scoreTracker.score.activeTimeSeconds,
+            activeTimeSeconds = activeTimeSeconds,
+        )
+        coinField.advance(
+            elapsedSeconds = delta,
+            distance = GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * delta,
+            leftBoundary = leftBoundary,
+        )
+        val zone = GameEngineConfig.zoneAt(activeTimeSeconds)
+        coinField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            rowIntervalSeconds = GameEngineConfig.coinRowIntervalAt(zone),
+            fiveHundredChance = GameEngineConfig.coinFiveHundredChanceAt(zone),
         )
     }
 
@@ -148,6 +174,8 @@ class GameEngine(
         zoneTransitionRemainingSeconds = 0.0
 
         obstacleGenerator.reset()
+        coinField.reset()
+        runCoins = 0
         collisionRegistered.clear()
         pointRegistered.clear()
     }
@@ -190,6 +218,9 @@ class GameEngine(
                         GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
                 ).coerceIn(0.0, 1.0),
             status = status,
+            coins = coinField.coins.toList(),
+            coinScrollX = coinField.scrollX,
+            runCoins = runCoins,
         )
     }
 

@@ -12,6 +12,27 @@ import kotlin.math.min
 
 private const val HORIZONTAL_FADE_DISTANCE: Double = 96.0
 
+internal fun horizontalEdgeAlpha(
+    views: Views,
+    x: Double,
+    width: Double,
+): Double {
+    val leftBoundary = views.actualVirtualLeft.toDouble()
+    val rightBoundary = leftBoundary + views.actualVirtualWidth.toDouble()
+    val right = x + width
+    val leftAlpha =
+        (
+            (right - leftBoundary) /
+                HORIZONTAL_FADE_DISTANCE
+        ).coerceIn(0.0, 1.0)
+    val rightAlpha =
+        (
+            (rightBoundary - x) /
+                HORIZONTAL_FADE_DISTANCE
+        ).coerceIn(0.0, 1.0)
+    return min(leftAlpha, rightAlpha)
+}
+
 private data class RenderedObstacle(
     val view: View,
     val displayWidth: Int,
@@ -98,22 +119,8 @@ internal class ObstacleView private constructor(
         rendered.view.scaleY = obstacle.height / rendered.displayHeight.toDouble()
     }
 
-    private fun calculateHorizontalAlpha(obstacle: Obstacle): Double {
-        val leftBoundary = views.actualVirtualLeft.toDouble()
-        val rightBoundary = leftBoundary + views.actualVirtualWidth.toDouble()
-        val obstacleRight = obstacle.x + obstacle.width
-        val leftAlpha =
-            (
-                (obstacleRight - leftBoundary) /
-                    HORIZONTAL_FADE_DISTANCE
-            ).coerceIn(0.0, 1.0)
-        val rightAlpha =
-            (
-                (rightBoundary - obstacle.x) /
-                    HORIZONTAL_FADE_DISTANCE
-            ).coerceIn(0.0, 1.0)
-        return min(leftAlpha, rightAlpha)
-    }
+    private fun calculateHorizontalAlpha(obstacle: Obstacle): Double =
+        horizontalEdgeAlpha(views, obstacle.x, obstacle.width)
 
     companion object {
         fun create(
