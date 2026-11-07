@@ -31,6 +31,25 @@ class ProjectileMovementCalculatorTest {
     }
 
     @Test
+    fun gravityMakesStoneRiseReachApexAndFallWithoutFloating() {
+        val projectile =
+            Projectile(
+                id = 0,
+                x = 900.0,
+                y = 400.0,
+                size = 64.0,
+                velocityX = -400.0,
+                velocityY = -300.0,
+                gravity = 300.0,
+            )
+        assertEquals(400.0, ProjectileMovementCalculator.yAt(projectile, 0.0))
+        assertEquals(287.5, ProjectileMovementCalculator.yAt(projectile, 0.5))
+        assertEquals(250.0, ProjectileMovementCalculator.yAt(projectile, 1.0))
+        assertEquals(287.5, ProjectileMovementCalculator.yAt(projectile, 1.5))
+        assertEquals(400.0, ProjectileMovementCalculator.yAt(projectile, 2.0))
+    }
+
+    @Test
     fun sharedFloatingKeepsFormationSpacingConstant() {
         val top = rock(228.0)
         val bottom = rock(508.0)

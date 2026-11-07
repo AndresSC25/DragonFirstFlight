@@ -9,6 +9,41 @@ import kotlin.test.assertTrue
 
 class GameEngineBossPatternTest {
     @Test
+    fun singleArcRisesAndFallsAtChosenHeightAcrossViewportWidths() {
+        for (width in listOf(960.0, 1280.0, 1680.0)) {
+            val engine = GameEngine(gameAreaWidth = width, random = Random(7))
+            repeat(3) {
+                engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+                repeat(110) {
+                    if (engine.snapshot().isZoneTransitioning) engine.update(0.05)
+                }
+            }
+            var arc: Projectile? = null
+            repeat(220) {
+                if (arc == null) {
+                    engine.update(0.05)
+                    arc = engine.snapshot().projectiles.firstOrNull { it.gravity > 0.0 }
+                }
+            }
+            val shot = assertNotNull(arc)
+            assertEquals(ProjectileTrajectory.ARC, assertNotNull(engine.snapshot().catapult).attackPattern?.trajectory)
+            assertTrue(shot.velocityX < 0.0 && shot.velocityY < 0.0)
+            assertEquals(0.0, shot.floatAmplitude)
+            val flightTime = GameEngineConfig.BOSS_ARC_FLIGHT_SECONDS
+            val apexTime = -shot.velocityY / shot.gravity
+            assertTrue(apexTime > 0.0 && apexTime < flightTime)
+            val apexY = ProjectileMovementCalculator.yAt(shot, apexTime)
+            assertTrue(apexY > 0.0 && apexY < shot.baseY)
+            assertEquals(shot.targetY, ProjectileMovementCalculator.yAt(shot, flightTime), 0.000001)
+            assertEquals(
+                GameEngineConfig.DRAGON_X + (GameEngineConfig.DRAGON_SIZE - shot.size) / 2.0,
+                shot.x + shot.velocityX * flightTime,
+                0.000001,
+            )
+        }
+    }
+
+    @Test
     fun aimedShotLocksDuringPreparationAndDoesNotFollowDragonAfterItMoves() {
         val engine = GameEngine(gameAreaWidth = 1280.0, random = Random(7))
         repeat(3) {
@@ -72,7 +107,12 @@ class GameEngineBossPatternTest {
             assertEquals(pattern.projectileCenterYs.map { it - 32.0 }, shots.map { it.targetY })
             val catapult = assertNotNull(engine.snapshot().catapult)
             assertTrue(shots.all { it.y == catapult.y + catapult.size * 0.4 - 32.0 })
-            assertTrue(shots.all { it.floatAmplitude == GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE })
+            if (pattern.trajectory == ProjectileTrajectory.ARC) {
+                assertTrue(shots.all { it.gravity == GameEngineConfig.BOSS_ARC_GRAVITY && it.velocityY < 0.0 })
+                assertTrue(shots.all { it.floatAmplitude == 0.0 })
+            } else {
+                assertTrue(shots.all { it.floatAmplitude == GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE })
+            }
             engine.restart()
             assertTrue(engine.snapshot().projectiles.isEmpty())
             assertEquals(null, engine.snapshot().catapult)

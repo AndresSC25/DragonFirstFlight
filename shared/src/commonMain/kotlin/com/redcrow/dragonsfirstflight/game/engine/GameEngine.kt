@@ -291,15 +291,26 @@ class GameEngine(
         val catapult = catapultSnapshot() ?: return
         val pattern = pendingBossPattern ?: return
         val size = GameEngineConfig.BOSS_PROJECTILE_SIZE
+        val launchX = catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - size / 2.0
+        val launchY = catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION - size / 2.0
+        val isArc = pattern.trajectory == ProjectileTrajectory.ARC
+        val gravity = if (isArc) GameEngineConfig.BOSS_ARC_GRAVITY else 0.0
+        val flightTime = GameEngineConfig.BOSS_ARC_FLIGHT_SECONDS
+        val targetX = GameEngineConfig.DRAGON_X + (GameEngineConfig.DRAGON_SIZE - size) / 2.0
         for (centerY in pattern.projectileCenterYs) {
+            val targetY = centerY - size / 2.0
+            val velocityY =
+                if (isArc) (targetY - launchY - 0.5 * gravity * flightTime * flightTime) / flightTime else 0.0
             projectileField.launch(
-                x = catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - size / 2.0,
-                y = catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION - size / 2.0,
+                x = launchX,
+                y = launchY,
                 size = size,
-                velocityX = -GameEngineConfig.BOSS_PROJECTILE_SPEED,
-                targetY = centerY - size / 2.0,
-                formationDistance = GameEngineConfig.BOSS_FORMATION_DISTANCE,
-                floatAmplitude = GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE,
+                velocityX = if (isArc) (targetX - launchX) / flightTime else -GameEngineConfig.BOSS_PROJECTILE_SPEED,
+                velocityY = velocityY,
+                targetY = targetY,
+                formationDistance = if (isArc) 0.0 else GameEngineConfig.BOSS_FORMATION_DISTANCE,
+                floatAmplitude = if (isArc) 0.0 else GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE,
+                gravity = gravity,
             )
         }
     }

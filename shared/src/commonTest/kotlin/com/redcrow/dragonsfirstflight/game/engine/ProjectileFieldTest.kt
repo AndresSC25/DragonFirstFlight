@@ -55,6 +55,20 @@ class ProjectileFieldTest {
     }
 
     @Test
+    fun ballisticStoneMovesUnderGravityAndIsRemovedWhenItFallsOffScreen() {
+        val field = ProjectileField()
+        field.launch(x = 900.0, y = 400.0, size = 64.0, velocityX = -100.0, velocityY = -300.0, gravity = 300.0)
+        field.update(delta = 1.0, leftBoundary = 0.0, rightBoundary = 1280.0)
+        val apex = field.snapshot().single()
+        assertEquals(800.0, apex.x)
+        assertEquals(250.0, apex.y)
+        field.update(delta = 1.0, leftBoundary = 0.0, rightBoundary = 1280.0)
+        assertEquals(400.0, field.snapshot().single().y)
+        field.update(delta = 1.0, leftBoundary = 0.0, rightBoundary = 1280.0)
+        assertTrue(field.snapshot().isEmpty())
+    }
+
+    @Test
     fun resetClearsActiveProjectiles() {
         val field = ProjectileField()
         field.launch(x = 600.0, y = 300.0, size = 64.0, velocityX = -400.0)

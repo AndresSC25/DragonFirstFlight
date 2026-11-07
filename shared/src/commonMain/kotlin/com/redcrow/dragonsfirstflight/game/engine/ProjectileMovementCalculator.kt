@@ -9,6 +9,10 @@ internal object ProjectileMovementCalculator {
         projectile: Projectile,
         ageSeconds: Double,
     ): Double {
+        if (projectile.gravity > 0.0) {
+            return projectile.baseY + projectile.velocityY * ageSeconds +
+                0.5 * projectile.gravity * ageSeconds * ageSeconds
+        }
         val progress =
             if (projectile.formationDistance > 0.0) {
                 (abs(projectile.velocityX) * ageSeconds / projectile.formationDistance).coerceIn(0.0, 1.0)

@@ -12,4 +12,5 @@ data class Projectile(
     val targetY: Double = y,
     val formationDistance: Double = 0.0,
     val floatAmplitude: Double = 0.0,
+    val gravity: Double = 0.0,
 )

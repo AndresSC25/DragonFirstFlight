@@ -23,6 +23,8 @@ object GameEngineConfig {
     const val CATAPULT_RELEASE_Y_FRACTION: Double = 0.40
     const val BOSS_PROJECTILE_SIZE: Double = 64.0
     const val BOSS_PROJECTILE_SPEED: Double = 400.0
+    const val BOSS_ARC_GRAVITY: Double = 300.0
+    const val BOSS_ARC_FLIGHT_SECONDS: Double = 1.8
     const val BOSS_STAGE_DURATION_SECONDS: Double = 10.0
     const val BOSS_PROJECTILE_FLOAT_AMPLITUDE: Double = 16.0
     const val BOSS_PROJECTILE_FLOAT_CYCLES_PER_SECOND: Double = 0.52

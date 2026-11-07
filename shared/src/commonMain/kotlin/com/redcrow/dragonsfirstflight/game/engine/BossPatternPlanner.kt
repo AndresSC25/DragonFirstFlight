@@ -48,7 +48,7 @@ internal class BossPatternPlanner(
             when (stage) {
                 BossAttackStage.SINGLE ->
                     listOf(260.0, 320.0, 380.0, 440.0, 500.0, 560.0).map { center ->
-                        BossAttackPattern(stage, listOf(center))
+                        BossAttackPattern(stage, listOf(center), trajectory = ProjectileTrajectory.ARC)
                     }
                 BossAttackStage.DOUBLE ->
                     listOf(listOf(260.0, 400.0), listOf(260.0, 540.0), listOf(400.0, 540.0)).map { centers ->

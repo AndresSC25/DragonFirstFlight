@@ -103,6 +103,10 @@ class BossPatternPlannerTest {
             val first = planner.next(4.0, dragonCenterY = 371.25)
             val second = planner.next(8.0, dragonCenterY = 450.0)
             assertTrue(first.isAimed != second.isAimed)
+            for (single in listOf(first, second)) {
+                val expected = if (single.isAimed) ProjectileTrajectory.FLOATING else ProjectileTrajectory.ARC
+                assertEquals(expected, single.trajectory)
+            }
             if (first.isAimed) assertEquals(listOf(371.25), first.projectileCenterYs)
             if (second.isAimed) assertEquals(listOf(450.0), second.projectileCenterYs)
             val pairOne = planner.next(14.0, dragonCenterY = 371.25)
@@ -110,6 +114,8 @@ class BossPatternPlannerTest {
             assertTrue(pairOne.isAimed != pairTwo.isAimed)
             assertEquals(2, pairOne.projectileCenterYs.size)
             assertEquals(2, pairTwo.projectileCenterYs.size)
+            assertEquals(ProjectileTrajectory.FLOATING, pairOne.trajectory)
+            assertEquals(ProjectileTrajectory.FLOATING, pairTwo.trajectory)
             if (pairOne.isAimed) {
                 assertTrue(371.25 in pairOne.projectileCenterYs)
                 assertTrue(pairOne.projectileCenterYs.last() - pairOne.projectileCenterYs.first() >= 198.5)

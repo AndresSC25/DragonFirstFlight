@@ -13,6 +13,7 @@ internal class ProjectileField {
         targetY: Double = y,
         formationDistance: Double = 0.0,
         floatAmplitude: Double = 0.0,
+        gravity: Double = 0.0,
     ) {
         active +=
             Projectile(
@@ -25,6 +26,7 @@ internal class ProjectileField {
                 targetY = targetY,
                 formationDistance = formationDistance,
                 floatAmplitude = floatAmplitude,
+                gravity = gravity,
             )
     }
 
