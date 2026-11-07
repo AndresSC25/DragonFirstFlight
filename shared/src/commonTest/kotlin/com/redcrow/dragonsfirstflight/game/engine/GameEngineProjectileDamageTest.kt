@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+import kotlin.math.abs
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -18,12 +20,15 @@ class GameEngineProjectileDamageTest {
     }
 
     private fun followFiringHeight(engine: GameEngine) {
-        // Keep the dragon in the rock's path so damage is exercised by real boss shots.
+        // Follow the nearest warned lane to exercise damage with real patterned boss shots.
         val snapshot = engine.snapshot()
         val catapult = assertNotNull(snapshot.catapult)
+        val dragonCenter = snapshot.dragonY + GameEngineConfig.DRAGON_SIZE / 2.0
+        val targetCenter =
+            catapult.attackPattern?.projectileCenterYs?.minByOrNull { abs(it - dragonCenter) }
+                ?: (catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION)
         val targetY =
-            catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION -
-                GameEngineConfig.DRAGON_SIZE / 2.0
+            targetCenter - GameEngineConfig.DRAGON_SIZE / 2.0
         if (snapshot.dragonY > targetY) engine.flap()
         engine.update(0.05)
     }
@@ -31,7 +36,7 @@ class GameEngineProjectileDamageTest {
     @Test
     fun projectileHitCostsOneLifeRemovesRockAndKeepsImpactAfterRemoval() {
         var damageEvents = 0
-        val engine = GameEngine(gameAreaWidth = 1280.0, onDamageEvent = { damageEvents++ })
+        val engine = GameEngine(gameAreaWidth = 1280.0, random = Random(42), onDamageEvent = { damageEvents++ })
         enterBoss(engine)
         var touchingShotId: Int? = null
         repeat(300) {
@@ -67,7 +72,7 @@ class GameEngineProjectileDamageTest {
     @Test
     fun invulnerabilityConsumesIncomingRockWithoutTakingAnotherLife() {
         var damageEvents = 0
-        val engine = GameEngine(gameAreaWidth = 1280.0, onDamageEvent = { damageEvents++ })
+        val engine = GameEngine(gameAreaWidth = 1280.0, random = Random(42), onDamageEvent = { damageEvents++ })
         enterBoss(engine)
         var incoming: Projectile? = null
         repeat(300) {
@@ -89,7 +94,7 @@ class GameEngineProjectileDamageTest {
     @Test
     fun threeSeparatedProjectileHitsEndRunAndStopAttacks() {
         var damageEvents = 0
-        val engine = GameEngine(gameAreaWidth = 1280.0, onDamageEvent = { damageEvents++ })
+        val engine = GameEngine(gameAreaWidth = 1280.0, random = Random(42), onDamageEvent = { damageEvents++ })
         enterBoss(engine)
         repeat(550) {
             if (engine.isRunning) followFiringHeight(engine)

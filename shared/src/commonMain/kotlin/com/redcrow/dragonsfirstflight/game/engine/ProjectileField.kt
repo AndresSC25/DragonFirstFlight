@@ -10,8 +10,22 @@ internal class ProjectileField {
         size: Double,
         velocityX: Double,
         velocityY: Double = 0.0,
+        targetY: Double = y,
+        formationDistance: Double = 0.0,
+        floatAmplitude: Double = 0.0,
     ) {
-        active += Projectile(nextId++, x, y, size, velocityX, velocityY)
+        active +=
+            Projectile(
+                id = nextId++,
+                x = x,
+                y = y,
+                size = size,
+                velocityX = velocityX,
+                velocityY = velocityY,
+                targetY = targetY,
+                formationDistance = formationDistance,
+                floatAmplitude = floatAmplitude,
+            )
     }
 
     fun update(
@@ -24,7 +38,7 @@ internal class ProjectileField {
             active[index] =
                 projectile.copy(
                     x = projectile.x + projectile.velocityX * delta,
-                    y = projectile.y + projectile.velocityY * delta,
+                    y = ProjectileMovementCalculator.yAt(projectile, projectile.ageSeconds + delta),
                     ageSeconds = projectile.ageSeconds + delta,
                 )
         }

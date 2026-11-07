@@ -37,6 +37,8 @@ class GameEngine(
     private var catapultEntrySeconds: Double = 0.0
     private val catapultAttack = CatapultAttack()
     private val projectileField = ProjectileField()
+    private val bossPatternPlanner = BossPatternPlanner(random)
+    private var pendingBossPattern: BossAttackPattern? = null
 
     var runCoins: Int = 0
         private set
@@ -159,7 +161,15 @@ class GameEngine(
             val entryDelta = minOf(delta, GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS - catapultEntrySeconds)
             catapultEntrySeconds += entryDelta
             val attackDelta = delta - entryDelta
-            if (attackDelta > 0.0) catapultAttack.update(attackDelta, ::launchBossProjectile)
+            if (attackDelta > 0.0) {
+                catapultAttack.update(
+                    delta = attackDelta,
+                    onPrepare = {
+                        pendingBossPattern = bossPatternPlanner.next(GameEngineConfig.zoneElapsedAt(activeTimeSeconds))
+                    },
+                    onFire = ::launchBossProjectiles,
+                )
+            }
             return
         }
         obstacleGenerator.update(
@@ -193,6 +203,8 @@ class GameEngine(
         catapultEntrySeconds = 0.0
         catapultAttack.reset()
         projectileField.reset()
+        bossPatternPlanner.reset()
+        pendingBossPattern = null
 
         obstacleGenerator.reset()
         coinField.reset()
@@ -267,18 +279,25 @@ class GameEngine(
             isEntering = progress < 1.0,
             frameIndex = catapultAttack.frameIndex,
             warningFrameIndex = if (isRunning && !isZoneTransitioning) catapultAttack.warningFrameIndex else null,
+            attackPattern = pendingBossPattern,
         )
     }
 
-    private fun launchBossProjectile() {
+    private fun launchBossProjectiles() {
         val catapult = catapultSnapshot() ?: return
+        val pattern = pendingBossPattern ?: return
         val size = GameEngineConfig.BOSS_PROJECTILE_SIZE
-        projectileField.launch(
-            x = catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - size / 2.0,
-            y = catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION - size / 2.0,
-            size = size,
-            velocityX = -GameEngineConfig.BOSS_PROJECTILE_SPEED,
-        )
+        for (centerY in pattern.projectileCenterYs) {
+            projectileField.launch(
+                x = catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - size / 2.0,
+                y = catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION - size / 2.0,
+                size = size,
+                velocityX = -GameEngineConfig.BOSS_PROJECTILE_SPEED,
+                targetY = centerY - size / 2.0,
+                formationDistance = GameEngineConfig.BOSS_FORMATION_DISTANCE,
+                floatAmplitude = GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE,
+            )
+        }
     }
 
     private val isZoneTransitioning: Boolean

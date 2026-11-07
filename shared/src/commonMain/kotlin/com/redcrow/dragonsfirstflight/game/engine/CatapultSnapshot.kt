@@ -7,4 +7,5 @@ data class CatapultSnapshot(
     val isEntering: Boolean,
     val frameIndex: Int = 0,
     val warningFrameIndex: Int? = null,
+    val attackPattern: BossAttackPattern? = null,
 )

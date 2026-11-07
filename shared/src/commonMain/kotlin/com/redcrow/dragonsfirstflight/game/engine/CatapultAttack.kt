@@ -1,6 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
-/** Timed poses drive both the spritesheet and the single projectile release event. */
+/** Preparation locks the warned pattern; the firing pose releases it exactly once. */
 internal class CatapultAttack {
     private enum class Phase {
         IDLE,
@@ -37,6 +37,7 @@ internal class CatapultAttack {
 
     fun update(
         delta: Double,
+        onPrepare: () -> Unit = {},
         onFire: () -> Unit,
     ) {
         elapsed += delta
@@ -50,6 +51,7 @@ internal class CatapultAttack {
                     Phase.FIRING -> Phase.RECOVERING
                     Phase.RECOVERING -> Phase.IDLE
                 }
+            if (phase == Phase.LOADING) onPrepare()
             if (phase == Phase.FIRING) onFire()
         }
     }

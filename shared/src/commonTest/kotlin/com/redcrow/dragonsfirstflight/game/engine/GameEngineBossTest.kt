@@ -146,7 +146,10 @@ class GameEngineBossTest {
         assertEquals(1, engine.snapshot().projectiles.size)
         val movedShot = engine.snapshot().projectiles.single()
         assertEquals(shot.x - GameEngineConfig.BOSS_PROJECTILE_SPEED * 0.05, movedShot.x)
-        repeat(65) { engine.update(0.05) }
+        repeat(65) {
+            if (shot.targetY + shot.size / 2.0 >= 400.0) engine.flap()
+            engine.update(0.05)
+        }
         assertTrue(engine.snapshot().projectiles.none { it.id == shot.id })
         assertEquals(startingLives, engine.snapshot().lives)
         assertTrue(engine.snapshot().obstacles.isEmpty())

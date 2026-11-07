@@ -8,4 +8,8 @@ data class Projectile(
     val velocityX: Double,
     val velocityY: Double,
     val ageSeconds: Double = 0.0,
+    val baseY: Double = y,
+    val targetY: Double = y,
+    val formationDistance: Double = 0.0,
+    val floatAmplitude: Double = 0.0,
 )
