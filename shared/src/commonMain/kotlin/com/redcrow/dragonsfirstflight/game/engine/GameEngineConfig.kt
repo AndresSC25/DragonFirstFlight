@@ -63,7 +63,7 @@ object GameEngineConfig {
      * from the right edge. Coins per zone are approximately duration / interval, independent of obstacle
      * speed and separation. Perfect collection yields ~₡46/s in zone 1 (₡300 / 6.5 s), ~₡62/s in zone 2,
      * and ~₡76/s in zone 3. With 20 s zones, a perfect winning run earns ~₡3,700; a typical run ~₡800-1,200.
-     * Suggested skin prices: ₡5,000 / ₡10,000 / ₡20,000. Revisit if zone durations change; rates remain valid.
+     * Skin prices are defined by DragonSkin.price. Revisit if zone durations change; rates remain valid.
      */
     const val ZONE_ONE_COIN_ROW_INTERVAL_SECONDS: Double = 6.5
     const val ZONE_TWO_COIN_ROW_INTERVAL_SECONDS: Double = 5.5

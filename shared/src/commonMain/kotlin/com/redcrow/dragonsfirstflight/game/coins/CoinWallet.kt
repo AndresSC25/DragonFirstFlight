@@ -20,6 +20,15 @@ class CoinWallet(
         storage[BALANCE_KEY] = balance.toString()
     }
 
+    fun spend(amount: Int): Boolean {
+        require(amount >= 0) { "Spend amount must not be negative: $amount" }
+        if (amount > balance) return false
+
+        balance -= amount
+        storage[BALANCE_KEY] = balance.toString()
+        return true
+    }
+
     private fun loadBalance(): Int = storage.getOrNull(BALANCE_KEY)?.toIntOrNull()?.coerceAtLeast(0) ?: 0
 
     private companion object {
