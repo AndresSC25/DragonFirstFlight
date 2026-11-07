@@ -20,6 +20,7 @@ data class GameSnapshot(
     val coins: List<Coin>,
     val coinScrollX: Double,
     val runCoins: Int,
+    val catapult: CatapultSnapshot? = null,
 ) {
     val firstObstacle: Obstacle?
         get() = obstacles.firstOrNull()

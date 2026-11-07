@@ -4,10 +4,16 @@ object GameEngineConfig {
     const val INITIAL_LIVES: Int = 3
     const val POINTS_PER_SECOND: Int = 1
     const val ZONE_DURATION_SECONDS: Double = 20.0
-    const val ZONE_COUNT: Int = 3
+    const val ZONE_COUNT: Int = 4
+    const val BOSS_START_SECONDS: Double = ZONE_DURATION_SECONDS * (ZONE_COUNT - 1)
+    const val BOSS_DURATION_SECONDS: Double = 30.0
     const val TIME_TO_WIN_SECONDS: Double =
-        ZONE_DURATION_SECONDS * ZONE_COUNT
+        BOSS_START_SECONDS + BOSS_DURATION_SECONDS
     const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
+
+    const val CATAPULT_SIZE: Double = 448.0
+    const val CATAPULT_RIGHT_MARGIN: Double = 24.0
+    const val CATAPULT_ENTRY_DURATION_SECONDS: Double = 2.0
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 
@@ -240,6 +246,7 @@ object GameEngineConfig {
             GameZone.ZONE_ONE -> ZONE_ONE_COIN_ROW_INTERVAL_SECONDS
             GameZone.ZONE_TWO -> ZONE_TWO_COIN_ROW_INTERVAL_SECONDS
             GameZone.ZONE_THREE -> ZONE_THREE_COIN_ROW_INTERVAL_SECONDS
+            GameZone.BOSS -> Double.POSITIVE_INFINITY
         }
 
     fun coinFiveHundredChanceAt(zone: GameZone): Double =
@@ -247,6 +254,7 @@ object GameEngineConfig {
             GameZone.ZONE_ONE -> ZONE_ONE_FIVE_HUNDRED_CHANCE
             GameZone.ZONE_TWO -> ZONE_TWO_FIVE_HUNDRED_CHANCE
             GameZone.ZONE_THREE -> ZONE_THREE_FIVE_HUNDRED_CHANCE
+            GameZone.BOSS -> 0.0
         }
 
     fun zoneAt(activeTimeSeconds: Double): GameZone {
@@ -263,7 +271,11 @@ object GameEngineConfig {
     fun zoneElapsedAt(activeTimeSeconds: Double): Double {
         requireValidActiveTime(activeTimeSeconds)
 
-        return activeTimeSeconds % ZONE_DURATION_SECONDS
+        return if (zoneAt(activeTimeSeconds) == GameZone.BOSS) {
+            activeTimeSeconds - BOSS_START_SECONDS
+        } else {
+            activeTimeSeconds % ZONE_DURATION_SECONDS
+        }
     }
 
     fun obstacleSpeedAt(activeTimeSeconds: Double): Double {
@@ -284,12 +296,14 @@ object GameEngineConfig {
                 GameZone.ZONE_ONE -> OBSTACLE_SPEED
                 GameZone.ZONE_TWO -> ZONE_TWO_OBSTACLE_SPEED
                 GameZone.ZONE_THREE -> ZONE_THREE_OBSTACLE_SPEED
+                GameZone.BOSS -> 0.0
             }
         val maximumSpeed =
             when (zone) {
                 GameZone.ZONE_ONE -> MAX_OBSTACLE_SPEED
                 GameZone.ZONE_TWO -> ZONE_TWO_MAX_OBSTACLE_SPEED
                 GameZone.ZONE_THREE -> ZONE_THREE_MAX_OBSTACLE_SPEED
+                GameZone.BOSS -> 0.0
             }
 
         return initialSpeed +
@@ -303,6 +317,7 @@ object GameEngineConfig {
             GameZone.ZONE_ONE -> MIN_OBSTACLE_SEPARATION
             GameZone.ZONE_TWO -> ZONE_TWO_MIN_OBSTACLE_SEPARATION
             GameZone.ZONE_THREE -> ZONE_THREE_MIN_OBSTACLE_SEPARATION
+            GameZone.BOSS -> ZONE_THREE_MIN_OBSTACLE_SEPARATION
         }
     }
 

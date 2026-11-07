@@ -14,6 +14,7 @@ internal object ObstacleMovementSelector {
 
         val candidates =
             when (zone) {
+                GameZone.BOSS -> listOf(ObstacleMovement.STATIC)
                 GameZone.ZONE_ONE ->
                     listOf(
                         ObstacleMovement.STATIC,

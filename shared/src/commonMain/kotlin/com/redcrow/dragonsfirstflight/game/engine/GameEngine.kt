@@ -33,6 +33,7 @@ class GameEngine(
     private var impactObstacleId: Int? = null
     private var invulnerabilityRemainingSeconds: Double = 0.0
     private var zoneTransitionRemainingSeconds: Double = 0.0
+    private var catapultEntrySeconds: Double = 0.0
 
     var runCoins: Int = 0
         private set
@@ -70,7 +71,7 @@ class GameEngine(
         obstacleGenerator.resize(
             newLeftBoundary = leftBoundary,
             newRightBoundary = rightBoundary,
-            spawnIfEmpty = !isZoneTransitioning,
+            spawnIfEmpty = !isZoneTransitioning && currentZone != GameZone.BOSS,
         )
     }
 
@@ -145,6 +146,11 @@ class GameEngine(
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
+        if (currentZone == GameZone.BOSS) {
+            catapultEntrySeconds =
+                (catapultEntrySeconds + delta).coerceAtMost(GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS)
+            return
+        }
         obstacleGenerator.update(
             delta = delta,
             activeTimeSeconds = activeTimeSeconds,
@@ -172,6 +178,7 @@ class GameEngine(
         impactObstacleId = null
         invulnerabilityRemainingSeconds = 0.0
         zoneTransitionRemainingSeconds = 0.0
+        catapultEntrySeconds = 0.0
 
         obstacleGenerator.reset()
         coinField.reset()
@@ -221,6 +228,27 @@ class GameEngine(
             coins = coinField.coins.toList(),
             coinScrollX = coinField.scrollX,
             runCoins = runCoins,
+            catapult = catapultSnapshot(),
+        )
+    }
+
+    private val currentZone: GameZone
+        get() = GameEngineConfig.zoneAt(scoreTracker.score.activeTimeSeconds)
+
+    private fun catapultSnapshot(): CatapultSnapshot? {
+        if (currentZone != GameZone.BOSS) return null
+
+        val progress = catapultEntrySeconds / GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS
+        val easedProgress = progress * progress * (3.0 - 2.0 * progress)
+        val startX = rightBoundary
+        val targetX =
+            (rightBoundary - GameEngineConfig.CATAPULT_SIZE - GameEngineConfig.CATAPULT_RIGHT_MARGIN)
+                .coerceAtLeast(leftBoundary)
+        return CatapultSnapshot(
+            x = startX + (targetX - startX) * easedProgress,
+            y = GameEngineConfig.GAME_AREA_HEIGHT - GameEngineConfig.CATAPULT_SIZE - 24.0,
+            size = GameEngineConfig.CATAPULT_SIZE,
+            isEntering = progress < 1.0,
         )
     }
 

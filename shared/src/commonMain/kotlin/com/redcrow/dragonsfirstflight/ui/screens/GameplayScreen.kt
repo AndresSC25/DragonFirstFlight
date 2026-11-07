@@ -11,6 +11,8 @@ import com.redcrow.dragonsfirstflight.game.skins.rollFlightSpritePath
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
+import com.redcrow.dragonsfirstflight.ui.gameplay.CATAPULT_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.CatapultView
 import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
@@ -131,6 +133,9 @@ internal suspend fun Container.createGameplayScreen(
     val coinIconBitmap =
         resourcesVfs[COIN_ICON_PATH].readBitmap()
 
+    val catapultBitmap =
+        resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
+
     val obstacleBitmaps =
         OBSTACLE_PATHS.associateWith { path ->
             resourcesVfs[path].readBitmap()
@@ -173,6 +178,7 @@ internal suspend fun Container.createGameplayScreen(
             )
 
         var appliedRunNumber = controller.runNumber
+        val catapultView = CatapultView.create(container = this, spriteMap = catapultBitmap)
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
 
@@ -246,6 +252,7 @@ internal suspend fun Container.createGameplayScreen(
             snapshot: GameSnapshot,
             elapsedSeconds: Double,
         ) {
+            catapultView.update(snapshot)
             obstacleView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
@@ -301,7 +308,7 @@ internal suspend fun Container.createGameplayScreen(
                 when (snapshot.zone) {
                     GameZone.ZONE_ONE -> ZoneBackground.FORTRESS_COURTYARD
                     GameZone.ZONE_TWO -> ZoneBackground.TOWERS_AND_WALLS
-                    GameZone.ZONE_THREE -> ZoneBackground.OUTER_FOREST
+                    GameZone.ZONE_THREE, GameZone.BOSS -> ZoneBackground.OUTER_FOREST
                 }
 
             if (

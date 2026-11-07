@@ -88,7 +88,7 @@ internal class ObstacleGenerator(
             obstacle.x + obstacle.width < leftBoundary
         }
 
-        if (spawnIfEmpty && obstacles.isEmpty()) {
+        if (spawnIfEmpty && currentZone != GameZone.BOSS && obstacles.isEmpty()) {
             spawnObstacle(
                 x = rightBoundary,
                 activeTimeSeconds = 0.0,
@@ -100,6 +100,10 @@ internal class ObstacleGenerator(
         delta: Double,
         activeTimeSeconds: Double,
     ) {
+        if (GameEngineConfig.zoneAt(activeTimeSeconds) == GameZone.BOSS) {
+            beginZoneTransition(GameZone.BOSS)
+            return
+        }
         val obstacleSpeed =
             GameEngineConfig.obstacleSpeedAt(activeTimeSeconds)
         val obstacleSeparation =

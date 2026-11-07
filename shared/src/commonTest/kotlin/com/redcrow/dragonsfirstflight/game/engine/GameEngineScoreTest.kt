@@ -35,7 +35,7 @@ class GameEngineScoreTest {
             ),
         )
         assertEquals(
-            GameEngineConfig.ZONE_THREE_MAX_OBSTACLE_SPEED,
+            0.0,
             GameEngineConfig.obstacleSpeedAt(
                 GameEngineConfig.TIME_TO_WIN_SECONDS,
             ),
@@ -99,7 +99,15 @@ class GameEngineScoreTest {
             engine.update(0.05)
         }
         engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
-        assertEquals(GameZone.ZONE_THREE, engine.snapshot().zone)
+        assertEquals(GameZone.BOSS, engine.snapshot().zone)
+        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+        assertTrue(engine.snapshot().isZoneTransitioning)
+
+        repeat(transitionUpdateCount) {
+            engine.update(0.05)
+        }
+        engine.update(GameEngineConfig.BOSS_DURATION_SECONDS)
+        assertEquals(GameZone.BOSS, engine.snapshot().zone)
         assertEquals(GameStatus.WON, engine.snapshot().status)
     }
 

@@ -8,6 +8,7 @@ internal object ObstaclePatternPlanner {
 
     fun availablePatterns(zone: GameZone): List<ObstaclePattern> =
         when (zone) {
+            GameZone.BOSS -> emptyList()
             GameZone.ZONE_ONE ->
                 listOf(
                     ObstaclePattern.SINGLE,
