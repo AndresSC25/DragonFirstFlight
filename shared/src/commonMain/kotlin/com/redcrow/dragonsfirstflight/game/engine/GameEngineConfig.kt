@@ -14,6 +14,15 @@ object GameEngineConfig {
     const val CATAPULT_SIZE: Double = 448.0
     const val CATAPULT_RIGHT_MARGIN: Double = 24.0
     const val CATAPULT_ENTRY_DURATION_SECONDS: Double = 2.0
+    const val CATAPULT_ATTACK_INTERVAL_SECONDS: Double = 2.0
+    const val CATAPULT_LOAD_FRAME_SECONDS: Double = 0.18
+    const val CATAPULT_WARNING_SECONDS: Double = 1.2
+    const val CATAPULT_FIRE_SECONDS: Double = 0.12
+    const val CATAPULT_RECOVERY_FRAME_SECONDS: Double = 0.16
+    const val CATAPULT_RELEASE_X_FRACTION: Double = 0.20
+    const val CATAPULT_RELEASE_Y_FRACTION: Double = 0.40
+    const val BOSS_PROJECTILE_SIZE: Double = 64.0
+    const val BOSS_PROJECTILE_SPEED: Double = 400.0
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 

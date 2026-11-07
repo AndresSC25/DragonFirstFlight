@@ -34,6 +34,8 @@ class GameEngine(
     private var invulnerabilityRemainingSeconds: Double = 0.0
     private var zoneTransitionRemainingSeconds: Double = 0.0
     private var catapultEntrySeconds: Double = 0.0
+    private val catapultAttack = CatapultAttack()
+    private val projectileField = ProjectileField()
 
     var runCoins: Int = 0
         private set
@@ -147,8 +149,15 @@ class GameEngine(
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
         if (currentZone == GameZone.BOSS) {
-            catapultEntrySeconds =
-                (catapultEntrySeconds + delta).coerceAtMost(GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS)
+            if (!isRunning) {
+                projectileField.reset()
+                return
+            }
+            projectileField.update(delta, leftBoundary, rightBoundary)
+            val entryDelta = minOf(delta, GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS - catapultEntrySeconds)
+            catapultEntrySeconds += entryDelta
+            val attackDelta = delta - entryDelta
+            if (attackDelta > 0.0) catapultAttack.update(attackDelta, ::launchBossProjectile)
             return
         }
         obstacleGenerator.update(
@@ -179,6 +188,8 @@ class GameEngine(
         invulnerabilityRemainingSeconds = 0.0
         zoneTransitionRemainingSeconds = 0.0
         catapultEntrySeconds = 0.0
+        catapultAttack.reset()
+        projectileField.reset()
 
         obstacleGenerator.reset()
         coinField.reset()
@@ -229,6 +240,7 @@ class GameEngine(
             coinScrollX = coinField.scrollX,
             runCoins = runCoins,
             catapult = catapultSnapshot(),
+            projectiles = projectileField.snapshot(),
         )
     }
 
@@ -249,6 +261,19 @@ class GameEngine(
             y = GameEngineConfig.GAME_AREA_HEIGHT - GameEngineConfig.CATAPULT_SIZE - 24.0,
             size = GameEngineConfig.CATAPULT_SIZE,
             isEntering = progress < 1.0,
+            frameIndex = catapultAttack.frameIndex,
+            warningFrameIndex = if (isRunning && !isZoneTransitioning) catapultAttack.warningFrameIndex else null,
+        )
+    }
+
+    private fun launchBossProjectile() {
+        val catapult = catapultSnapshot() ?: return
+        val size = GameEngineConfig.BOSS_PROJECTILE_SIZE
+        projectileField.launch(
+            x = catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - size / 2.0,
+            y = catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION - size / 2.0,
+            size = size,
+            velocityX = -GameEngineConfig.BOSS_PROJECTILE_SPEED,
         )
     }
 

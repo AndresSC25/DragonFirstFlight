@@ -11,7 +11,9 @@ import com.redcrow.dragonsfirstflight.game.skins.rollFlightSpritePath
 import com.redcrow.dragonsfirstflight.ui.components.GameplayHud
 import com.redcrow.dragonsfirstflight.ui.components.SessionOverlay
 import com.redcrow.dragonsfirstflight.ui.gameplay.ANIMATED_OBSTACLE_CONFIGS
+import com.redcrow.dragonsfirstflight.ui.gameplay.CATAPULT_PROJECTILE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.CATAPULT_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.CATAPULT_WARNING_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.CatapultView
 import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
@@ -23,6 +25,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
@@ -135,6 +138,8 @@ internal suspend fun Container.createGameplayScreen(
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
+    val catapultWarningBitmap = resourcesVfs[CATAPULT_WARNING_PATH].readBitmap()
+    val catapultProjectileBitmap = resourcesVfs[CATAPULT_PROJECTILE_PATH].readBitmap()
 
     val obstacleBitmaps =
         OBSTACLE_PATHS.associateWith { path ->
@@ -178,7 +183,13 @@ internal suspend fun Container.createGameplayScreen(
             )
 
         var appliedRunNumber = controller.runNumber
-        val catapultView = CatapultView.create(container = this, spriteMap = catapultBitmap)
+        val catapultView =
+            CatapultView.create(
+                container = this,
+                spriteMap = catapultBitmap,
+                warningMap = catapultWarningBitmap,
+            )
+        val projectileView = ProjectileView.create(container = container(), spriteMap = catapultProjectileBitmap)
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
 
@@ -253,6 +264,7 @@ internal suspend fun Container.createGameplayScreen(
             elapsedSeconds: Double,
         ) {
             catapultView.update(snapshot)
+            projectileView.update(snapshot)
             obstacleView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,

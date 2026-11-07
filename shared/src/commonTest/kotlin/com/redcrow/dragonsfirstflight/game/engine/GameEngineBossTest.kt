@@ -112,6 +112,88 @@ class GameEngineBossTest {
     }
 
     @Test
+    fun firstShotFollowsEntryAndWarningAndMovesWithoutDamagingDragon() {
+        val engine = GameEngine(gameAreaWidth = 1280.0)
+        reachBoss(engine)
+        finishTransition(engine)
+        var sawWarning = false
+        var firstShot: Projectile? = null
+        val startingLives = engine.snapshot().lives
+        repeat(200) {
+            if (firstShot != null) return@repeat
+            engine.update(0.05)
+            val snapshot = engine.snapshot()
+            val catapult = assertNotNull(snapshot.catapult)
+            if (catapult.isEntering) {
+                assertNull(catapult.warningFrameIndex)
+                assertTrue(snapshot.projectiles.isEmpty())
+            }
+            if (catapult.warningFrameIndex != null) sawWarning = true
+            firstShot = snapshot.projectiles.firstOrNull()
+        }
+        assertTrue(sawWarning)
+        val shot = assertNotNull(firstShot)
+        val catapult = assertNotNull(engine.snapshot().catapult)
+        assertEquals(5, catapult.frameIndex)
+        assertNull(catapult.warningFrameIndex)
+        assertEquals(
+            catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - shot.size / 2,
+            shot.x,
+        )
+        assertEquals(0.0, shot.ageSeconds)
+
+        engine.update(0.05)
+        assertEquals(1, engine.snapshot().projectiles.size)
+        val movedShot = engine.snapshot().projectiles.single()
+        assertEquals(shot.x - GameEngineConfig.BOSS_PROJECTILE_SPEED * 0.05, movedShot.x)
+        repeat(65) { engine.update(0.05) }
+        assertTrue(engine.snapshot().projectiles.none { it.id == shot.id })
+        assertEquals(startingLives, engine.snapshot().lives)
+        assertTrue(engine.snapshot().obstacles.isEmpty())
+        engine.restart()
+        assertTrue(engine.snapshot().projectiles.isEmpty())
+    }
+
+    @Test
+    fun victoryClearsProjectilesAndWarnings() {
+        val engine = GameEngine(gameAreaWidth = 1280.0)
+        reachBoss(engine)
+        finishTransition(engine)
+        repeat(120) { engine.update(0.05) }
+        assertTrue(engine.snapshot().projectiles.isNotEmpty())
+        engine.update(GameEngineConfig.BOSS_DURATION_SECONDS)
+        assertEquals(GameStatus.WON, engine.snapshot().status)
+        assertTrue(engine.snapshot().projectiles.isEmpty())
+        assertNull(assertNotNull(engine.snapshot().catapult).warningFrameIndex)
+    }
+
+    @Test
+    fun pauseFreezesAttackAndProjectileUntilResume() {
+        val controller = GameController(gameAreaWidth = 1280.0)
+        controller.startGame()
+        repeat(3) { zone ->
+            controller.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+            if (zone < 2) {
+                while (controller.snapshot().isZoneTransitioning) controller.update(0.05)
+            }
+        }
+        while (controller.snapshot().isZoneTransitioning) controller.update(0.05)
+        repeat(120) { controller.update(0.05) }
+        val beforePause = controller.snapshot()
+        assertTrue(beforePause.projectiles.isNotEmpty())
+        controller.pauseGame()
+        controller.update(10.0)
+        assertEquals(beforePause, controller.snapshot())
+        controller.resumeGame()
+        controller.update(0.05)
+        val afterResume = controller.snapshot()
+        assertTrue(afterResume.projectiles.first().x < beforePause.projectiles.first().x)
+        controller.startGame()
+        assertTrue(controller.snapshot().projectiles.isEmpty())
+        assertNull(controller.snapshot().catapult)
+    }
+
+    @Test
     fun bossLastsThirtySecondsAfterThreeNormalZones() {
         assertEquals(GameZone.ZONE_THREE, GameEngineConfig.zoneAt(59.999))
         assertEquals(GameZone.BOSS, GameEngineConfig.zoneAt(60.0))
