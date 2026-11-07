@@ -4,6 +4,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.bitmap.BmpSlice
 import korlibs.image.bitmap.sliceWithSize
+import korlibs.image.color.RGBA
 import korlibs.korge.view.Container
 import korlibs.korge.view.Image
 import korlibs.korge.view.image
@@ -32,6 +33,9 @@ internal class CatapultView private constructor(
         image.y = catapult.y
         image.scaleX = catapult.size / FRAME_SIZE
         image.scaleY = catapult.size / FRAME_SIZE
+        val redIntensity = if (catapult.isFurious) 0.35 + 0.65 * catapult.furyPulse else 0.0
+        val greenBlue = (255.0 - 145.0 * redIntensity).toInt()
+        image.colorMul = RGBA(255, greenBlue, greenBlue, 255)
 
         catapult.warningFrameIndex?.let { frame ->
             warning.bitmap = warningFrames[frame]

@@ -143,6 +143,7 @@ class GameEngineBossPatternTest {
             val catapult = assertNotNull(firstRelease.catapult)
             assertTrue(firstRelease.projectiles.all { it.y == catapult.y + catapult.size * 0.4 - 32.0 })
             if (expectedStage == BossAttackStage.DOUBLE) {
+                assertEquals(ProjectileTrajectory.ARC, pattern.trajectory)
                 assertEquals(1, firstRelease.projectiles.size)
                 repeat(6) { engine.update(0.05) }
                 assertEquals(1, engine.snapshot().projectiles.size)

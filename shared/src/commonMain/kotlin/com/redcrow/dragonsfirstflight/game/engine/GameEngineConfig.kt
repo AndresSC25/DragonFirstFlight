@@ -6,7 +6,10 @@ object GameEngineConfig {
     const val ZONE_DURATION_SECONDS: Double = 20.0
     const val ZONE_COUNT: Int = 4
     const val BOSS_START_SECONDS: Double = ZONE_DURATION_SECONDS * (ZONE_COUNT - 1)
-    const val BOSS_DURATION_SECONDS: Double = 30.0
+    const val BOSS_STAGE_DURATION_SECONDS: Double = 20.0
+    const val BOSS_DURATION_SECONDS: Double = BOSS_STAGE_DURATION_SECONDS * 3
+    const val BOSS_FURY_DURATION_SECONDS: Double = 10.0
+    const val BOSS_FURY_START_SECONDS: Double = BOSS_DURATION_SECONDS - BOSS_FURY_DURATION_SECONDS
     const val TIME_TO_WIN_SECONDS: Double =
         BOSS_START_SECONDS + BOSS_DURATION_SECONDS
     const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
@@ -15,6 +18,8 @@ object GameEngineConfig {
     const val CATAPULT_RIGHT_MARGIN: Double = 24.0
     const val CATAPULT_ENTRY_DURATION_SECONDS: Double = 2.0
     const val CATAPULT_ATTACK_INTERVAL_SECONDS: Double = 2.0
+    const val CATAPULT_FURY_ATTACK_INTERVAL_SECONDS: Double = 0.9
+    const val CATAPULT_FURY_LOAD_FRAME_SECONDS: Double = 0.11
     const val CATAPULT_LOAD_FRAME_SECONDS: Double = 0.18
     const val CATAPULT_WARNING_SECONDS: Double = 1.2
     const val CATAPULT_FIRE_SECONDS: Double = 0.12
@@ -26,7 +31,6 @@ object GameEngineConfig {
     const val BOSS_DOUBLE_SHOT_DELAY_SECONDS: Double = 0.35
     const val BOSS_ARC_GRAVITY: Double = 300.0
     const val BOSS_ARC_FLIGHT_SECONDS: Double = 1.8
-    const val BOSS_STAGE_DURATION_SECONDS: Double = 10.0
     const val BOSS_PROJECTILE_FLOAT_AMPLITUDE: Double = 16.0
     const val BOSS_PROJECTILE_FLOAT_CYCLES_PER_SECOND: Double = 0.52
     const val BOSS_FORMATION_DISTANCE: Double = 160.0

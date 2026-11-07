@@ -13,12 +13,12 @@ class BossPatternPlannerTest {
         val first = planner.next(4.0)
         assertEquals(BossAttackStage.SINGLE, first.stage)
         assertEquals(1, first.projectileCenterYs.size)
-        assertEquals(1, planner.next(9.999).projectileCenterYs.size)
-        val pair = planner.next(10.0)
+        assertEquals(1, planner.next(19.999).projectileCenterYs.size)
+        val pair = planner.next(20.0)
         assertEquals(BossAttackStage.DOUBLE, pair.stage)
         assertEquals(2, pair.projectileCenterYs.size)
-        assertEquals(2, planner.next(19.999).projectileCenterYs.size)
-        val wall = planner.next(20.0)
+        assertEquals(2, planner.next(39.999).projectileCenterYs.size)
+        val wall = planner.next(40.0)
         assertEquals(BossAttackStage.CORRIDOR, wall.stage)
         assertTrue(wall.projectileCenterYs.size > 2)
         planner.reset()
@@ -31,7 +31,7 @@ class BossPatternPlannerTest {
     fun eachWallHasExactlyOnePassageAndKeepsAdvertisedLaneClearThroughoutFloating() {
         val planner = BossPatternPlanner(Random(7))
         repeat(30) {
-            val pattern = planner.next(20.0)
+            val pattern = planner.next(44.0)
             val center = pattern.safeLaneCenterY!!
             val safeDragonY = center - GameEngineConfig.DRAGON_SIZE / 2.0
             assertTrue(safeDragonY in GameEngineConfig.DRAGON_MIN_Y..GameEngineConfig.DRAGON_MAX_Y)
@@ -88,9 +88,9 @@ class BossPatternPlannerTest {
     @Test
     fun corridorMovesByAtMostOneLaneBetweenWarnings() {
         val planner = BossPatternPlanner(Random(7))
-        var previous = planner.next(20.0).safeLaneCenterY!!
+        var previous = planner.next(44.0).safeLaneCenterY!!
         repeat(200) {
-            val next = planner.next(20.0).safeLaneCenterY!!
+            val next = planner.next(44.0).safeLaneCenterY!!
             assertTrue(abs(next - previous) <= 145.0)
             previous = next
         }
@@ -109,13 +109,13 @@ class BossPatternPlannerTest {
             }
             if (first.isAimed) assertEquals(listOf(371.25), first.projectileCenterYs)
             if (second.isAimed) assertEquals(listOf(450.0), second.projectileCenterYs)
-            val pairOne = planner.next(14.0, dragonCenterY = 371.25)
-            val pairTwo = planner.next(18.0, dragonCenterY = 450.0)
+            val pairOne = planner.next(24.0, dragonCenterY = 371.25)
+            val pairTwo = planner.next(28.0, dragonCenterY = 450.0)
             assertTrue(pairOne.isAimed != pairTwo.isAimed)
             assertEquals(2, pairOne.projectileCenterYs.size)
             assertEquals(2, pairTwo.projectileCenterYs.size)
-            assertEquals(ProjectileTrajectory.FLOATING, pairOne.trajectory)
-            assertEquals(ProjectileTrajectory.FLOATING, pairTwo.trajectory)
+            assertEquals(ProjectileTrajectory.ARC, pairOne.trajectory)
+            assertEquals(ProjectileTrajectory.ARC, pairTwo.trajectory)
             if (pairOne.isAimed) {
                 assertTrue(371.25 in pairOne.projectileCenterYs)
                 assertTrue(pairOne.projectileCenterYs.last() - pairOne.projectileCenterYs.first() >= 198.5)
@@ -124,7 +124,7 @@ class BossPatternPlannerTest {
                 assertTrue(450.0 in pairTwo.projectileCenterYs)
                 assertTrue(pairTwo.projectileCenterYs.last() - pairTwo.projectileCenterYs.first() >= 198.5)
             }
-            assertTrue(!planner.next(24.0, dragonCenterY = 400.0).isAimed)
+            assertTrue(!planner.next(44.0, dragonCenterY = 400.0).isAimed)
         }
     }
 
@@ -133,12 +133,12 @@ class BossPatternPlannerTest {
         fun sequence(seed: Int): List<BossAttackPattern> {
             val planner = BossPatternPlanner(Random(seed))
             return List(6) { planner.next(4.0) } +
-                List(6) { planner.next(14.0) } + List(6) { planner.next(24.0) }
+                List(6) { planner.next(24.0) } + List(6) { planner.next(44.0) }
         }
 
         assertEquals(sequence(7), sequence(7))
         assertTrue((0..20).map(::sequence).toSet().size > 15)
-        for (time in listOf(4.0, 14.0, 24.0)) {
+        for (time in listOf(4.0, 24.0, 44.0)) {
             val planner = BossPatternPlanner(Random(42))
             val patterns = List(50) { planner.next(time) }
             assertTrue(patterns.zipWithNext().all { (first, second) -> first != second })

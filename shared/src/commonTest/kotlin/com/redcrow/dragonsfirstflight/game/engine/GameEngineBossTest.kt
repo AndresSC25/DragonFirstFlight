@@ -9,6 +9,40 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class GameEngineBossTest {
+    @Test
+    fun furyStartsOnlyInLastTenSecondsFreezesOnPauseAndClearsOnVictoryOrRestart() {
+        val controller = GameController(gameAreaWidth = 1280.0)
+        controller.startGame()
+        repeat(3) {
+            controller.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+            repeat(110) {
+                if (controller.snapshot().isZoneTransitioning) controller.update(0.05)
+            }
+        }
+        controller.update(GameEngineConfig.BOSS_FURY_START_SECONDS - 0.1)
+        assertFalse(assertNotNull(controller.snapshot().catapult).isFurious)
+        controller.update(0.1)
+        val start = assertNotNull(controller.snapshot().catapult)
+        assertTrue(start.isFurious)
+        assertEquals(0.0, start.furyPulse, 0.000001)
+        controller.update(0.3)
+        val furious = controller.snapshot()
+        val pulse = assertNotNull(furious.catapult).furyPulse
+        assertTrue(pulse > 0.0 && pulse <= 1.0)
+        controller.pauseGame()
+        controller.update(10.0)
+        assertEquals(furious, controller.snapshot())
+        controller.resumeGame()
+        controller.update(0.05)
+        assertTrue(assertNotNull(controller.snapshot().catapult).furyPulse > pulse)
+        controller.update(GameEngineConfig.BOSS_FURY_DURATION_SECONDS - 0.3)
+        assertEquals(GameStatus.WON, controller.snapshot().status)
+        assertFalse(assertNotNull(controller.snapshot().catapult).isFurious)
+        assertEquals(0.0, assertNotNull(controller.snapshot().catapult).furyPulse)
+        controller.startGame()
+        assertNull(controller.snapshot().catapult)
+    }
+
     private fun reachBoss(engine: GameEngine) {
         repeat(3) {
             engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
@@ -197,11 +231,27 @@ class GameEngineBossTest {
     }
 
     @Test
-    fun bossLastsThirtySecondsAfterThreeNormalZones() {
+    fun bossLastsSixtySecondsWithThreeTwentySecondStages() {
         assertEquals(GameZone.ZONE_THREE, GameEngineConfig.zoneAt(59.999))
         assertEquals(GameZone.BOSS, GameEngineConfig.zoneAt(60.0))
-        assertEquals(GameZone.BOSS, GameEngineConfig.zoneAt(89.999))
+        assertEquals(GameZone.BOSS, GameEngineConfig.zoneAt(119.999))
         assertEquals(25.0, GameEngineConfig.zoneElapsedAt(85.0))
-        assertEquals(90.0, GameEngineConfig.TIME_TO_WIN_SECONDS)
+        assertEquals(120.0, GameEngineConfig.TIME_TO_WIN_SECONDS)
+        assertEquals(BossAttackStage.SINGLE, BossPatternPlanner.stageAt(19.999))
+        assertEquals(BossAttackStage.DOUBLE, BossPatternPlanner.stageAt(20.0))
+        assertEquals(BossAttackStage.DOUBLE, BossPatternPlanner.stageAt(39.999))
+        assertEquals(BossAttackStage.CORRIDOR, BossPatternPlanner.stageAt(40.0))
+        assertEquals(BossAttackStage.CORRIDOR, BossPatternPlanner.stageAt(59.999))
+        assertEquals(50.0, GameEngineConfig.BOSS_FURY_START_SECONDS)
+
+        val engine = GameEngine(gameAreaWidth = 1280.0)
+        reachBoss(engine)
+        finishTransition(engine)
+        engine.update(35.0)
+        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+        engine.update(24.999)
+        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+        engine.update(0.001)
+        assertEquals(GameStatus.WON, engine.snapshot().status)
     }
 }

@@ -1,6 +1,8 @@
 ﻿package com.redcrow.dragonsfirstflight.game.engine
 
 import com.redcrow.dragonsfirstflight.game.score.ScoreTracker
+import kotlin.math.PI
+import kotlin.math.cos
 import kotlin.random.Random
 
 class GameEngine(
@@ -167,6 +169,7 @@ class GameEngine(
             if (attackDelta > 0.0) {
                 catapultAttack.update(
                     delta = attackDelta,
+                    isFurious = isBossFurious,
                     onPrepare = {
                         pendingBossPattern =
                             bossPatternPlanner.next(
@@ -271,6 +274,15 @@ class GameEngine(
     private val currentZone: GameZone
         get() = GameEngineConfig.zoneAt(scoreTracker.score.activeTimeSeconds)
 
+    private val isBossFurious: Boolean
+        get() =
+            currentZone == GameZone.BOSS &&
+                isRunning &&
+                bossElapsedSeconds >= GameEngineConfig.BOSS_FURY_START_SECONDS
+
+    private val bossElapsedSeconds: Double
+        get() = GameEngineConfig.zoneElapsedAt(scoreTracker.score.activeTimeSeconds)
+
     private fun catapultSnapshot(): CatapultSnapshot? {
         if (currentZone != GameZone.BOSS) return null
 
@@ -280,6 +292,7 @@ class GameEngine(
         val targetX =
             (rightBoundary - GameEngineConfig.CATAPULT_SIZE - GameEngineConfig.CATAPULT_RIGHT_MARGIN)
                 .coerceAtLeast(leftBoundary)
+        val furyElapsed = bossElapsedSeconds - GameEngineConfig.BOSS_FURY_START_SECONDS
         return CatapultSnapshot(
             x = startX + (targetX - startX) * easedProgress,
             y = GameEngineConfig.GAME_AREA_HEIGHT - GameEngineConfig.CATAPULT_SIZE - 24.0,
@@ -288,6 +301,8 @@ class GameEngine(
             frameIndex = bossVolley.secondaryFrameIndex ?: catapultAttack.frameIndex,
             warningFrameIndex = if (isRunning && !isZoneTransitioning) catapultAttack.warningFrameIndex else null,
             attackPattern = pendingBossPattern,
+            isFurious = isBossFurious,
+            furyPulse = if (isBossFurious) (1.0 - cos(furyElapsed * 0.8 * 2.0 * PI)) / 2.0 else 0.0,
         )
     }
 

@@ -41,7 +41,10 @@ internal class BossPatternPlanner(
                     } else {
                         listOf(lockedCenter)
                     }
-                return BossAttackPattern(stage, centers, isAimed = true).also { previousPattern = it }
+                val trajectory =
+                    if (stage == BossAttackStage.DOUBLE) ProjectileTrajectory.ARC else ProjectileTrajectory.FLOATING
+                return BossAttackPattern(stage, centers, isAimed = true, trajectory = trajectory)
+                    .also { previousPattern = it }
             }
         }
         val candidates =
@@ -52,7 +55,7 @@ internal class BossPatternPlanner(
                     }
                 BossAttackStage.DOUBLE ->
                     listOf(listOf(260.0, 400.0), listOf(260.0, 540.0), listOf(400.0, 540.0)).map { centers ->
-                        BossAttackPattern(stage, centers)
+                        BossAttackPattern(stage, centers, trajectory = ProjectileTrajectory.ARC)
                     }
                 BossAttackStage.CORRIDOR ->
                     listOf(255.0, 327.5, 400.0, 472.5, 545.0).map(::corridor)

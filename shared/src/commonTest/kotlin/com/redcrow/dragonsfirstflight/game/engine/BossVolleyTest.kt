@@ -28,7 +28,7 @@ class BossVolleyTest {
     @Test
     fun corridorReleasesAllStonesTogetherAndSingleHasNoDelayedShot() {
         val volley = BossVolley()
-        val corridor = BossPatternPlanner().next(24.0)
+        val corridor = BossPatternPlanner().next(44.0)
         assertEquals(corridor.projectileCenterYs.size, volley.start(corridor).size)
         assertTrue(volley.update(1.0).isEmpty())
         val single = BossAttackPattern(BossAttackStage.SINGLE, listOf(400.0))
