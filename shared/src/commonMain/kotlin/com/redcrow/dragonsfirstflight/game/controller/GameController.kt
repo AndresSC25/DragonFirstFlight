@@ -20,6 +20,9 @@ class GameController(
 
     private var bankedRunCoins = 0
 
+    var runNumber: Int = 0
+        private set
+
     var screenState: GameScreenState =
         GameScreenState.MENU
         private set
@@ -30,6 +33,9 @@ class GameController(
     val isMenuVisible: Boolean
         get() = screenState == GameScreenState.MENU
 
+    val isInventoryVisible: Boolean
+        get() = screenState == GameScreenState.INVENTORY
+
     val isGameVisible: Boolean
         get() = screenState == GameScreenState.PLAYING
 
@@ -38,6 +44,12 @@ class GameController(
 
     val coinBalance: Int
         get() = coinWallet.balance + (engine.runCoins - bankedRunCoins)
+
+    fun openInventory() {
+        if (isMenuVisible) {
+            screenState = GameScreenState.INVENTORY
+        }
+    }
 
     fun startGame() {
         restartRun()
@@ -119,6 +131,7 @@ class GameController(
     private fun restartRun() {
         bankRunCoins()
         engine.restart()
+        runNumber++
         bankedRunCoins = 0
     }
 }
