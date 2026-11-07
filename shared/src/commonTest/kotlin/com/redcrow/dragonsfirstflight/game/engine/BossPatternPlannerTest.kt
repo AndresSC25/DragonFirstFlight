@@ -97,6 +97,32 @@ class BossPatternPlannerTest {
     }
 
     @Test
+    fun aimedAndRegularVolleysBothAppearInFirstTwoStagesAndKeepCapturedHeight() {
+        for (seed in 0..20) {
+            val planner = BossPatternPlanner(Random(seed))
+            val first = planner.next(4.0, dragonCenterY = 371.25)
+            val second = planner.next(8.0, dragonCenterY = 450.0)
+            assertTrue(first.isAimed != second.isAimed)
+            if (first.isAimed) assertEquals(listOf(371.25), first.projectileCenterYs)
+            if (second.isAimed) assertEquals(listOf(450.0), second.projectileCenterYs)
+            val pairOne = planner.next(14.0, dragonCenterY = 371.25)
+            val pairTwo = planner.next(18.0, dragonCenterY = 450.0)
+            assertTrue(pairOne.isAimed != pairTwo.isAimed)
+            assertEquals(2, pairOne.projectileCenterYs.size)
+            assertEquals(2, pairTwo.projectileCenterYs.size)
+            if (pairOne.isAimed) {
+                assertTrue(371.25 in pairOne.projectileCenterYs)
+                assertTrue(pairOne.projectileCenterYs.last() - pairOne.projectileCenterYs.first() >= 198.5)
+            }
+            if (pairTwo.isAimed) {
+                assertTrue(450.0 in pairTwo.projectileCenterYs)
+                assertTrue(pairTwo.projectileCenterYs.last() - pairTwo.projectileCenterYs.first() >= 198.5)
+            }
+            assertTrue(!planner.next(24.0, dragonCenterY = 400.0).isAimed)
+        }
+    }
+
+    @Test
     fun seededSequencesAreReproducibleButDifferentSeedsAndRestartsVary() {
         fun sequence(seed: Int): List<BossAttackPattern> {
             val planner = BossPatternPlanner(Random(seed))

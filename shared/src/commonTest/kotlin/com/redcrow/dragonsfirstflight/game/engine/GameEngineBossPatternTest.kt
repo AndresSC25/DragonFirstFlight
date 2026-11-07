@@ -1,11 +1,51 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+import kotlin.math.abs
+import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GameEngineBossPatternTest {
+    @Test
+    fun aimedShotLocksDuringPreparationAndDoesNotFollowDragonAfterItMoves() {
+        val engine = GameEngine(gameAreaWidth = 1280.0, random = Random(7))
+        repeat(3) {
+            engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+            repeat(110) {
+                if (engine.snapshot().isZoneTransitioning) engine.update(0.05)
+            }
+        }
+        var aimed: BossAttackPattern? = null
+        repeat(220) {
+            if (aimed == null) {
+                engine.flap()
+                engine.update(0.05)
+                val catapult = assertNotNull(engine.snapshot().catapult)
+                if (catapult.warningFrameIndex != null && catapult.attackPattern?.isAimed == true) {
+                    aimed = catapult.attackPattern
+                }
+            }
+        }
+        val lockedPattern = assertNotNull(aimed)
+        val lockedCenter = lockedPattern.projectileCenterYs.single()
+        var shot: Projectile? = null
+        repeat(60) {
+            if (shot == null) {
+                engine.update(0.05)
+                assertEquals(lockedPattern, assertNotNull(engine.snapshot().catapult).attackPattern)
+                shot = engine.snapshot().projectiles.firstOrNull()
+            }
+        }
+        val fired = assertNotNull(shot)
+        assertEquals(lockedCenter - fired.size / 2.0, fired.targetY)
+        assertTrue(abs(engine.snapshot().dragonY + GameEngineConfig.DRAGON_SIZE / 2.0 - lockedCenter) > 80.0)
+        repeat(20) { engine.update(0.05) }
+        val inFlight = engine.snapshot().projectiles.single()
+        assertEquals(fired.targetY, inFlight.targetY)
+    }
+
     @Test
     fun eachStageReleasesExactlyTheWarnedFormationFromTheCatapult() {
         for ((stageIndex, expectedStage) in BossAttackStage.entries.withIndex()) {

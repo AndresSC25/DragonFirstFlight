@@ -165,7 +165,11 @@ class GameEngine(
                 catapultAttack.update(
                     delta = attackDelta,
                     onPrepare = {
-                        pendingBossPattern = bossPatternPlanner.next(GameEngineConfig.zoneElapsedAt(activeTimeSeconds))
+                        pendingBossPattern =
+                            bossPatternPlanner.next(
+                                bossElapsedSeconds = GameEngineConfig.zoneElapsedAt(activeTimeSeconds),
+                                dragonCenterY = dragonY + GameEngineConfig.DRAGON_SIZE / 2.0,
+                            )
                     },
                     onFire = ::launchBossProjectiles,
                 )

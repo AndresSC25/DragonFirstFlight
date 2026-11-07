@@ -10,4 +10,5 @@ data class BossAttackPattern(
     val stage: BossAttackStage,
     val projectileCenterYs: List<Double>,
     val safeLaneCenterY: Double? = null,
+    val isAimed: Boolean = false,
 )

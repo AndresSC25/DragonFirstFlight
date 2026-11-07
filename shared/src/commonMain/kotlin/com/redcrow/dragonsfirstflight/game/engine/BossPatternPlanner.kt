@@ -8,8 +8,42 @@ internal class BossPatternPlanner(
 ) {
     private var previousPattern: BossAttackPattern? = null
 
-    fun next(bossElapsedSeconds: Double): BossAttackPattern {
+    fun next(
+        bossElapsedSeconds: Double,
+        dragonCenterY: Double? = null,
+    ): BossAttackPattern {
         val stage = stageAt(bossElapsedSeconds)
+        // Both regular and aimed volleys occur in each of the first two stages.
+        if (stage != BossAttackStage.CORRIDOR && dragonCenterY != null) {
+            val aimAtDragon =
+                if (previousPattern?.stage == stage) {
+                    previousPattern?.isAimed == false
+                } else {
+                    random.nextBoolean()
+                }
+            if (aimAtDragon) {
+                val padding =
+                    GameEngineConfig.BOSS_PROJECTILE_SIZE / 2.0 +
+                        GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE
+                val lockedCenter =
+                    dragonCenterY.coerceIn(
+                        GameEngineConfig.DRAGON_MIN_Y + padding,
+                        GameEngineConfig.DRAGON_MAX_Y + GameEngineConfig.DRAGON_SIZE - padding,
+                    )
+                val centers =
+                    if (stage == BossAttackStage.DOUBLE) {
+                        val minimumCenter = GameEngineConfig.DRAGON_MIN_Y + padding
+                        val maximumCenter = GameEngineConfig.DRAGON_MAX_Y + GameEngineConfig.DRAGON_SIZE - padding
+                        // Place the companion far enough away to leave room between the two stones.
+                        val companion =
+                            if (lockedCenter < (minimumCenter + maximumCenter) / 2.0) maximumCenter else minimumCenter
+                        listOf(lockedCenter, companion).sorted()
+                    } else {
+                        listOf(lockedCenter)
+                    }
+                return BossAttackPattern(stage, centers, isAimed = true).also { previousPattern = it }
+            }
+        }
         val candidates =
             when (stage) {
                 BossAttackStage.SINGLE ->
