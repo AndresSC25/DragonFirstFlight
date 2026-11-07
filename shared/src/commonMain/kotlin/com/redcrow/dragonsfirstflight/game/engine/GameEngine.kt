@@ -38,6 +38,7 @@ class GameEngine(
     private val catapultAttack = CatapultAttack()
     private val projectileField = ProjectileField()
     private val bossPatternPlanner = BossPatternPlanner(random)
+    private val bossVolley = BossVolley()
     private var pendingBossPattern: BossAttackPattern? = null
 
     var runCoins: Int = 0
@@ -155,9 +156,11 @@ class GameEngine(
         if (currentZone == GameZone.BOSS) {
             if (!isRunning) {
                 projectileField.reset()
+                bossVolley.reset()
                 return
             }
             projectileField.update(delta, leftBoundary, rightBoundary)
+            bossVolley.update(delta).forEach(::launchBossProjectile)
             val entryDelta = minOf(delta, GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS - catapultEntrySeconds)
             catapultEntrySeconds += entryDelta
             val attackDelta = delta - entryDelta
@@ -171,7 +174,7 @@ class GameEngine(
                                 dragonCenterY = dragonY + GameEngineConfig.DRAGON_SIZE / 2.0,
                             )
                     },
-                    onFire = ::launchBossProjectiles,
+                    onFire = ::startBossVolley,
                 )
             }
             return
@@ -208,6 +211,7 @@ class GameEngine(
         catapultAttack.reset()
         projectileField.reset()
         bossPatternPlanner.reset()
+        bossVolley.reset()
         pendingBossPattern = null
 
         obstacleGenerator.reset()
@@ -281,15 +285,20 @@ class GameEngine(
             y = GameEngineConfig.GAME_AREA_HEIGHT - GameEngineConfig.CATAPULT_SIZE - 24.0,
             size = GameEngineConfig.CATAPULT_SIZE,
             isEntering = progress < 1.0,
-            frameIndex = catapultAttack.frameIndex,
+            frameIndex = bossVolley.secondaryFrameIndex ?: catapultAttack.frameIndex,
             warningFrameIndex = if (isRunning && !isZoneTransitioning) catapultAttack.warningFrameIndex else null,
             attackPattern = pendingBossPattern,
         )
     }
 
-    private fun launchBossProjectiles() {
-        val catapult = catapultSnapshot() ?: return
+    private fun startBossVolley() {
         val pattern = pendingBossPattern ?: return
+        bossVolley.start(pattern).forEach(::launchBossProjectile)
+    }
+
+    private fun launchBossProjectile(launch: BossProjectileLaunch) {
+        val catapult = catapultSnapshot() ?: return
+        val pattern = launch.pattern
         val size = GameEngineConfig.BOSS_PROJECTILE_SIZE
         val launchX = catapult.x + catapult.size * GameEngineConfig.CATAPULT_RELEASE_X_FRACTION - size / 2.0
         val launchY = catapult.y + catapult.size * GameEngineConfig.CATAPULT_RELEASE_Y_FRACTION - size / 2.0
@@ -297,22 +306,20 @@ class GameEngine(
         val gravity = if (isArc) GameEngineConfig.BOSS_ARC_GRAVITY else 0.0
         val flightTime = GameEngineConfig.BOSS_ARC_FLIGHT_SECONDS
         val targetX = GameEngineConfig.DRAGON_X + (GameEngineConfig.DRAGON_SIZE - size) / 2.0
-        for (centerY in pattern.projectileCenterYs) {
-            val targetY = centerY - size / 2.0
-            val velocityY =
-                if (isArc) (targetY - launchY - 0.5 * gravity * flightTime * flightTime) / flightTime else 0.0
-            projectileField.launch(
-                x = launchX,
-                y = launchY,
-                size = size,
-                velocityX = if (isArc) (targetX - launchX) / flightTime else -GameEngineConfig.BOSS_PROJECTILE_SPEED,
-                velocityY = velocityY,
-                targetY = targetY,
-                formationDistance = if (isArc) 0.0 else GameEngineConfig.BOSS_FORMATION_DISTANCE,
-                floatAmplitude = if (isArc) 0.0 else GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE,
-                gravity = gravity,
-            )
-        }
+        val targetY = launch.centerY - size / 2.0
+        val velocityY =
+            if (isArc) (targetY - launchY - 0.5 * gravity * flightTime * flightTime) / flightTime else 0.0
+        projectileField.launch(
+            x = launchX,
+            y = launchY,
+            size = size,
+            velocityX = if (isArc) (targetX - launchX) / flightTime else -GameEngineConfig.BOSS_PROJECTILE_SPEED,
+            velocityY = velocityY,
+            targetY = targetY,
+            formationDistance = if (isArc) 0.0 else GameEngineConfig.BOSS_FORMATION_DISTANCE,
+            floatAmplitude = if (isArc) 0.0 else GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE,
+            gravity = gravity,
+        )
     }
 
     private val isZoneTransitioning: Boolean

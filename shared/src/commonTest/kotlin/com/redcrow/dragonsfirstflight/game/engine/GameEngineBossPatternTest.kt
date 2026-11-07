@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+import com.redcrow.dragonsfirstflight.game.controller.GameController
 import kotlin.math.abs
 import kotlin.random.Random
 import kotlin.test.Test
@@ -8,6 +9,42 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GameEngineBossPatternTest {
+    @Test
+    fun pauseBetweenDoubleShotsFreezesDelayAndRestartCancelsPendingStone() {
+        val controller = GameController(gameAreaWidth = 1280.0, random = Random(7))
+        controller.startGame()
+        repeat(3) {
+            controller.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+            repeat(110) {
+                if (controller.snapshot().isZoneTransitioning) controller.update(0.05)
+            }
+        }
+        controller.update(GameEngineConfig.BOSS_STAGE_DURATION_SECONDS)
+        repeat(160) {
+            if (controller.snapshot().projectiles.isEmpty()) controller.update(0.05)
+        }
+        val first = controller.snapshot()
+        assertEquals(BossAttackStage.DOUBLE, first.catapult?.attackPattern?.stage)
+        assertEquals(1, first.projectiles.size)
+        controller.pauseGame()
+        controller.update(10.0)
+        assertEquals(first, controller.snapshot())
+        controller.resumeGame()
+        repeat(6) { controller.update(0.05) }
+        assertEquals(1, controller.snapshot().projectiles.size)
+        controller.update(0.05)
+        val pair = controller.snapshot().projectiles
+        assertEquals(2, pair.size)
+        assertEquals(0.35, pair.first().ageSeconds, 0.000001)
+        assertEquals(0.0, pair.last().ageSeconds)
+        assertEquals(5, controller.snapshot().catapult?.frameIndex)
+
+        // The next run cannot inherit the queued second stone from the previous run.
+        controller.startGame()
+        repeat(10) { controller.update(0.05) }
+        assertTrue(controller.snapshot().projectiles.isEmpty())
+    }
+
     @Test
     fun singleArcRisesAndFallsAtChosenHeightAcrossViewportWidths() {
         for (width in listOf(960.0, 1280.0, 1680.0)) {
@@ -102,11 +139,18 @@ class GameEngineBossPatternTest {
             }
             val pattern = assertNotNull(warned)
             assertEquals(expectedStage, pattern.stage)
+            val firstRelease = engine.snapshot()
+            val catapult = assertNotNull(firstRelease.catapult)
+            assertTrue(firstRelease.projectiles.all { it.y == catapult.y + catapult.size * 0.4 - 32.0 })
+            if (expectedStage == BossAttackStage.DOUBLE) {
+                assertEquals(1, firstRelease.projectiles.size)
+                repeat(6) { engine.update(0.05) }
+                assertEquals(1, engine.snapshot().projectiles.size)
+                engine.update(0.05)
+            }
             val shots = engine.snapshot().projectiles
             assertEquals(pattern.projectileCenterYs.size, shots.size)
             assertEquals(pattern.projectileCenterYs.map { it - 32.0 }, shots.map { it.targetY })
-            val catapult = assertNotNull(engine.snapshot().catapult)
-            assertTrue(shots.all { it.y == catapult.y + catapult.size * 0.4 - 32.0 })
             if (pattern.trajectory == ProjectileTrajectory.ARC) {
                 assertTrue(shots.all { it.gravity == GameEngineConfig.BOSS_ARC_GRAVITY && it.velocityY < 0.0 })
                 assertTrue(shots.all { it.floatAmplitude == 0.0 })
