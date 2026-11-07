@@ -38,6 +38,25 @@ internal class ProjectileField {
 
     fun snapshot(): List<Projectile> = active.toList()
 
+    fun removeColliding(bounds: CollisionBounds): List<Projectile> {
+        val hits = mutableListOf<Projectile>()
+        for (index in active.lastIndex downTo 0) {
+            val projectile = active[index]
+            val projectileBounds =
+                CollisionBoundsCalculator.calculate(
+                    x = projectile.x,
+                    y = projectile.y,
+                    width = projectile.size,
+                    height = projectile.size,
+                    margins = CollisionProfileCatalog.bossProjectileMargins,
+                )
+            if (collisionBoundsOverlap(bounds, projectileBounds)) {
+                hits += active.removeAt(index)
+            }
+        }
+        return hits
+    }
+
     fun reset() {
         active.clear()
         nextId = 0

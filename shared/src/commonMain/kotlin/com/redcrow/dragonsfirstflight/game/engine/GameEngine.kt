@@ -31,6 +31,7 @@ class GameEngine(
     private val pointRegistered = mutableSetOf<Int>()
     private var impactFeedbackRemainingSeconds: Double = 0.0
     private var impactObstacleId: Int? = null
+    private var impactPosition: ImpactPosition? = null
     private var invulnerabilityRemainingSeconds: Double = 0.0
     private var zoneTransitionRemainingSeconds: Double = 0.0
     private var catapultEntrySeconds: Double = 0.0
@@ -103,6 +104,7 @@ class GameEngine(
             (impactFeedbackRemainingSeconds - delta).coerceAtLeast(0.0)
         if (impactFeedbackRemainingSeconds <= 0.0) {
             impactObstacleId = null
+            impactPosition = null
         }
         invulnerabilityRemainingSeconds =
             (invulnerabilityRemainingSeconds - delta).coerceAtLeast(0.0)
@@ -185,6 +187,7 @@ class GameEngine(
         scoreTracker.reset()
         impactFeedbackRemainingSeconds = 0.0
         impactObstacleId = null
+        impactPosition = null
         invulnerabilityRemainingSeconds = 0.0
         zoneTransitionRemainingSeconds = 0.0
         catapultEntrySeconds = 0.0
@@ -241,6 +244,7 @@ class GameEngine(
             runCoins = runCoins,
             catapult = catapultSnapshot(),
             projectiles = projectileField.snapshot(),
+            impactPosition = impactPosition,
         )
     }
 
@@ -364,11 +368,20 @@ class GameEngine(
                 collisionRegistered += obstacle.id
                 pointRegistered += obstacle.id
                 impactObstacleId = obstacle.id
+                impactPosition = null
                 return DamageEvent
             }
         }
 
-        return null
+        // Consume every touching rock, including during invulnerability, and apply damage once.
+        val projectileHit = projectileField.removeColliding(dragonBounds).firstOrNull() ?: return null
+        impactObstacleId = null
+        impactPosition =
+            ImpactPosition(
+                x = projectileHit.x + projectileHit.size / 2.0,
+                y = projectileHit.y + projectileHit.size / 2.0,
+            )
+        return DamageEvent
     }
 
     internal fun handleDamageEvent(event: DamageEvent) {

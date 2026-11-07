@@ -31,6 +31,30 @@ class ProjectileFieldTest {
     }
 
     @Test
+    fun transparentPaddingAndTouchingEdgesDoNotHitButVisibleRockIsConsumedOnce() {
+        val field = ProjectileField()
+        field.launch(x = 200.0, y = 300.0, size = 64.0, velocityX = 0.0)
+        assertTrue(field.removeColliding(CollisionBounds(200.0, 300.0, 10.0, 10.0)).isEmpty())
+        assertTrue(field.removeColliding(CollisionBounds(250.5, 320.0, 10.0, 10.0)).isEmpty())
+        assertEquals(1, field.snapshot().size)
+
+        val hits = field.removeColliding(CollisionBounds(220.0, 320.0, 10.0, 10.0))
+        assertEquals(1, hits.size)
+        assertTrue(field.snapshot().isEmpty())
+        assertTrue(field.removeColliding(CollisionBounds(220.0, 320.0, 10.0, 10.0)).isEmpty())
+    }
+
+    @Test
+    fun simultaneousHitsAreRemovedTogetherWithoutRemovingMisses() {
+        val field = ProjectileField()
+        field.launch(x = 200.0, y = 300.0, size = 64.0, velocityX = 0.0)
+        field.launch(x = 210.0, y = 300.0, size = 64.0, velocityX = 0.0)
+        field.launch(x = 600.0, y = 300.0, size = 64.0, velocityX = 0.0)
+        assertEquals(2, field.removeColliding(CollisionBounds(220.0, 320.0, 40.0, 40.0)).size)
+        assertEquals(600.0, field.snapshot().single().x)
+    }
+
+    @Test
     fun resetClearsActiveProjectiles() {
         val field = ProjectileField()
         field.launch(x = 600.0, y = 300.0, size = 64.0, velocityX = -400.0)
