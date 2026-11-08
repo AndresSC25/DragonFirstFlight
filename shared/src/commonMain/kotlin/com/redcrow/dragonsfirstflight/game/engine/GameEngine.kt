@@ -293,9 +293,10 @@ class GameEngine(
             (rightBoundary - GameEngineConfig.CATAPULT_SIZE - GameEngineConfig.CATAPULT_RIGHT_MARGIN)
                 .coerceAtLeast(leftBoundary)
         val furyElapsed = bossElapsedSeconds - GameEngineConfig.BOSS_FURY_START_SECONDS
+        val groundOffset = GameEngineConfig.CATAPULT_SIZE * GameEngineConfig.CATAPULT_GROUND_ANCHOR_RATIO
         return CatapultSnapshot(
             x = startX + (targetX - startX) * easedProgress,
-            y = GameEngineConfig.GAME_AREA_HEIGHT - GameEngineConfig.CATAPULT_SIZE - 24.0,
+            y = GameEngineConfig.CATAPULT_GROUND_Y - groundOffset,
             size = GameEngineConfig.CATAPULT_SIZE,
             isEntering = progress < 1.0,
             frameIndex = bossVolley.secondaryFrameIndex ?: catapultAttack.frameIndex,

@@ -41,6 +41,14 @@ internal enum class ZoneBackground(
             LayerAsset("backgrounds/zone3/parallax/03_forest_front.png", speedFactor = 0.75, heightFraction = 0.65),
         ),
     ),
+    BOSS_BATTLEFIELD(
+        listOf(
+            LayerAsset("backgrounds/boss/parallax/00_sky.png", speedFactor = 0.03, mirrorTiles = true),
+            LayerAsset("backgrounds/boss/parallax/01_distant_landscape.png", speedFactor = 0.12, mirrorTiles = true),
+            LayerAsset("backgrounds/boss/parallax/02_castle_courtyard.png", speedFactor = 0.35, mirrorTiles = true),
+            LayerAsset("backgrounds/boss/parallax/03_floor.png", speedFactor = 0.0, mirrorTiles = true),
+        ),
+    ),
     ;
 
     suspend fun loadLayers(): List<ScrollingBackground.Layer> =

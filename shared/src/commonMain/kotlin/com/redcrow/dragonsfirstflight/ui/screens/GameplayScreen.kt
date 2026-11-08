@@ -321,7 +321,8 @@ internal suspend fun Container.createGameplayScreen(
                 when (snapshot.zone) {
                     GameZone.ZONE_ONE -> ZoneBackground.FORTRESS_COURTYARD
                     GameZone.ZONE_TWO -> ZoneBackground.TOWERS_AND_WALLS
-                    GameZone.ZONE_THREE, GameZone.BOSS -> ZoneBackground.OUTER_FOREST
+                    GameZone.ZONE_THREE -> ZoneBackground.OUTER_FOREST
+                    GameZone.BOSS -> ZoneBackground.BOSS_BATTLEFIELD
                 }
 
             if (
