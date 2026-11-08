@@ -97,6 +97,22 @@ class BossPatternPlannerTest {
     }
 
     @Test
+    fun corridorBuildsUpFromFloorWithoutAnyRockFloatingIntoIt() {
+        val planner = BossPatternPlanner(Random(7))
+        val clearance = GameEngineConfig.BOSS_PROJECTILE_SIZE / 2.0 + GameEngineConfig.BOSS_PROJECTILE_FLOAT_AMPLITUDE
+        repeat(100) {
+            val pattern = planner.next(44.0)
+            val lowerRocks = pattern.projectileCenterYs.filter { it > pattern.safeLaneCenterY!! }
+            if (lowerRocks.isNotEmpty()) {
+                assertEquals(GameEngineConfig.CATAPULT_GROUND_Y - clearance, lowerRocks.last())
+            }
+            pattern.projectileCenterYs.forEach { center ->
+                assertTrue(center + clearance <= GameEngineConfig.CATAPULT_GROUND_Y)
+            }
+        }
+    }
+
+    @Test
     fun aimedAndRegularVolleysBothAppearInFirstTwoStagesAndKeepCapturedHeight() {
         for (seed in 0..20) {
             val planner = BossPatternPlanner(Random(seed))

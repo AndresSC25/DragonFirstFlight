@@ -34,22 +34,38 @@ internal class ProjectileField {
         delta: Double,
         leftBoundary: Double,
         rightBoundary: Double,
-    ) {
+    ): List<Projectile> {
+        val groundHits = mutableListOf<Projectile>()
         for (index in active.indices) {
             val projectile = active[index]
-            active[index] =
+            val moved =
                 projectile.copy(
                     x = projectile.x + projectile.velocityX * delta,
                     y = ProjectileMovementCalculator.yAt(projectile, projectile.ageSeconds + delta),
                     ageSeconds = projectile.ageSeconds + delta,
                 )
+            active[index] = moved
+            val visibleBottom = moved.y + moved.size * (1.0 - CollisionProfileCatalog.bossProjectileMargins.bottomRatio)
+            val isDescending = moved.velocityY + moved.gravity * moved.ageSeconds > 0.0
+            if (
+                moved.gravity > 0.0 &&
+                isDescending &&
+                visibleBottom >= GameEngineConfig.CATAPULT_GROUND_Y &&
+                moved.x + moved.size >= leftBoundary &&
+                moved.x <= rightBoundary
+            ) {
+                groundHits += moved
+            }
         }
+        val groundHitIds = groundHits.mapTo(mutableSetOf()) { it.id }
         active.removeAll {
-            it.x + it.size < leftBoundary ||
+            it.id in groundHitIds ||
+                it.x + it.size < leftBoundary ||
                 it.x > rightBoundary ||
                 it.y + it.size < 0.0 ||
                 it.y > GameEngineConfig.GAME_AREA_HEIGHT
         }
+        return groundHits
     }
 
     fun snapshot(): List<Projectile> = active.toList()

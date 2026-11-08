@@ -75,4 +75,25 @@ class ProjectileFieldTest {
         field.reset()
         assertTrue(field.snapshot().isEmpty())
     }
+
+    @Test
+    fun fallingArcBreaksOnVisibleFloorOnceWhileFloatingShotsContinue() {
+        val field = ProjectileField()
+        field.launch(x = 400.0, y = 600.0, size = 64.0, velocityX = 0.0, velocityY = 100.0, gravity = 300.0)
+        field.launch(x = 600.0, y = 620.0, size = 64.0, velocityX = 0.0)
+        assertTrue(field.update(delta = 0.05, leftBoundary = 0.0, rightBoundary = 1280.0).isEmpty())
+        val hits = field.update(delta = 0.1, leftBoundary = 0.0, rightBoundary = 1280.0)
+        assertEquals(400.0, hits.single().x)
+        assertEquals(600.0, field.snapshot().single().x)
+        assertTrue(field.update(delta = 0.1, leftBoundary = 0.0, rightBoundary = 1280.0).isEmpty())
+    }
+
+    @Test
+    fun ascendingOrOffscreenArcDoesNotCreateFloorImpact() {
+        val field = ProjectileField()
+        field.launch(x = 400.0, y = 630.0, size = 64.0, velocityX = 0.0, velocityY = -100.0, gravity = 300.0)
+        field.launch(x = -200.0, y = 630.0, size = 64.0, velocityX = 0.0, velocityY = 100.0, gravity = 300.0)
+        assertTrue(field.update(delta = 0.05, leftBoundary = 0.0, rightBoundary = 1280.0).isEmpty())
+        assertEquals(400.0, field.snapshot().single().x)
+    }
 }
