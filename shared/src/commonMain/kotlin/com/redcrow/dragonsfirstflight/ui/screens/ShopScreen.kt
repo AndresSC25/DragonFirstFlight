@@ -47,6 +47,7 @@ internal suspend fun Container.createShopScreen(
     val coinIconBitmap = resourcesVfs[COIN_ICON_PATH].readBitmap()
 
     return container {
+        visible = false
         val screenWidth = DragonGameConfig.VIRTUAL_SIZE.width
         val screenHeight = DragonGameConfig.VIRTUAL_SIZE.height
         val panelX = (screenWidth - PANEL_WIDTH) / 2.0

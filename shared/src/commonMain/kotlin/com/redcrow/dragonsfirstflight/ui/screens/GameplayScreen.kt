@@ -147,6 +147,7 @@ internal suspend fun Container.createGameplayScreen(
         }
 
     return container {
+        visible = false
         val scrollingBackgrounds =
             ZoneBackground.values().associateWith { zone ->
                 ScrollingBackground.create(
