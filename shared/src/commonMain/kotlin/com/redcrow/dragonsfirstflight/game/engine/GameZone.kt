@@ -4,4 +4,5 @@ enum class GameZone {
     ZONE_ONE,
     ZONE_TWO,
     ZONE_THREE,
+    BOSS,
 }

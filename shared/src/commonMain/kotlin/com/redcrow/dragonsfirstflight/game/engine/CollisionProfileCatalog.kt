@@ -1,6 +1,15 @@
 ﻿package com.redcrow.dragonsfirstflight.game.engine
 
 internal object CollisionProfileCatalog {
+    // Visible envelope shared by the eight 128x128 rock frames (pixels 27 through 100).
+    val bossProjectileMargins =
+        CollisionMargins(
+            leftRatio = 27.0 / 128.0,
+            topRatio = 27.0 / 128.0,
+            rightRatio = 27.0 / 128.0,
+            bottomRatio = 27.0 / 128.0,
+        )
+
     val dragonMargins =
         CollisionMargins(
             leftRatio = 2.0 / 32.0,

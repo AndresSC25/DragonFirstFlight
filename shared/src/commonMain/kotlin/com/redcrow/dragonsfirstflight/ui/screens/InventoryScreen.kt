@@ -40,6 +40,7 @@ internal suspend fun Container.createInventoryScreen(
     val buttonBitmap = resourcesVfs[BUTTON_PATH].readBitmap()
 
     return container {
+        visible = false
         val screenWidth = DragonGameConfig.VIRTUAL_SIZE.width
         val screenHeight = DragonGameConfig.VIRTUAL_SIZE.height
         val panelX = (screenWidth - PANEL_WIDTH) / 2.0

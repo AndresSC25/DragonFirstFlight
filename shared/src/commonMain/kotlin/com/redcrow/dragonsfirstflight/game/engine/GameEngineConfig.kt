@@ -4,10 +4,38 @@ object GameEngineConfig {
     const val INITIAL_LIVES: Int = 3
     const val POINTS_PER_SECOND: Int = 1
     const val ZONE_DURATION_SECONDS: Double = 20.0
-    const val ZONE_COUNT: Int = 3
+    const val ZONE_COUNT: Int = 4
+    const val BOSS_START_SECONDS: Double = ZONE_DURATION_SECONDS * (ZONE_COUNT - 1)
+    const val BOSS_STAGE_DURATION_SECONDS: Double = 20.0
+    const val BOSS_DURATION_SECONDS: Double = BOSS_STAGE_DURATION_SECONDS * 3
+    const val BOSS_FURY_DURATION_SECONDS: Double = 10.0
+    const val BOSS_FURY_START_SECONDS: Double = BOSS_DURATION_SECONDS - BOSS_FURY_DURATION_SECONDS
     const val TIME_TO_WIN_SECONDS: Double =
-        ZONE_DURATION_SECONDS * ZONE_COUNT
+        BOSS_START_SECONDS + BOSS_DURATION_SECONDS
     const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
+
+    const val CATAPULT_SIZE: Double = 448.0
+    const val CATAPULT_RIGHT_MARGIN: Double = 24.0
+    const val CATAPULT_ENTRY_DURATION_SECONDS: Double = 2.0
+    const val CATAPULT_ATTACK_INTERVAL_SECONDS: Double = 2.0
+    const val CATAPULT_FURY_ATTACK_INTERVAL_SECONDS: Double = 0.9
+    const val CATAPULT_FURY_LOAD_FRAME_SECONDS: Double = 0.11
+    const val CATAPULT_LOAD_FRAME_SECONDS: Double = 0.18
+    const val CATAPULT_WARNING_SECONDS: Double = 1.2
+    const val CATAPULT_FIRE_SECONDS: Double = 0.12
+    const val CATAPULT_RECOVERY_FRAME_SECONDS: Double = 0.16
+    const val CATAPULT_RELEASE_X_FRACTION: Double = 0.20
+    const val CATAPULT_RELEASE_Y_FRACTION: Double = 0.40
+    const val BOSS_PROJECTILE_SIZE: Double = 64.0
+    const val BOSS_PROJECTILE_SPEED: Double = 400.0
+    const val BOSS_DOUBLE_SHOT_DELAY_SECONDS: Double = 0.35
+    const val BOSS_ARC_GRAVITY: Double = 300.0
+    const val BOSS_ARC_FLIGHT_SECONDS: Double = 1.8
+    const val BOSS_PROJECTILE_FLOAT_AMPLITUDE: Double = 16.0
+    const val BOSS_PROJECTILE_FLOAT_CYCLES_PER_SECOND: Double = 0.52
+    const val BOSS_FORMATION_DISTANCE: Double = 160.0
+    const val BOSS_SAFE_LANE_HEIGHT: Double = 184.0
+    const val BOSS_WALL_SPACING: Double = 48.0
 
     const val GAME_AREA_HEIGHT: Double = 720.0
 
@@ -240,6 +268,7 @@ object GameEngineConfig {
             GameZone.ZONE_ONE -> ZONE_ONE_COIN_ROW_INTERVAL_SECONDS
             GameZone.ZONE_TWO -> ZONE_TWO_COIN_ROW_INTERVAL_SECONDS
             GameZone.ZONE_THREE -> ZONE_THREE_COIN_ROW_INTERVAL_SECONDS
+            GameZone.BOSS -> Double.POSITIVE_INFINITY
         }
 
     fun coinFiveHundredChanceAt(zone: GameZone): Double =
@@ -247,6 +276,7 @@ object GameEngineConfig {
             GameZone.ZONE_ONE -> ZONE_ONE_FIVE_HUNDRED_CHANCE
             GameZone.ZONE_TWO -> ZONE_TWO_FIVE_HUNDRED_CHANCE
             GameZone.ZONE_THREE -> ZONE_THREE_FIVE_HUNDRED_CHANCE
+            GameZone.BOSS -> 0.0
         }
 
     fun zoneAt(activeTimeSeconds: Double): GameZone {
@@ -263,7 +293,11 @@ object GameEngineConfig {
     fun zoneElapsedAt(activeTimeSeconds: Double): Double {
         requireValidActiveTime(activeTimeSeconds)
 
-        return activeTimeSeconds % ZONE_DURATION_SECONDS
+        return if (zoneAt(activeTimeSeconds) == GameZone.BOSS) {
+            activeTimeSeconds - BOSS_START_SECONDS
+        } else {
+            activeTimeSeconds % ZONE_DURATION_SECONDS
+        }
     }
 
     fun obstacleSpeedAt(activeTimeSeconds: Double): Double {
@@ -284,12 +318,14 @@ object GameEngineConfig {
                 GameZone.ZONE_ONE -> OBSTACLE_SPEED
                 GameZone.ZONE_TWO -> ZONE_TWO_OBSTACLE_SPEED
                 GameZone.ZONE_THREE -> ZONE_THREE_OBSTACLE_SPEED
+                GameZone.BOSS -> 0.0
             }
         val maximumSpeed =
             when (zone) {
                 GameZone.ZONE_ONE -> MAX_OBSTACLE_SPEED
                 GameZone.ZONE_TWO -> ZONE_TWO_MAX_OBSTACLE_SPEED
                 GameZone.ZONE_THREE -> ZONE_THREE_MAX_OBSTACLE_SPEED
+                GameZone.BOSS -> 0.0
             }
 
         return initialSpeed +
@@ -303,6 +339,7 @@ object GameEngineConfig {
             GameZone.ZONE_ONE -> MIN_OBSTACLE_SEPARATION
             GameZone.ZONE_TWO -> ZONE_TWO_MIN_OBSTACLE_SEPARATION
             GameZone.ZONE_THREE -> ZONE_THREE_MIN_OBSTACLE_SEPARATION
+            GameZone.BOSS -> ZONE_THREE_MIN_OBSTACLE_SEPARATION
         }
     }
 

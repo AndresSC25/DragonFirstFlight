@@ -45,12 +45,14 @@ internal class ZoneTransitionOverlay private constructor(
                 GameZone.ZONE_ONE -> "ZONE I"
                 GameZone.ZONE_TWO -> "ZONE II"
                 GameZone.ZONE_THREE -> "ZONE III"
+                GameZone.BOSS -> "ZONE IV"
             }
         val zoneSubtitle =
             when (snapshot.zone) {
                 GameZone.ZONE_ONE -> "FORTRESS COURTYARD"
                 GameZone.ZONE_TWO -> "TOWERS AND WALLS"
                 GameZone.ZONE_THREE -> "OUTER FOREST"
+                GameZone.BOSS -> "Boss"
             }
 
         if (title.text != zoneText) {
