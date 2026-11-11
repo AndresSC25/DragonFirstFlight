@@ -14,7 +14,12 @@ object GameEngineConfig {
         BOSS_START_SECONDS + BOSS_DURATION_SECONDS
     const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
 
-    const val CATAPULT_SIZE: Double = 448.0
+    const val CATAPULT_SIZE: Double = 512.0
+    const val CATAPULT_GROUND_Y: Double = 660.0
+
+    // Anchor the wheels rather than the transparent bottom of the sprite cell.
+    const val CATAPULT_GROUND_ANCHOR_RATIO: Double = 332.0 / 384.0
+
     const val CATAPULT_RIGHT_MARGIN: Double = 24.0
     const val CATAPULT_ENTRY_DURATION_SECONDS: Double = 2.0
     const val CATAPULT_ATTACK_INTERVAL_SECONDS: Double = 2.0

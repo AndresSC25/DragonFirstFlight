@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
 import com.redcrow.dragonsfirstflight.game.score.ScoreTracker
 import kotlin.math.PI
@@ -34,6 +34,7 @@ class GameEngine(
     private var impactFeedbackRemainingSeconds: Double = 0.0
     private var impactObstacleId: Int? = null
     private var impactPosition: ImpactPosition? = null
+    private val rockImpacts = mutableListOf<RockImpact>()
     private var invulnerabilityRemainingSeconds: Double = 0.0
     private var zoneTransitionRemainingSeconds: Double = 0.0
     private var catapultEntrySeconds: Double = 0.0
@@ -105,6 +106,12 @@ class GameEngine(
                 GameEngineConfig.MAX_DELTA_SECONDS,
             )
 
+        for (index in rockImpacts.indices) {
+            val impact = rockImpacts[index]
+            rockImpacts[index] = impact.copy(ageSeconds = impact.ageSeconds + delta)
+        }
+        rockImpacts.removeAll { it.ageSeconds >= RockImpact.DURATION_SECONDS }
+
         impactFeedbackRemainingSeconds =
             (impactFeedbackRemainingSeconds - delta).coerceAtLeast(0.0)
         if (impactFeedbackRemainingSeconds <= 0.0) {
@@ -161,7 +168,16 @@ class GameEngine(
                 bossVolley.reset()
                 return
             }
-            projectileField.update(delta, leftBoundary, rightBoundary)
+            projectileField.update(delta, leftBoundary, rightBoundary).forEach { projectile ->
+                val size = projectile.size * 74.0 / 128.0
+                rockImpacts +=
+                    RockImpact(
+                        x = projectile.x + projectile.size / 2.0,
+                        y = GameEngineConfig.CATAPULT_GROUND_Y - size / 2.0,
+                        size = size,
+                        isGroundImpact = true,
+                    )
+            }
             bossVolley.update(delta).forEach(::launchBossProjectile)
             val entryDelta = minOf(delta, GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS - catapultEntrySeconds)
             catapultEntrySeconds += entryDelta
@@ -205,6 +221,7 @@ class GameEngine(
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
         scoreTracker.reset()
+        rockImpacts.clear()
         impactFeedbackRemainingSeconds = 0.0
         impactObstacleId = null
         impactPosition = null
@@ -268,6 +285,7 @@ class GameEngine(
             catapult = catapultSnapshot(),
             projectiles = projectileField.snapshot(),
             impactPosition = impactPosition,
+            rockImpacts = rockImpacts.toList(),
         )
     }
 
@@ -293,9 +311,10 @@ class GameEngine(
             (rightBoundary - GameEngineConfig.CATAPULT_SIZE - GameEngineConfig.CATAPULT_RIGHT_MARGIN)
                 .coerceAtLeast(leftBoundary)
         val furyElapsed = bossElapsedSeconds - GameEngineConfig.BOSS_FURY_START_SECONDS
+        val groundOffset = GameEngineConfig.CATAPULT_SIZE * GameEngineConfig.CATAPULT_GROUND_ANCHOR_RATIO
         return CatapultSnapshot(
             x = startX + (targetX - startX) * easedProgress,
-            y = GameEngineConfig.GAME_AREA_HEIGHT - GameEngineConfig.CATAPULT_SIZE - 24.0,
+            y = GameEngineConfig.CATAPULT_GROUND_Y - groundOffset,
             size = GameEngineConfig.CATAPULT_SIZE,
             isEntering = progress < 1.0,
             frameIndex = bossVolley.secondaryFrameIndex ?: catapultAttack.frameIndex,
@@ -430,7 +449,16 @@ class GameEngine(
         }
 
         // Consume every touching rock, including during invulnerability, and apply damage once.
-        val projectileHit = projectileField.removeColliding(dragonBounds).firstOrNull() ?: return null
+        val projectileHits = projectileField.removeColliding(dragonBounds)
+        projectileHits.forEach { projectile ->
+            rockImpacts +=
+                RockImpact(
+                    x = projectile.x + projectile.size / 2.0,
+                    y = projectile.y + projectile.size / 2.0,
+                    size = projectile.size * 74.0 / 128.0,
+                )
+        }
+        val projectileHit = projectileHits.firstOrNull() ?: return null
         impactObstacleId = null
         impactPosition =
             ImpactPosition(

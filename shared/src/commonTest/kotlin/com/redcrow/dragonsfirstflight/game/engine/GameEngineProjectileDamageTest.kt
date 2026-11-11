@@ -52,6 +52,7 @@ class GameEngineProjectileDamageTest {
         assertTrue(hit.isInvulnerable)
         assertNull(hit.impactObstacleId)
         assertNotNull(hit.impactPosition)
+        assertTrue(hit.rockImpacts.any { !it.isGroundImpact && it.x == hit.impactPosition.x })
         assertTrue(hit.projectiles.none { it.id == touchingShotId })
 
         engine.update(0.05)
@@ -66,6 +67,7 @@ class GameEngineProjectileDamageTest {
         assertEquals(GameEngineConfig.INITIAL_LIVES, engine.snapshot().lives)
         assertFalse(engine.snapshot().isInvulnerable)
         assertNull(engine.snapshot().impactPosition)
+        assertTrue(engine.snapshot().rockImpacts.isEmpty())
         assertTrue(engine.snapshot().projectiles.isEmpty())
     }
 

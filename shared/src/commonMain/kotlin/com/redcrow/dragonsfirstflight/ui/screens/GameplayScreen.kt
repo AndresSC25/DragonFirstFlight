@@ -26,6 +26,8 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
@@ -129,6 +131,7 @@ internal suspend fun Container.createGameplayScreen(
 
     val hitSparkBitmap =
         resourcesVfs[HIT_SPARK_PATH].readBitmap()
+    val rockImpactBitmap = resourcesVfs[ROCK_IMPACT_PATH].readBitmap()
 
     val coinAtlasBitmap =
         resourcesVfs[COIN_ATLAS_PATH].readBitmap()
@@ -191,6 +194,8 @@ internal suspend fun Container.createGameplayScreen(
                 warningMap = catapultWarningBitmap,
             )
         val projectileView = ProjectileView.create(container = container(), spriteMap = catapultProjectileBitmap)
+        val rockImpactView =
+            RockImpactView.create(container = container(), rockMap = rockImpactBitmap, sparkMap = hitSparkBitmap)
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
 
@@ -266,6 +271,7 @@ internal suspend fun Container.createGameplayScreen(
         ) {
             catapultView.update(snapshot)
             projectileView.update(snapshot)
+            rockImpactView.update(snapshot)
             obstacleView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
@@ -321,7 +327,8 @@ internal suspend fun Container.createGameplayScreen(
                 when (snapshot.zone) {
                     GameZone.ZONE_ONE -> ZoneBackground.FORTRESS_COURTYARD
                     GameZone.ZONE_TWO -> ZoneBackground.TOWERS_AND_WALLS
-                    GameZone.ZONE_THREE, GameZone.BOSS -> ZoneBackground.OUTER_FOREST
+                    GameZone.ZONE_THREE -> ZoneBackground.OUTER_FOREST
+                    GameZone.BOSS -> ZoneBackground.BOSS_BATTLEFIELD
                 }
 
             if (

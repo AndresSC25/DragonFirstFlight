@@ -89,11 +89,12 @@ internal class BossPatternPlanner(
             centers += above
             above -= GameEngineConfig.BOSS_WALL_SPACING
         }
-        var below = centerY + halfGap + clearance
-        val bottom = GameEngineConfig.DRAGON_MAX_Y + GameEngineConfig.DRAGON_SIZE
-        while (below <= bottom + GameEngineConfig.BOSS_PROJECTILE_SIZE) {
+        // Build upward from the floor, reserving the full sprite and its downward floating range.
+        var below = GameEngineConfig.CATAPULT_GROUND_Y - clearance
+        val lowestLaneEdge = centerY + halfGap + clearance
+        while (below >= lowestLaneEdge) {
             centers += below
-            below += GameEngineConfig.BOSS_WALL_SPACING
+            below -= GameEngineConfig.BOSS_WALL_SPACING
         }
         return BossAttackPattern(BossAttackStage.CORRIDOR, centers.sorted(), centerY)
     }
