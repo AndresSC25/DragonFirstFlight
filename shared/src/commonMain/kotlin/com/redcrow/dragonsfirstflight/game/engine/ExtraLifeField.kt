@@ -64,8 +64,10 @@ internal class ExtraLifeField(
 
             val y =
                 GameEngineConfig.extraLifeLanes
-                    .filter { lane -> kotlin.math.abs(lane - obstacle.y) >= GameEngineConfig.EXTRA_LIFE_SAFE_LANE_DISTANCE }
-                    .randomOrNull(random)
+                    .filter { lane ->
+                        kotlin.math.abs(lane - obstacle.y) >=
+                            GameEngineConfig.EXTRA_LIFE_SAFE_LANE_DISTANCE
+                    }.randomOrNull(random)
                     ?: return
             activeExtraLives +=
                 ExtraLife(

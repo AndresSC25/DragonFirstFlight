@@ -21,6 +21,7 @@ object GameEngineConfig {
     const val EXTRA_LIFE_OBSTACLE_GAP: Double = 72.0
     const val EXTRA_LIFE_SPAWN_EDGE_TOLERANCE: Double = 24.0
     const val EXTRA_LIFE_SAFE_LANE_DISTANCE: Double = 96.0
+
     fun extraLifeChance(zone: GameZone): Double =
         when (zone) {
             GameZone.ZONE_ONE -> 0.16

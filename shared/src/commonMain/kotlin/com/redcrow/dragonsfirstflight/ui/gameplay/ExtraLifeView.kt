@@ -60,7 +60,11 @@ internal class ExtraLifeView private constructor(
     }
 
     companion object {
-        fun create(container: Container, bitmap: Bitmap, views: Views): ExtraLifeView {
+        fun create(
+            container: Container,
+            bitmap: Bitmap,
+            views: Views,
+        ): ExtraLifeView {
             require(
                 bitmap.width == EXTRA_LIFE_FRAME_SIZE * EXTRA_LIFE_FRAME_COUNT &&
                     bitmap.height == EXTRA_LIFE_FRAME_SIZE,

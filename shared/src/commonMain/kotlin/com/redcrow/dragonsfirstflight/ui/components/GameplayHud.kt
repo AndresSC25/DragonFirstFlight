@@ -1,7 +1,7 @@
 ﻿package com.redcrow.dragonsfirstflight.ui.components
 
-import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
+import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
@@ -192,7 +192,6 @@ internal class GameplayHud private constructor(
                                 visible = false
                             }
                     }
-
                 }
 
             val pauseButton =
