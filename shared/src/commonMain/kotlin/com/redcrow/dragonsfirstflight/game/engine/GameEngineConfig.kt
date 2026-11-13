@@ -2,6 +2,7 @@
 
 object GameEngineConfig {
     const val INITIAL_LIVES: Int = 3
+    const val MAX_LIVES: Int = 5
     const val POINTS_PER_SECOND: Int = 1
     const val ZONE_DURATION_SECONDS: Double = 20.0
     const val ZONE_COUNT: Int = 4
@@ -13,6 +14,21 @@ object GameEngineConfig {
     const val TIME_TO_WIN_SECONDS: Double =
         BOSS_START_SECONDS + BOSS_DURATION_SECONDS
     const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
+    const val EXTRA_LIFE_SIZE: Double = 56.0
+    const val EXTRA_LIFE_MAX_PER_RUN: Int = 2
+    const val EXTRA_LIFE_FIRST_ATTEMPT_SECONDS: Double = 5.0
+    const val EXTRA_LIFE_MIN_INTERVAL_SECONDS: Double = 18.0
+    const val EXTRA_LIFE_OBSTACLE_GAP: Double = 72.0
+    const val EXTRA_LIFE_SPAWN_EDGE_TOLERANCE: Double = 24.0
+    const val EXTRA_LIFE_SAFE_LANE_DISTANCE: Double = 96.0
+
+    fun extraLifeChance(zone: GameZone): Double =
+        when (zone) {
+            GameZone.ZONE_ONE -> 0.16
+            GameZone.ZONE_TWO -> 0.18
+            GameZone.ZONE_THREE -> 0.20
+            GameZone.BOSS -> 0.0
+        }
 
     const val CATAPULT_SIZE: Double = 512.0
     const val CATAPULT_GROUND_Y: Double = 660.0
@@ -75,6 +91,8 @@ object GameEngineConfig {
     const val ZONE_THREE_OBSTACLE_SPEED: Double =
         ZONE_TWO_MAX_OBSTACLE_SPEED
     const val ZONE_THREE_MAX_OBSTACLE_SPEED: Double = 300.0
+    val extraLifeLanes: List<Double> =
+        listOf(OBSTACLE_TOP_Y, OBSTACLE_Y, OBSTACLE_LOWER_MIDDLE_Y, OBSTACLE_BOTTOM_Y)
 
     const val MAX_DELTA_SECONDS: Double = 0.05
     const val IMPACT_FEEDBACK_DURATION_SECONDS: Double = 0.18
@@ -109,6 +127,12 @@ object GameEngineConfig {
     init {
         require(INITIAL_LIVES > 0) {
             "INITIAL_LIVES must be greater than zero."
+        }
+        require(MAX_LIVES >= INITIAL_LIVES) {
+            "MAX_LIVES must not be less than INITIAL_LIVES."
+        }
+        require(EXTRA_LIFE_MAX_PER_RUN in 1..2) {
+            "Extra lives must be limited to one or two per run."
         }
 
         require(POINTS_PER_SECOND > 0) {

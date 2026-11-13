@@ -17,6 +17,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.CATAPULT_WARNING_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.CatapultView
 import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ExtraLifeView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
@@ -81,6 +82,8 @@ private const val COIN_ATLAS_PATH: String =
 
 private const val COIN_ICON_PATH: String =
     "sprites/coins/coin_icon.png"
+private const val EXTRA_LIFE_PATH: String =
+    "sprites/power-ups/extra_life.png"
 
 private val OBSTACLE_PATHS =
     listOf(
@@ -138,6 +141,8 @@ internal suspend fun Container.createGameplayScreen(
 
     val coinIconBitmap =
         resourcesVfs[COIN_ICON_PATH].readBitmap()
+    val extraLifeBitmap =
+        resourcesVfs[EXTRA_LIFE_PATH].readBitmap()
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
@@ -183,6 +188,12 @@ internal suspend fun Container.createGameplayScreen(
             CoinView.create(
                 container = coinLayer,
                 atlas = coinAtlasBitmap,
+                views = views,
+            )
+        val extraLifeView =
+            ExtraLifeView.create(
+                container = container(),
+                bitmap = extraLifeBitmap,
                 views = views,
             )
 
@@ -281,6 +292,10 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
                 elapsedSeconds = elapsedSeconds,
+            )
+            extraLifeView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
             )
 
             gameplayHud.update(
