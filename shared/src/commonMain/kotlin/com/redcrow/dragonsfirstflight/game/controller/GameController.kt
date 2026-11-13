@@ -1,16 +1,27 @@
 package com.redcrow.dragonsfirstflight.game.controller
 
+import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.engine.GameEngine
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.state.GameScreenState
+import korlibs.korge.service.storage.InmemoryStorage
+import kotlin.random.Random
 
 class GameController(
     gameAreaWidth: Double,
+    private val coinWallet: CoinWallet = CoinWallet(InmemoryStorage()),
+    random: Random = Random.Default,
 ) {
     private val engine =
         GameEngine(
             gameAreaWidth = gameAreaWidth,
+            random = random,
         )
+
+    private var bankedRunCoins = 0
+
+    var runNumber: Int = 0
+        private set
 
     var screenState: GameScreenState =
         GameScreenState.MENU
@@ -22,19 +33,41 @@ class GameController(
     val isMenuVisible: Boolean
         get() = screenState == GameScreenState.MENU
 
+    val isInventoryVisible: Boolean
+        get() = screenState == GameScreenState.INVENTORY
+
+    val isShopVisible: Boolean
+        get() = screenState == GameScreenState.SHOP
+
     val isGameVisible: Boolean
         get() = screenState == GameScreenState.PLAYING
 
     val isGameRunning: Boolean
         get() = isGameVisible && engine.isRunning && !isPaused
 
+    val coinBalance: Int
+        get() = coinWallet.balance + (engine.runCoins - bankedRunCoins)
+
+    fun openInventory() {
+        if (isMenuVisible) {
+            screenState = GameScreenState.INVENTORY
+        }
+    }
+
+    fun openShop() {
+        if (isMenuVisible) {
+            screenState = GameScreenState.SHOP
+        }
+    }
+
     fun startGame() {
-        engine.restart()
+        restartRun()
         isPaused = false
         screenState = GameScreenState.PLAYING
     }
 
     fun returnToMenu() {
+        bankRunCoins()
         isPaused = false
         screenState = GameScreenState.MENU
     }
@@ -42,6 +75,7 @@ class GameController(
     fun pauseGame() {
         if (isGameVisible && engine.isRunning) {
             isPaused = true
+            bankRunCoins()
         }
     }
 
@@ -67,7 +101,7 @@ class GameController(
         if (engine.isRunning) {
             engine.flap()
         } else {
-            engine.restart()
+            restartRun()
         }
     }
 
@@ -77,6 +111,10 @@ class GameController(
         }
 
         engine.update(elapsedSeconds)
+
+        if (!engine.isRunning) {
+            bankRunCoins()
+        }
     }
 
     fun resizeGameArea(
@@ -90,4 +128,19 @@ class GameController(
     }
 
     fun snapshot(): GameSnapshot = engine.snapshot()
+
+    private fun bankRunCoins() {
+        val unbanked = engine.runCoins - bankedRunCoins
+        if (unbanked > 0) {
+            coinWallet.deposit(unbanked)
+            bankedRunCoins = engine.runCoins
+        }
+    }
+
+    private fun restartRun() {
+        bankRunCoins()
+        engine.restart()
+        runNumber++
+        bankedRunCoins = 0
+    }
 }

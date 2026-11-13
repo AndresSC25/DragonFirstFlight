@@ -22,20 +22,29 @@ private const val SCORE_PLATE_GAP: Double = 16.0
 private const val SCORE_TEXT_SIZE: Double = 24.0
 private const val SCORE_TEXT_OFFSET_Y: Double = 3.0
 private const val PAUSE_BUTTON_WIDTH: Double = 96.0
+private const val COIN_PLATE_WIDTH: Double = 150.0
+private const val COIN_ICON_SIZE: Double = 28.0
+private const val COIN_ICON_PADDING: Double = 14.0
+private const val COIN_TEXT_GAP: Double = 8.0
 
 private const val SCORE_PLATE_X: Double =
     MAX_LIVES * HUD_ITEM_HEIGHT +
         (MAX_LIVES - 1) * LIFE_ICON_GAP +
         SCORE_PLATE_GAP
 
+private const val COIN_PLATE_X: Double =
+    SCORE_PLATE_X + SCORE_PLATE_WIDTH + SCORE_PLATE_GAP
+
 internal class GameplayHud private constructor(
     private val views: Views,
     private val statusGroup: Container,
     private val fullLifeIcons: List<Image>,
     private val pointsText: Text,
+    private val coinsText: Text,
     private val pauseButton: Image,
 ) {
     private var displayedPoints: Int? = null
+    private var displayedCoins: Int? = null
 
     fun update(
         snapshot: GameSnapshot,
@@ -51,6 +60,11 @@ internal class GameplayHud private constructor(
             pointsText.text = "Points: ${snapshot.points}"
             pointsText.x = SCORE_PLATE_X + (SCORE_PLATE_WIDTH - pointsText.width) / 2.0
             displayedPoints = snapshot.points
+        }
+
+        if (displayedCoins != snapshot.runCoins) {
+            coinsText.text = snapshot.runCoins.toString()
+            displayedCoins = snapshot.runCoins
         }
 
         pauseButton.visible =
@@ -84,11 +98,13 @@ internal class GameplayHud private constructor(
             lifeFullBitmap: Bitmap,
             lifeEmptyBitmap: Bitmap,
             scorePlateBitmap: Bitmap,
+            coinIcon: Bitmap,
             pauseButtonBitmap: Bitmap,
             onPause: () -> Unit,
         ): GameplayHud {
             val fullLifeIcons = mutableListOf<Image>()
             lateinit var pointsText: Text
+            lateinit var coinsText: Text
 
             val statusGroup =
                 container.container {
@@ -125,6 +141,33 @@ internal class GameplayHud private constructor(
 
                     pointsText.y =
                         (HUD_ITEM_HEIGHT - pointsText.height) / 2.0 + SCORE_TEXT_OFFSET_Y
+
+                    hudImage(
+                        bitmap = scorePlateBitmap,
+                        x = COIN_PLATE_X,
+                        width = COIN_PLATE_WIDTH,
+                    )
+
+                    image(texture = coinIcon) {
+                        x = COIN_PLATE_X + COIN_ICON_PADDING
+                        y = (HUD_ITEM_HEIGHT - COIN_ICON_SIZE) / 2.0
+                        scaleX = COIN_ICON_SIZE / coinIcon.width.toDouble()
+                        scaleY = COIN_ICON_SIZE / coinIcon.height.toDouble()
+                        smoothing = true
+                    }
+
+                    coinsText =
+                        text(
+                            text = "0",
+                            textSize = SCORE_TEXT_SIZE,
+                            color = Colors.WHITE,
+                        )
+
+                    coinsText.x =
+                        COIN_PLATE_X + COIN_ICON_PADDING + COIN_ICON_SIZE + COIN_TEXT_GAP
+
+                    coinsText.y =
+                        (HUD_ITEM_HEIGHT - coinsText.height) / 2.0 + SCORE_TEXT_OFFSET_Y
                 }
 
             val pauseButton =
@@ -143,6 +186,7 @@ internal class GameplayHud private constructor(
                 statusGroup = statusGroup,
                 fullLifeIcons = fullLifeIcons,
                 pointsText = pointsText,
+                coinsText = coinsText,
                 pauseButton = pauseButton,
             )
         }

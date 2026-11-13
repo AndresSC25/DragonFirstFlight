@@ -17,6 +17,13 @@ data class GameSnapshot(
     val isZoneTransitioning: Boolean,
     val zoneTransitionProgress: Double,
     val status: GameStatus,
+    val coins: List<Coin>,
+    val coinScrollX: Double,
+    val runCoins: Int,
+    val catapult: CatapultSnapshot? = null,
+    val projectiles: List<Projectile> = emptyList(),
+    val impactPosition: ImpactPosition? = null,
+    val rockImpacts: List<RockImpact> = emptyList(),
 ) {
     val firstObstacle: Obstacle?
         get() = obstacles.firstOrNull()

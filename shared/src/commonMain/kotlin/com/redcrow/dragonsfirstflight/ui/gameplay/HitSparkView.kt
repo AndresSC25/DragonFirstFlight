@@ -34,15 +34,16 @@ internal class HitSparkView private constructor(
             snapshot.obstacles.firstOrNull {
                 it.id == snapshot.impactObstacleId
             }
-        if (impactObstacle == null) {
+        val impactPosition = snapshot.impactPosition
+        if (impactObstacle == null && impactPosition == null) {
             sprite.visible = false
             return
         }
 
-        sprite.x = impactObstacle.x + impactObstacle.width / 2.0 -
-            HIT_SPARK_FRAME_SIZE / 2.0
-        sprite.y = impactObstacle.y + impactObstacle.height / 2.0 -
-            HIT_SPARK_FRAME_SIZE / 2.0
+        val centerX = impactPosition?.x ?: (impactObstacle!!.x + impactObstacle.width / 2.0)
+        val centerY = impactPosition?.y ?: (impactObstacle!!.y + impactObstacle.height / 2.0)
+        sprite.x = centerX - HIT_SPARK_FRAME_SIZE / 2.0
+        sprite.y = centerY - HIT_SPARK_FRAME_SIZE / 2.0
         sprite.visible = true
 
         if (isPaused) {

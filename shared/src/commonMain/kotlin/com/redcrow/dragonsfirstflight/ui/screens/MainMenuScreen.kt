@@ -1,7 +1,10 @@
 ﻿package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
+import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
+import com.redcrow.dragonsfirstflight.ui.components.MEDIEVAL_PANEL_BORDER
 import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
+import com.redcrow.dragonsfirstflight.ui.components.medievalPanel
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
 import korlibs.image.color.Colors
@@ -10,8 +13,8 @@ import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.view.Container
 import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.Views
+import korlibs.korge.view.addUpdater
 import korlibs.korge.view.container
-import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.sprite
 import korlibs.korge.view.text
@@ -23,26 +26,23 @@ private const val MENU_PANEL_PATH =
     "ui/panels/panel_medieval.png"
 private const val MENU_BUTTON_PATH =
     "ui/buttons/button_normal.png"
-private const val MENU_DRAGON_PATH =
-    "sprites/dragon/YoungBrassDragon.png"
-
 private const val MENU_DRAGON_FRAME_WIDTH = 32
-private const val MENU_DRAGON_FRAME_HEIGHT = 32
-private const val MENU_DRAGON_FRAME_COLUMNS = 6
-private const val MENU_DRAGON_FRAME_ROWS = 1
 private const val MENU_DRAGON_FRAME_DURATION_MS = 140
 
 private const val MENU_PANEL_WIDTH = 600.0
-private const val MENU_PANEL_HEIGHT = 480.0
-private const val MENU_CONTENT_WIDTH = 470.0
-private const val MENU_CONTENT_HEIGHT = 362.0
-private const val MENU_BUTTON_WIDTH = 300.0
-private const val MENU_BUTTON_HEIGHT = 76.0
-private const val MENU_DRAGON_DISPLAY_SIZE = 108.0
+private const val MENU_PANEL_HEIGHT = 560.0
+private const val MENU_PADDING = 24.0
+private const val MENU_BUTTON_GAP = 20.0
+private const val MENU_BUTTON_HEIGHT = 64.0
+private const val MENU_DRAGON_DISPLAY_SIZE = 96.0
 
 internal suspend fun Container.createMainMenuScreen(
     views: Views,
+    skinInventory: SkinInventory,
+    skinAnimations: Map<String, SpriteAnimation>,
     onPlay: () -> Unit,
+    onShop: () -> Unit,
+    onInventory: () -> Unit,
 ): Container {
     val backgroundBitmap =
         resourcesVfs[MENU_BACKGROUND_PATH].readBitmap()
@@ -50,36 +50,6 @@ internal suspend fun Container.createMainMenuScreen(
         resourcesVfs[MENU_PANEL_PATH].readBitmap()
     val buttonBitmap =
         resourcesVfs[MENU_BUTTON_PATH].readBitmap()
-    val dragonSpriteMap =
-        resourcesVfs[MENU_DRAGON_PATH].readBitmap()
-
-    require(
-        dragonSpriteMap.width ==
-            MENU_DRAGON_FRAME_WIDTH * MENU_DRAGON_FRAME_COLUMNS,
-    ) {
-        "Invalid menu dragon spritesheet width."
-    }
-
-    require(
-        dragonSpriteMap.height ==
-            MENU_DRAGON_FRAME_HEIGHT * MENU_DRAGON_FRAME_ROWS,
-    ) {
-        "Invalid menu dragon spritesheet height."
-    }
-
-    val dragonAnimation =
-        SpriteAnimation(
-            spriteMap = dragonSpriteMap,
-            spriteWidth = MENU_DRAGON_FRAME_WIDTH,
-            spriteHeight = MENU_DRAGON_FRAME_HEIGHT,
-            marginTop = 0,
-            marginLeft = 0,
-            columns = MENU_DRAGON_FRAME_COLUMNS,
-            rows = MENU_DRAGON_FRAME_ROWS,
-            offsetBetweenColumns = 0,
-            offsetBetweenRows = 0,
-        )
-
     return container {
         val screenWidth = DragonGameConfig.VIRTUAL_SIZE.width
         val screenHeight = DragonGameConfig.VIRTUAL_SIZE.height
@@ -97,24 +67,23 @@ internal suspend fun Container.createMainMenuScreen(
 
         val panelX = (screenWidth - MENU_PANEL_WIDTH) / 2.0
         val panelY = (screenHeight - MENU_PANEL_HEIGHT) / 2.0
+        val innerX = panelX + MEDIEVAL_PANEL_BORDER
+        val innerY = panelY + MEDIEVAL_PANEL_BORDER
+        val innerWidth = MENU_PANEL_WIDTH - 2.0 * MEDIEVAL_PANEL_BORDER
+        val innerHeight = MENU_PANEL_HEIGHT - 2.0 * MEDIEVAL_PANEL_BORDER
+        val buttonWidth = (innerWidth - 2.0 * MENU_PADDING - MENU_BUTTON_GAP) / 2.0
 
         solidRect(
-            width = MENU_CONTENT_WIDTH,
-            height = MENU_CONTENT_HEIGHT,
+            width = innerWidth,
+            height = innerHeight,
             color = Colors["#101827"],
         ) {
-            x = (screenWidth - MENU_CONTENT_WIDTH) / 2.0
-            y = 178.0
+            x = innerX
+            y = innerY
             alpha = 0.60
         }
 
-        image(texture = panelBitmap) {
-            x = panelX
-            y = panelY
-            scaleX = MENU_PANEL_WIDTH / panelBitmap.width.toDouble()
-            scaleY = MENU_PANEL_HEIGHT / panelBitmap.height.toDouble()
-            smoothing = false
-        }
+        medievalPanel(panelBitmap, panelX, panelY, MENU_PANEL_WIDTH, MENU_PANEL_HEIGHT)
 
         val titleText =
             text(
@@ -123,7 +92,7 @@ internal suspend fun Container.createMainMenuScreen(
                 color = Colors["#F8D66D"],
             )
         titleText.x = (screenWidth - titleText.width) / 2.0
-        titleText.y = 215.0
+        titleText.y = innerY + MENU_PADDING
 
         val subtitleText =
             text(
@@ -132,16 +101,19 @@ internal suspend fun Container.createMainMenuScreen(
                 color = Colors.WHITE,
             )
         subtitleText.x = (screenWidth - subtitleText.width) / 2.0
-        subtitleText.y = 286.0
+        subtitleText.y = innerY + 85.0
 
         val dragonScale =
             MENU_DRAGON_DISPLAY_SIZE /
                 MENU_DRAGON_FRAME_WIDTH.toDouble()
 
+        var displayedSkin = skinInventory.equipped
+        val dragonAnimation = skinAnimations.getValue(displayedSkin.spritePath)
+
         val dragon =
             sprite(initialAnimation = dragonAnimation) {
                 x = (screenWidth - MENU_DRAGON_DISPLAY_SIZE) / 2.0
-                y = 315.0
+                y = innerY + 118.0
                 scaleX = dragonScale
                 scaleY = dragonScale
                 smoothing = false
@@ -153,15 +125,48 @@ internal suspend fun Container.createMainMenuScreen(
                 MENU_DRAGON_FRAME_DURATION_MS.milliseconds,
         )
 
+        addUpdater {
+            if (skinInventory.equipped != displayedSkin) {
+                displayedSkin = skinInventory.equipped
+                dragon.playAnimationLooped(
+                    spriteAnimation = skinAnimations.getValue(displayedSkin.spritePath),
+                    spriteDisplayTime = MENU_DRAGON_FRAME_DURATION_MS.milliseconds,
+                    startFrame = 0,
+                )
+            }
+        }
+
         createMedievalImageButton(
-            x = (screenWidth - MENU_BUTTON_WIDTH) / 2.0,
-            y = 430.0,
-            width = MENU_BUTTON_WIDTH,
+            x = innerX + MENU_PADDING,
+            y = innerY + 226.0,
+            width = innerWidth - 2.0 * MENU_PADDING,
             height = MENU_BUTTON_HEIGHT,
             texture = buttonBitmap,
             label = "Play",
             textSize = 28.0,
             onClick = onPlay,
+        )
+
+        createMedievalImageButton(
+            x = (screenWidth - MENU_BUTTON_GAP) / 2.0 - buttonWidth,
+            y = innerY + 310.0,
+            width = buttonWidth,
+            height = MENU_BUTTON_HEIGHT,
+            texture = buttonBitmap,
+            label = "Shop",
+            textSize = 28.0,
+            onClick = onShop,
+        )
+
+        createMedievalImageButton(
+            x = (screenWidth + MENU_BUTTON_GAP) / 2.0,
+            y = innerY + 310.0,
+            width = buttonWidth,
+            height = MENU_BUTTON_HEIGHT,
+            texture = buttonBitmap,
+            label = "Inventory",
+            textSize = 28.0,
+            onClick = onInventory,
         )
 
         val instructionText =
@@ -172,6 +177,6 @@ internal suspend fun Container.createMainMenuScreen(
             )
         instructionText.x =
             (screenWidth - instructionText.width) / 2.0
-        instructionText.y = 515.0
+        instructionText.y = innerY + innerHeight - MENU_PADDING - instructionText.height
     }
 }

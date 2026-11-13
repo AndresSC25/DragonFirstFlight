@@ -1,4 +1,4 @@
-package com.redcrow.dragonsfirstflight.game.engine
+﻿package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,7 +35,7 @@ class GameEngineScoreTest {
             ),
         )
         assertEquals(
-            GameEngineConfig.ZONE_THREE_MAX_OBSTACLE_SPEED,
+            0.0,
             GameEngineConfig.obstacleSpeedAt(
                 GameEngineConfig.TIME_TO_WIN_SECONDS,
             ),
@@ -57,6 +57,11 @@ class GameEngineScoreTest {
     @Test
     fun activeTimeProgressesThroughZonesBeforeVictory() {
         val engine = GameEngine(gameAreaWidth = 1280.0)
+        val transitionUpdateCount =
+            kotlin.math
+                .ceil(
+                    GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS / 0.05,
+                ).toInt() + 1
 
         assertEquals(GameZone.ZONE_ONE, engine.snapshot().zone)
 
@@ -73,7 +78,7 @@ class GameEngineScoreTest {
             engine.snapshot().points,
         )
 
-        repeat(30) {
+        repeat(transitionUpdateCount) {
             engine.update(0.05)
         }
         assertFalse(engine.snapshot().isZoneTransitioning)
@@ -90,11 +95,19 @@ class GameEngineScoreTest {
         assertEquals(GameStatus.RUNNING, engine.snapshot().status)
         assertTrue(engine.snapshot().isZoneTransitioning)
 
-        repeat(30) {
+        repeat(transitionUpdateCount) {
             engine.update(0.05)
         }
         engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
-        assertEquals(GameZone.ZONE_THREE, engine.snapshot().zone)
+        assertEquals(GameZone.BOSS, engine.snapshot().zone)
+        assertEquals(GameStatus.RUNNING, engine.snapshot().status)
+        assertTrue(engine.snapshot().isZoneTransitioning)
+
+        repeat(transitionUpdateCount) {
+            engine.update(0.05)
+        }
+        engine.update(GameEngineConfig.BOSS_DURATION_SECONDS)
+        assertEquals(GameZone.BOSS, engine.snapshot().zone)
         assertEquals(GameStatus.WON, engine.snapshot().status)
     }
 
