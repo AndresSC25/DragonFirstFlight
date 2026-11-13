@@ -48,6 +48,7 @@ class GameEngine(
         private set
 
     private val coinField = CoinField(random)
+    private val extraLifeField = ExtraLifeField(random)
     private var leftBoundary: Double = 0.0
     private var rightBoundary: Double = gameAreaWidth
 
@@ -137,6 +138,14 @@ class GameEngine(
         evaluateCollisionAndScore()
         if (isRunning) {
             runCoins += coinField.collect(dragonY)
+            if (
+                extraLifeField.collect(
+                    dragonY = dragonY,
+                    canIncreaseLives = lives < GameEngineConfig.MAX_LIVES,
+                )
+            ) {
+                lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
+            }
         }
         scoreTracker.update(elapsedSeconds)
         val currentZone =
@@ -159,6 +168,7 @@ class GameEngine(
                 GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
             obstacleGenerator.beginZoneTransition(currentZone)
             coinField.clear()
+            extraLifeField.clear()
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
@@ -207,12 +217,22 @@ class GameEngine(
             distance = GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * delta,
             leftBoundary = leftBoundary,
         )
+        extraLifeField.advance(
+            elapsedSeconds = delta,
+            distance = GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * delta,
+            leftBoundary = leftBoundary,
+        )
         val zone = GameEngineConfig.zoneAt(activeTimeSeconds)
         coinField.spawnForNewObstacles(
             obstacles = obstacleGenerator.activeObstacles,
             rightBoundary = rightBoundary,
             rowIntervalSeconds = GameEngineConfig.coinRowIntervalAt(zone),
             fiveHundredChance = GameEngineConfig.coinFiveHundredChanceAt(zone),
+        )
+        extraLifeField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
         )
     }
 
@@ -236,6 +256,7 @@ class GameEngine(
 
         obstacleGenerator.reset()
         coinField.reset()
+        extraLifeField.reset()
         runCoins = 0
         collisionRegistered.clear()
         pointRegistered.clear()
@@ -282,6 +303,8 @@ class GameEngine(
             coins = coinField.coins.toList(),
             coinScrollX = coinField.scrollX,
             runCoins = runCoins,
+            extraLives = extraLifeField.extraLives.toList(),
+            extraLifeScrollX = extraLifeField.currentScrollX,
             catapult = catapultSnapshot(),
             projectiles = projectileField.snapshot(),
             impactPosition = impactPosition,

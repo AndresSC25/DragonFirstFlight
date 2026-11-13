@@ -20,6 +20,8 @@ data class GameSnapshot(
     val coins: List<Coin>,
     val coinScrollX: Double,
     val runCoins: Int,
+    val extraLives: List<ExtraLife> = emptyList(),
+    val extraLifeScrollX: Double = 0.0,
     val catapult: CatapultSnapshot? = null,
     val projectiles: List<Projectile> = emptyList(),
     val impactPosition: ImpactPosition? = null,
