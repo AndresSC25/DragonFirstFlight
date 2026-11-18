@@ -11,9 +11,9 @@ data class Obstacle(
     val baseY: Double = y,
     internal val movement: ObstacleMovement = ObstacleMovement.STATIC,
     internal val movementPhase: Double = 0.0,
- internal val horizontalBehavior: ObstacleHorizontalBehavior =
- ObstacleHorizontalBehavior.NORMAL,
- val rushWarningRemainingSeconds: Double = 0.0,
+    internal val horizontalBehavior: ObstacleHorizontalBehavior =
+        ObstacleHorizontalBehavior.NORMAL,
+    val rushWarningRemainingSeconds: Double = 0.0,
 ) {
     init {
         require(id >= 0) {
@@ -40,9 +40,9 @@ data class Obstacle(
         require(spritePath.isNotBlank()) {
             "Obstacle sprite path must not be blank."
         }
- require(rushWarningRemainingSeconds.isFinite() && rushWarningRemainingSeconds >= 0.0) {
- "Rush warning time must be finite and must not be negative."
- }
+        require(rushWarningRemainingSeconds.isFinite() && rushWarningRemainingSeconds >= 0.0) {
+            "Rush warning time must be finite and must not be negative."
+        }
         require(movementPhase.isFinite()) {
             "Obstacle movement phase must be finite."
         }

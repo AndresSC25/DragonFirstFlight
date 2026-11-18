@@ -24,12 +24,12 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
-import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
+import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
@@ -210,7 +210,7 @@ internal suspend fun Container.createGameplayScreen(
             RockImpactView.create(container = container(), rockMap = rockImpactBitmap, sparkMap = hitSparkBitmap)
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
- lateinit var rushWarningView: RushWarningView
+        lateinit var rushWarningView: RushWarningView
 
         clipContainer(
             size =
@@ -234,11 +234,11 @@ internal suspend fun Container.createGameplayScreen(
                     spriteMap = hitSparkBitmap,
                 )
 
- rushWarningView =
- RushWarningView.create(
- parent = this,
- views = views,
- )
+            rushWarningView =
+                RushWarningView.create(
+                    parent = this,
+                    views = views,
+                )
         }
 
         val gameplayInputSurface =
@@ -289,7 +289,7 @@ internal suspend fun Container.createGameplayScreen(
             elapsedSeconds: Double,
         ) {
             catapultView.update(snapshot)
- rushWarningView.update(snapshot)
+            rushWarningView.update(snapshot)
             projectileView.update(snapshot)
             rockImpactView.update(snapshot)
             obstacleView.update(

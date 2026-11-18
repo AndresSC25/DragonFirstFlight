@@ -135,8 +135,8 @@ class ObstacleGeneratorHorizontalBehaviorTest {
                 val before = generator.snapshot()
                 val rushBefore =
                     before.firstOrNull { obstacle ->
- obstacle.horizontalBehavior.isRush &&
- obstacle.rushWarningRemainingSeconds == 0.0
+                        obstacle.horizontalBehavior.isRush &&
+                            obstacle.rushWarningRemainingSeconds == 0.0
                     }
 
                 generator.update(

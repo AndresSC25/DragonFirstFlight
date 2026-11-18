@@ -22,12 +22,13 @@ class ObstacleHorizontalBehaviorSelectorTest {
     @Test
     fun mediumCanGenerateRushBehavior() {
         val behaviors =
-            (0 until 1000).map { seed ->
-                select(
-                    difficulty = GameDifficulty.MEDIUM,
-                    seed = seed,
-                )
-            }.toSet()
+            (0 until 1000)
+                .map { seed ->
+                    select(
+                        difficulty = GameDifficulty.MEDIUM,
+                        seed = seed,
+                    )
+                }.toSet()
 
         assertTrue(ObstacleHorizontalBehavior.NORMAL in behaviors)
         assertTrue(ObstacleHorizontalBehavior.RUSH_MEDIUM in behaviors)
@@ -37,12 +38,13 @@ class ObstacleHorizontalBehaviorSelectorTest {
     @Test
     fun hardCanGenerateItsFasterRushBehavior() {
         val behaviors =
-            (0 until 1000).map { seed ->
-                select(
-                    difficulty = GameDifficulty.HARD,
-                    seed = seed,
-                )
-            }.toSet()
+            (0 until 1000)
+                .map { seed ->
+                    select(
+                        difficulty = GameDifficulty.HARD,
+                        seed = seed,
+                    )
+                }.toSet()
 
         assertTrue(ObstacleHorizontalBehavior.NORMAL in behaviors)
         assertTrue(ObstacleHorizontalBehavior.RUSH_HARD in behaviors)

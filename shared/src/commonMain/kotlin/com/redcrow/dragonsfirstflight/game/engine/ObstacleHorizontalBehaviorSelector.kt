@@ -34,9 +34,9 @@ internal object ObstacleHorizontalBehaviorSelector {
         }
 
         return when (difficulty) {
-                GameDifficulty.EASY -> ObstacleHorizontalBehavior.NORMAL
-                GameDifficulty.MEDIUM -> ObstacleHorizontalBehavior.RUSH_MEDIUM
-                GameDifficulty.HARD -> ObstacleHorizontalBehavior.RUSH_HARD
-            }
+            GameDifficulty.EASY -> ObstacleHorizontalBehavior.NORMAL
+            GameDifficulty.MEDIUM -> ObstacleHorizontalBehavior.RUSH_MEDIUM
+            GameDifficulty.HARD -> ObstacleHorizontalBehavior.RUSH_HARD
+        }
     }
 }

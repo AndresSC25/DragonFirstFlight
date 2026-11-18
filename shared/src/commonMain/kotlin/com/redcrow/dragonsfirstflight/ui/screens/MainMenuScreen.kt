@@ -4,8 +4,8 @@ import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
 import com.redcrow.dragonsfirstflight.ui.components.MEDIEVAL_PANEL_BORDER
-import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.components.createCompactDifficultySelector
+import com.redcrow.dragonsfirstflight.ui.components.createMedievalImageButton
 import com.redcrow.dragonsfirstflight.ui.components.medievalPanel
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveBackdrop
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
@@ -42,7 +42,7 @@ internal suspend fun Container.createMainMenuScreen(
     views: Views,
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
- onPlay: (GameDifficulty) -> Unit,
+    onPlay: (GameDifficulty) -> Unit,
     onShop: () -> Unit,
     onInventory: () -> Unit,
 ): Container {
@@ -109,15 +109,15 @@ internal suspend fun Container.createMainMenuScreen(
             MENU_DRAGON_DISPLAY_SIZE /
                 MENU_DRAGON_FRAME_WIDTH.toDouble()
 
- var selectedDifficulty = GameDifficulty.EASY
+        var selectedDifficulty = GameDifficulty.EASY
 
         var displayedSkin = skinInventory.equipped
         val dragonAnimation = skinAnimations.getValue(displayedSkin.spritePath)
 
         val dragon =
             sprite(initialAnimation = dragonAnimation) {
- x = innerX + 80.0
- y = innerY + 112.0
+                x = innerX + 80.0
+                y = innerY + 112.0
                 scaleX = dragonScale
                 scaleY = dragonScale
                 smoothing = false
@@ -140,15 +140,15 @@ internal suspend fun Container.createMainMenuScreen(
             }
         }
 
- createCompactDifficultySelector(
- x = innerX + innerWidth - MENU_PADDING - 212.0,
- y = innerY + 124.0,
- width = 212.0,
- height = 46.0,
- texture = buttonBitmap,
- initialDifficulty = selectedDifficulty,
- onSelectionChanged = { selectedDifficulty = it },
- )
+        createCompactDifficultySelector(
+            x = innerX + innerWidth - MENU_PADDING - 212.0,
+            y = innerY + 124.0,
+            width = 212.0,
+            height = 46.0,
+            texture = buttonBitmap,
+            initialDifficulty = selectedDifficulty,
+            onSelectionChanged = { selectedDifficulty = it },
+        )
 
         createMedievalImageButton(
             x = innerX + MENU_PADDING,
@@ -158,7 +158,7 @@ internal suspend fun Container.createMainMenuScreen(
             texture = buttonBitmap,
             label = "Play",
             textSize = 28.0,
- onClick = { onPlay(selectedDifficulty) },
+            onClick = { onPlay(selectedDifficulty) },
         )
 
         createMedievalImageButton(

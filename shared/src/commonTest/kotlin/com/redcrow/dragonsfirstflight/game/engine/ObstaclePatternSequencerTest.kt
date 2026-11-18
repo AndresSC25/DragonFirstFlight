@@ -63,11 +63,12 @@ class ObstaclePatternSequencerTest {
 
         repeat(1200) {
             generatedPatterns +=
-                sequencer.nextStep(
-                    zone = GameZone.ZONE_THREE,
-                    difficulty = GameDifficulty.HARD,
-                    singleLane = GameEngineConfig.OBSTACLE_Y,
-                ).pattern
+                sequencer
+                    .nextStep(
+                        zone = GameZone.ZONE_THREE,
+                        difficulty = GameDifficulty.HARD,
+                        singleLane = GameEngineConfig.OBSTACLE_Y,
+                    ).pattern
         }
 
         assertEquals(
@@ -119,7 +120,7 @@ class ObstaclePatternSequencerTest {
                     previousPattern != null &&
                     step.pattern != previousPattern
                 ) {
- if (checkNotNull(previousPattern).isIntense) {
+                    if (checkNotNull(previousPattern).isIntense) {
                         assertEquals(
                             1.40,
                             step.separationMultiplier,

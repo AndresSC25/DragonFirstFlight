@@ -78,7 +78,7 @@ object GameEngineConfig {
     const val FOREST_MAGE_SIZE: Double = 120.0
     const val KNIGHT_SWORD_SIZE: Double = 120.0
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
- const val RUSH_WARNING_DURATION_SECONDS: Double = 0.80
+    const val RUSH_WARNING_DURATION_SECONDS: Double = 0.80
     const val MIN_OBSTACLE_SEPARATION: Double = 285.0
     const val ZONE_TWO_MIN_OBSTACLE_SEPARATION: Double = 270.0
     const val ZONE_THREE_MIN_OBSTACLE_SEPARATION: Double = 240.0

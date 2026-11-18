@@ -59,7 +59,7 @@ internal class RushWarningView private constructor(
             1.0 -
                 warningObstacle.rushWarningRemainingSeconds /
                 GameEngineConfig.RUSH_WARNING_DURATION_SECONDS
- container.alpha = 0.82 + progress.coerceIn(0.0, 1.0) * 0.18
+        container.alpha = 0.82 + progress.coerceIn(0.0, 1.0) * 0.18
 
         val urgency = progress.coerceIn(0.0, 1.0)
         plate.alpha = 0.52 + urgency * 0.30
@@ -72,9 +72,10 @@ internal class RushWarningView private constructor(
             parent: Container,
             views: Views,
         ): RushWarningView {
-            val warningContainer = parent.container {
-                visible = false
-            }
+            val warningContainer =
+                parent.container {
+                    visible = false
+                }
 
             val plate =
                 warningContainer.solidRect(

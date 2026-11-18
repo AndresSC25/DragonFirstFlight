@@ -97,43 +97,42 @@ internal object ObstaclePatternPlanner {
             "Single obstacle lane must be a configured obstacle lane."
         }
 
- return when (pattern) {
-                ObstaclePattern.SINGLE -> listOf(singleLane)
-                ObstaclePattern.STAIR_UP ->
-                    listOf(bottom, lowerMiddle, middle, top)
-                ObstaclePattern.STAIR_DOWN ->
-                    listOf(top, middle, lowerMiddle, bottom)
-                ObstaclePattern.ZIGZAG ->
-                    listOf(top, lowerMiddle, middle, bottom)
-                ObstaclePattern.DIAMOND ->
-                    listOf(middle, top, middle, bottom, middle)
-                ObstaclePattern.ALTERNATING ->
-                    if (reverseVariant) {
-                        listOf(bottom, top, bottom, top)
-                    } else {
-                        listOf(top, bottom, top, bottom)
-                    }
-                ObstaclePattern.MIDDLE_WEAVE ->
-                    if (reverseVariant) {
-                        listOf(middle, lowerMiddle, top, middle)
-                    } else {
-                        listOf(middle, top, lowerMiddle, middle)
-                    }
-                ObstaclePattern.FAKE_OPENING ->
-                    if (reverseVariant) {
-                        listOf(bottom, lowerMiddle, bottom)
-                    } else {
-                        listOf(top, middle, top)
-                    }
-                ObstaclePattern.DOUBLE_PRESSURE ->
-                    if (reverseVariant) {
-                        listOf(bottom, bottom, top)
-                    } else {
-                        listOf(top, top, bottom)
-                    }
-            }
+        return when (pattern) {
+            ObstaclePattern.SINGLE -> listOf(singleLane)
+            ObstaclePattern.STAIR_UP ->
+                listOf(bottom, lowerMiddle, middle, top)
+            ObstaclePattern.STAIR_DOWN ->
+                listOf(top, middle, lowerMiddle, bottom)
+            ObstaclePattern.ZIGZAG ->
+                listOf(top, lowerMiddle, middle, bottom)
+            ObstaclePattern.DIAMOND ->
+                listOf(middle, top, middle, bottom, middle)
+            ObstaclePattern.ALTERNATING ->
+                if (reverseVariant) {
+                    listOf(bottom, top, bottom, top)
+                } else {
+                    listOf(top, bottom, top, bottom)
+                }
+            ObstaclePattern.MIDDLE_WEAVE ->
+                if (reverseVariant) {
+                    listOf(middle, lowerMiddle, top, middle)
+                } else {
+                    listOf(middle, top, lowerMiddle, middle)
+                }
+            ObstaclePattern.FAKE_OPENING ->
+                if (reverseVariant) {
+                    listOf(bottom, lowerMiddle, bottom)
+                } else {
+                    listOf(top, middle, top)
+                }
+            ObstaclePattern.DOUBLE_PRESSURE ->
+                if (reverseVariant) {
+                    listOf(bottom, bottom, top)
+                } else {
+                    listOf(top, top, bottom)
+                }
+        }
     }
 
-    fun allLanes(): List<Double> =
-        listOf(top, middle, lowerMiddle, bottom)
+    fun allLanes(): List<Double> = listOf(top, middle, lowerMiddle, bottom)
 }

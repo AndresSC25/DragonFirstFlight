@@ -120,7 +120,7 @@ class RushWarningTimingTest {
                 generator.snapshot().firstOrNull { obstacle ->
                     obstacle.horizontalBehavior.isRush &&
                         obstacle.rushWarningRemainingSeconds ==
-                            GameEngineConfig.RUSH_WARNING_DURATION_SECONDS
+                        GameEngineConfig.RUSH_WARNING_DURATION_SECONDS
                 }
 
             if (rush != null) {

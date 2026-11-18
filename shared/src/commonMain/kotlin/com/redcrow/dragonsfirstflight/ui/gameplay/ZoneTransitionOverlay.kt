@@ -68,7 +68,7 @@ internal class ZoneTransitionOverlay private constructor(
         announcement.visible = announcement.alpha > 0.0
         announcement.y =
             (DragonGameConfig.VIRTUAL_SIZE.height - PANEL_HEIGHT) / 2.0 +
-                entranceOffset(progress)
+            entranceOffset(progress)
     }
 
     private fun transitionAlpha(progress: Double): Double {
@@ -167,7 +167,7 @@ internal class ZoneTransitionOverlay private constructor(
                     title =
                         text(
                             text = "THE TOWERS",
- textSize = 36.0,
+                            textSize = 36.0,
                             color = Colors["#F8D66D"],
                         )
                     title.x = (PANEL_WIDTH - title.width) / 2.0

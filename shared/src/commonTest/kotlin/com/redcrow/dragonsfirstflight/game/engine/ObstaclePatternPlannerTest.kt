@@ -78,10 +78,11 @@ class ObstaclePatternPlannerTest {
     fun bossUsesItsIndependentPatternSystem() {
         GameDifficulty.entries.forEach { difficulty ->
             assertTrue(
-                ObstaclePatternPlanner.availablePatterns(
-                    zone = GameZone.BOSS,
-                    difficulty = difficulty,
-                ).isEmpty(),
+                ObstaclePatternPlanner
+                    .availablePatterns(
+                        zone = GameZone.BOSS,
+                        difficulty = difficulty,
+                    ).isEmpty(),
             )
         }
     }

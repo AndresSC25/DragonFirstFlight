@@ -5,7 +5,6 @@ import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors
 import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
-import korlibs.korge.view.Image
 import korlibs.korge.view.Text
 import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
@@ -99,9 +98,9 @@ internal fun Container.createCompactDifficultySelector(
     leftArrow.x = x + (SELECTOR_ARROW_AREA_WIDTH - leftArrow.width) / 2.0
     rightArrow.x =
         x +
-            width -
-            SELECTOR_ARROW_AREA_WIDTH +
-            (SELECTOR_ARROW_AREA_WIDTH - rightArrow.width) / 2.0
+        width -
+        SELECTOR_ARROW_AREA_WIDTH +
+        (SELECTOR_ARROW_AREA_WIDTH - rightArrow.width) / 2.0
     centerVertically(leftArrow)
     centerVertically(rightArrow)
 

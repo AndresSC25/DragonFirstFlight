@@ -60,8 +60,8 @@ suspend fun Container.createDragonGame(views: Views) {
             views = views,
             skinInventory = skinInventory,
             skinAnimations = skinAnimations,
- onPlay = { difficulty ->
- controller.startGame(difficulty)
+            onPlay = { difficulty ->
+                controller.startGame(difficulty)
                 updateScreenVisibility()
             },
             onInventory = {
