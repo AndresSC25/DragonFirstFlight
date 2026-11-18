@@ -1,10 +1,11 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
 internal class ObstacleGenerator(
     areaWidth: Double,
     private val random: Random = Random.Default,
+ private var difficulty: GameDifficulty = GameDifficulty.MEDIUM,
 ) {
     private val obstacleSpritePathsByZone =
         listOf(
@@ -105,9 +106,9 @@ internal class ObstacleGenerator(
             return
         }
         val obstacleSpeed =
-            GameEngineConfig.obstacleSpeedAt(activeTimeSeconds)
+ difficulty.obstacleSpeedAt(activeTimeSeconds)
         val obstacleSeparation =
-            GameEngineConfig.obstacleSeparationAt(activeTimeSeconds)
+ difficulty.obstacleSeparationAt(activeTimeSeconds)
         val zone =
             GameEngineConfig.zoneAt(activeTimeSeconds)
 
@@ -169,7 +170,8 @@ internal class ObstacleGenerator(
         }
     }
 
-    fun reset() {
+ fun reset(difficulty: GameDifficulty = this.difficulty) {
+ this.difficulty = difficulty
         obstacles.clear()
         nextId = 0
         spritePaths.clear()
