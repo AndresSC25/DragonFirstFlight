@@ -8,21 +8,21 @@ enum class GameDifficulty(
 ) {
     EASY(
         displayName = "Easy",
-        description = "A calmer flight with slower and more separated obstacles.",
-        obstacleSpeedMultiplier = 0.85,
-        obstacleSeparationMultiplier = 1.15,
-    ),
-    MEDIUM(
-        displayName = "Medium",
-        description = "The balanced Dragon's First Flight experience.",
+        description = "Classic",
         obstacleSpeedMultiplier = 1.0,
         obstacleSeparationMultiplier = 1.0,
     ),
+    MEDIUM(
+        displayName = "Medium",
+        description = "Challenging",
+        obstacleSpeedMultiplier = 1.15,
+        obstacleSeparationMultiplier = 0.92,
+    ),
     HARD(
         displayName = "Hard",
-        description = "A faster flight with less space between obstacles.",
-        obstacleSpeedMultiplier = 1.15,
-        obstacleSeparationMultiplier = 0.90,
+        description = "Intense",
+        obstacleSpeedMultiplier = 1.30,
+        obstacleSeparationMultiplier = 0.85,
     ),
     ;
 

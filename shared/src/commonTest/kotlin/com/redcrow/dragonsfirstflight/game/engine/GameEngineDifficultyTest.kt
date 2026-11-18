@@ -8,20 +8,20 @@ import kotlin.test.assertTrue
 
 class GameEngineDifficultyTest {
  @Test
- fun mediumRemainsTheDefaultDifficulty() {
+ fun easyIsTheDefaultDifficulty() {
  val defaultEngine = GameEngine(gameAreaWidth = 1280.0, random = Random(7))
- val mediumEngine =
+ val easyEngine =
  GameEngine(
  gameAreaWidth = 1280.0,
  random = Random(7),
- initialDifficulty = GameDifficulty.MEDIUM,
+ initialDifficulty = GameDifficulty.EASY,
  )
 
  defaultEngine.update(0.05)
- mediumEngine.update(0.05)
+ easyEngine.update(0.05)
 
  assertEquals(
- mediumEngine.snapshot().obstacles,
+ easyEngine.snapshot().obstacles,
  defaultEngine.snapshot().obstacles,
  )
  }

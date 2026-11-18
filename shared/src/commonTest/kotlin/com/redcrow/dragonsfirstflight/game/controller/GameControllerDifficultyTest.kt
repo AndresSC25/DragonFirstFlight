@@ -11,18 +11,18 @@ import kotlin.test.assertTrue
 
 class GameControllerDifficultyTest {
  @Test
- fun mediumIsTheDefaultDifficulty() {
+ fun easyIsTheDefaultDifficulty() {
  val controller =
  GameController(
  gameAreaWidth = 1280.0,
  random = Random(7),
  )
 
- assertEquals(GameDifficulty.MEDIUM, controller.activeDifficulty)
+ assertEquals(GameDifficulty.EASY, controller.activeDifficulty)
 
  controller.startGame()
 
- assertEquals(GameDifficulty.MEDIUM, controller.activeDifficulty)
+ assertEquals(GameDifficulty.EASY, controller.activeDifficulty)
  }
 
  @Test

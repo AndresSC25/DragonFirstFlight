@@ -5,7 +5,7 @@ import kotlin.random.Random
 internal class ObstacleGenerator(
     areaWidth: Double,
     private val random: Random = Random.Default,
- private var difficulty: GameDifficulty = GameDifficulty.MEDIUM,
+ private var difficulty: GameDifficulty = GameDifficulty.EASY,
 ) {
     private val obstacleSpritePathsByZone =
         listOf(

@@ -6,7 +6,7 @@ import kotlin.test.assertTrue
 
 class GameDifficultyTest {
     @Test
-    fun mediumPreservesTheCurrentBalance() {
+ fun easyPreservesTheOriginalBalance() {
         val sampleTimes =
             listOf(
                 0.0,
@@ -18,17 +18,17 @@ class GameDifficultyTest {
         sampleTimes.forEach { activeTimeSeconds ->
             assertEquals(
                 GameEngineConfig.obstacleSpeedAt(activeTimeSeconds),
-                GameDifficulty.MEDIUM.obstacleSpeedAt(activeTimeSeconds),
+ GameDifficulty.EASY.obstacleSpeedAt(activeTimeSeconds),
             )
             assertEquals(
                 GameEngineConfig.obstacleSeparationAt(activeTimeSeconds),
-                GameDifficulty.MEDIUM.obstacleSeparationAt(activeTimeSeconds),
+ GameDifficulty.EASY.obstacleSeparationAt(activeTimeSeconds),
             )
         }
     }
 
     @Test
-    fun easyIsLessDemandingThanMedium() {
+ fun mediumIsMoreDemandingThanEasy() {
         val activeTimeSeconds = GameEngineConfig.ZONE_DURATION_SECONDS * 2.0
 
         assertTrue(

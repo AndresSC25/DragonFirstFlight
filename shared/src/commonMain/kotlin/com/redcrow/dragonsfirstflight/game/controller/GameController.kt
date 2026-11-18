@@ -21,7 +21,7 @@ class GameController(
 
     private var bankedRunCoins = 0
 
- var activeDifficulty: GameDifficulty = GameDifficulty.MEDIUM
+ var activeDifficulty: GameDifficulty = GameDifficulty.EASY
  private set
 
     var runNumber: Int = 0
@@ -64,7 +64,7 @@ class GameController(
         }
     }
 
- fun startGame(difficulty: GameDifficulty = GameDifficulty.MEDIUM) {
+ fun startGame(difficulty: GameDifficulty = GameDifficulty.EASY) {
  activeDifficulty = difficulty
  restartRun()
         isPaused = false

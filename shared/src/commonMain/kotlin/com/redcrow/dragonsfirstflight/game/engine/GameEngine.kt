@@ -8,7 +8,7 @@ import kotlin.random.Random
 class GameEngine(
     gameAreaWidth: Double,
     random: Random = Random.Default,
- initialDifficulty: GameDifficulty = GameDifficulty.MEDIUM,
+ initialDifficulty: GameDifficulty = GameDifficulty.EASY,
     private val onDamageEvent: (DamageEvent) -> Unit = {},
 ) {
  private var difficulty: GameDifficulty = initialDifficulty
