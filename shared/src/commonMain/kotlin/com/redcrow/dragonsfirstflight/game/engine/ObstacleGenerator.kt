@@ -61,6 +61,7 @@ internal class ObstacleGenerator(
 
     private var lastLane: Double? = null
     private var consecutiveLaneCount: Int = 0
+ private var previousWasRush: Boolean = false
 
     private val laneUsage =
         mutableMapOf<Double, Int>()
@@ -118,13 +119,20 @@ internal class ObstacleGenerator(
 
         for (index in obstacles.indices) {
             val obstacle = obstacles[index]
+ val warningTimeConsumed =
+ minOf(delta, obstacle.rushWarningRemainingSeconds)
+ val movementDelta = delta - warningTimeConsumed
+ val warningRemainingSeconds =
+ (obstacle.rushWarningRemainingSeconds - delta).coerceAtLeast(0.0)
 
             val movedObstacle =
                 obstacle.copy(
                     x =
                         obstacle.x -
                             obstacleSpeed *
-                            delta,
+ obstacle.horizontalBehavior.speedMultiplier *
+ movementDelta,
+ rushWarningRemainingSeconds = warningRemainingSeconds,
                 )
 
             obstacles[index] =
@@ -178,6 +186,7 @@ internal class ObstacleGenerator(
         currentZone = GameZone.ZONE_ONE
         lastLane = null
         consecutiveLaneCount = 0
+ previousWasRush = false
         laneUsage.clear()
         patternSequencer.reset()
         spawnObstacle(
@@ -197,6 +206,7 @@ internal class ObstacleGenerator(
         currentZone = zone
         lastLane = null
         consecutiveLaneCount = 0
+ previousWasRush = false
         laneUsage.clear()
         patternSequencer.reset()
     }
@@ -293,24 +303,56 @@ internal class ObstacleGenerator(
                 }
             }
         val isBottomOnly = spritePath in bottomOnlyObstaclePaths
+ val horizontalBehavior =
+ ObstacleHorizontalBehaviorSelector.select(
+ difficulty = difficulty,
+ zone = currentZone,
+ isBottomOnly = isBottomOnly || obstacles.isEmpty(),
+ previousWasRush = previousWasRush,
+ random = random,
+ )
         val movement =
+ if (horizontalBehavior.isRush) {
+ ObstacleMovement.STATIC
+ } else {
             ObstacleMovementSelector.select(
                 zone = currentZone,
                 isBottomOnly = isBottomOnly,
                 random = random,
             )
+ }
+
+ val effectiveX =
+ if (horizontalBehavior.isRush && obstacles.isNotEmpty()) {
+ maxOf(
+ x,
+ obstacles.last().x +
+ difficulty.obstacleSeparationAt(activeTimeSeconds) *
+ horizontalBehavior.separationMultiplier,
+ )
+ } else {
+ x
+ }
 
         obstacles +=
             Obstacle(
                 id = nextId++,
-                x = x,
+ x = effectiveX,
                 y = lane,
                 size = obstacleSize,
                 spritePath = spritePaths.removeAt(0),
                 baseY = lane,
                 movement = movement,
                 movementPhase = random.nextDouble() * 2.0 * kotlin.math.PI,
+ horizontalBehavior = horizontalBehavior,
+ rushWarningRemainingSeconds =
+ if (horizontalBehavior.isRush) {
+ GameEngineConfig.RUSH_WARNING_DURATION_SECONDS
+ } else {
+ 0.0
+ },
             )
+ previousWasRush = horizontalBehavior.isRush
     }
 
     private fun validateRightBoundary(width: Double): Double {
