@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game.controller
 
 import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.engine.GameEngine
+import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.state.GameScreenState
 import korlibs.korge.service.storage.InmemoryStorage
@@ -19,6 +20,9 @@ class GameController(
         )
 
     private var bankedRunCoins = 0
+
+ var activeDifficulty: GameDifficulty = GameDifficulty.MEDIUM
+ private set
 
     var runNumber: Int = 0
         private set
@@ -60,8 +64,9 @@ class GameController(
         }
     }
 
-    fun startGame() {
-        restartRun()
+ fun startGame(difficulty: GameDifficulty = GameDifficulty.MEDIUM) {
+ activeDifficulty = difficulty
+ restartRun()
         isPaused = false
         screenState = GameScreenState.PLAYING
     }
@@ -139,7 +144,7 @@ class GameController(
 
     private fun restartRun() {
         bankRunCoins()
-        engine.restart()
+ engine.restart(activeDifficulty)
         runNumber++
         bankedRunCoins = 0
     }
