@@ -13,7 +13,7 @@ object GameEngineConfig {
     const val BOSS_FURY_START_SECONDS: Double = BOSS_DURATION_SECONDS - BOSS_FURY_DURATION_SECONDS
     const val TIME_TO_WIN_SECONDS: Double =
         BOSS_START_SECONDS + BOSS_DURATION_SECONDS
-    const val ZONE_TRANSITION_DURATION_SECONDS: Double = 5.0
+    const val ZONE_TRANSITION_DURATION_SECONDS: Double = 2.0
     const val EXTRA_LIFE_SIZE: Double = 56.0
     const val EXTRA_LIFE_MAX_PER_RUN: Int = 2
     const val EXTRA_LIFE_FIRST_ATTEMPT_SECONDS: Double = 5.0
