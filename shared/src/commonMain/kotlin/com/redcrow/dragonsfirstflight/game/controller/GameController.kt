@@ -64,7 +64,7 @@ class GameController(
         }
     }
 
-    fun startGame(difficulty: GameDifficulty = GameDifficulty.EASY) {
+    fun startGame(difficulty: GameDifficulty = activeDifficulty) {
         activeDifficulty = difficulty
         restartRun()
         isPaused = false

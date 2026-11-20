@@ -102,4 +102,16 @@ class GameControllerDifficultyTest {
     private companion object {
         const val MAX_FRAMES_UNTIL_LOSS = 1000
     }
+
+    @Test
+    fun restartAfterFinishingPreservesTheSelectedDifficulty() {
+        val controller = GameController(gameAreaWidth = 1280.0)
+
+        controller.startGame(GameDifficulty.HARD)
+        assertEquals(GameDifficulty.HARD, controller.activeDifficulty)
+
+        controller.startGame()
+
+        assertEquals(GameDifficulty.HARD, controller.activeDifficulty)
+    }
 }
