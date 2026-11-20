@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.gameplay
+package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
@@ -15,10 +15,10 @@ import korlibs.korge.view.image
 import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 
-private const val PANEL_WIDTH: Double = 500.0
-private const val PANEL_HEIGHT: Double = 240.0
-private const val CONTENT_WIDTH: Double = 390.0
-private const val CONTENT_HEIGHT: Double = 181.0
+private const val PANEL_WIDTH = 440.0
+private const val PANEL_HEIGHT = 190.0
+private const val CONTENT_WIDTH = 340.0
+private const val CONTENT_HEIGHT = 136.0
 
 internal class ZoneTransitionOverlay private constructor(
     private val shade: SolidRect,
@@ -42,17 +42,17 @@ internal class ZoneTransitionOverlay private constructor(
 
         val zoneText =
             when (snapshot.zone) {
-                GameZone.ZONE_ONE -> "ZONE I"
-                GameZone.ZONE_TWO -> "ZONE II"
-                GameZone.ZONE_THREE -> "ZONE III"
-                GameZone.BOSS -> "ZONE IV"
+                GameZone.ZONE_ONE -> "THE COURTYARD"
+                GameZone.ZONE_TWO -> "THE TOWERS"
+                GameZone.ZONE_THREE -> "THE WILDS"
+                GameZone.BOSS -> "FINAL ASSAULT"
             }
         val zoneSubtitle =
             when (snapshot.zone) {
-                GameZone.ZONE_ONE -> "FORTRESS COURTYARD"
-                GameZone.ZONE_TWO -> "TOWERS AND WALLS"
-                GameZone.ZONE_THREE -> "OUTER FOREST"
-                GameZone.BOSS -> "Boss"
+                GameZone.ZONE_ONE -> "Take flight from the fortress"
+                GameZone.ZONE_TWO -> "Climb beyond the fortress walls"
+                GameZone.ZONE_THREE -> "Escape through the outer forest"
+                GameZone.BOSS -> "Break through the siege"
             }
 
         if (title.text != zoneText) {
@@ -66,6 +66,9 @@ internal class ZoneTransitionOverlay private constructor(
 
         announcement.alpha = announcementAlpha(progress)
         announcement.visible = announcement.alpha > 0.0
+        announcement.y =
+            (DragonGameConfig.VIRTUAL_SIZE.height - PANEL_HEIGHT) / 2.0 +
+            entranceOffset(progress)
     }
 
     private fun transitionAlpha(progress: Double): Double {
@@ -81,34 +84,42 @@ internal class ZoneTransitionOverlay private constructor(
 
     private fun announcementAlpha(progress: Double): Double =
         when {
-            progress < ANNOUNCEMENT_FADE_IN_START -> 0.0
-            progress < ANNOUNCEMENT_FADE_IN_END ->
-                smoothStep(
-                    (progress - ANNOUNCEMENT_FADE_IN_START) /
-                        (ANNOUNCEMENT_FADE_IN_END - ANNOUNCEMENT_FADE_IN_START),
-                )
-            progress <= ANNOUNCEMENT_FADE_OUT_START -> 1.0
-            progress < ANNOUNCEMENT_FADE_OUT_END ->
+            progress < FADE_IN_END -> smoothStep(progress / FADE_IN_END)
+            progress <= FADE_OUT_START -> 1.0
+            else ->
                 1.0 -
                     smoothStep(
-                        (progress - ANNOUNCEMENT_FADE_OUT_START) /
-                            (ANNOUNCEMENT_FADE_OUT_END - ANNOUNCEMENT_FADE_OUT_START),
+                        (progress - FADE_OUT_START) /
+                            (1.0 - FADE_OUT_START),
                     )
-            else -> 0.0
         }.coerceIn(0.0, 1.0)
 
+    private fun entranceOffset(progress: Double): Double {
+        val visibleProgress =
+            when {
+                progress < FADE_IN_END -> smoothStep(progress / FADE_IN_END)
+                progress <= FADE_OUT_START -> 1.0
+                else ->
+                    1.0 -
+                        smoothStep(
+                            (progress - FADE_OUT_START) /
+                                (1.0 - FADE_OUT_START),
+                        )
+            }
+        return (1.0 - visibleProgress) * ENTRANCE_OFFSET_Y
+    }
+
     private fun smoothStep(value: Double): Double {
-        val progress = value.coerceIn(0.0, 1.0)
-        return progress * progress * (3.0 - 2.0 * progress)
+        val normalized = value.coerceIn(0.0, 1.0)
+        return normalized * normalized * (3.0 - 2.0 * normalized)
     }
 
     companion object {
-        const val TRANSITION_MIDPOINT: Double = 0.50
-        private const val MAX_SHADE_ALPHA: Double = 0.94
-        private const val ANNOUNCEMENT_FADE_IN_START: Double = 0.12
-        private const val ANNOUNCEMENT_FADE_IN_END: Double = 0.24
-        private const val ANNOUNCEMENT_FADE_OUT_START: Double = 0.78
-        private const val ANNOUNCEMENT_FADE_OUT_END: Double = 0.94
+        const val TRANSITION_MIDPOINT = 0.50
+        private const val MAX_SHADE_ALPHA = 0.68
+        private const val FADE_IN_END = 0.22
+        private const val FADE_OUT_START = 0.74
+        private const val ENTRANCE_OFFSET_Y = 18.0
 
         fun create(
             container: Container,
@@ -144,7 +155,7 @@ internal class ZoneTransitionOverlay private constructor(
                     ) {
                         x = (PANEL_WIDTH - CONTENT_WIDTH) / 2.0
                         y = (PANEL_HEIGHT - CONTENT_HEIGHT) / 2.0
-                        alpha = 0.78
+                        alpha = 0.72
                     }
 
                     image(texture = panelBitmap) {
@@ -155,21 +166,21 @@ internal class ZoneTransitionOverlay private constructor(
 
                     title =
                         text(
-                            text = "ZONE II",
-                            textSize = 44.0,
+                            text = "THE TOWERS",
+                            textSize = 36.0,
                             color = Colors["#F8D66D"],
                         )
                     title.x = (PANEL_WIDTH - title.width) / 2.0
-                    title.y = 65.0
+                    title.y = 50.0
 
                     subtitle =
                         text(
-                            text = "TOWERS AND WALLS",
-                            textSize = 20.0,
+                            text = "Climb beyond the fortress walls",
+                            textSize = 18.0,
                             color = Colors.WHITE,
                         )
                     subtitle.x = (PANEL_WIDTH - subtitle.width) / 2.0
-                    subtitle.y = 135.0
+                    subtitle.y = 111.0
                 }
 
             return ZoneTransitionOverlay(

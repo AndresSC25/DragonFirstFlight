@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game
+package com.redcrow.dragonsfirstflight.game
 
 import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
@@ -60,8 +60,8 @@ suspend fun Container.createDragonGame(views: Views) {
             views = views,
             skinInventory = skinInventory,
             skinAnimations = skinAnimations,
-            onPlay = {
-                controller.startGame()
+            onPlay = { difficulty ->
+                controller.startGame(difficulty)
                 updateScreenVisibility()
             },
             onInventory = {

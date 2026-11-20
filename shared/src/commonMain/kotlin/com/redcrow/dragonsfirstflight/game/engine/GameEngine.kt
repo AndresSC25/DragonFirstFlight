@@ -8,8 +8,10 @@ import kotlin.random.Random
 class GameEngine(
     gameAreaWidth: Double,
     random: Random = Random.Default,
+    initialDifficulty: GameDifficulty = GameDifficulty.EASY,
     private val onDamageEvent: (DamageEvent) -> Unit = {},
 ) {
+    private var difficulty: GameDifficulty = initialDifficulty
     private var dragonY: Double =
         GameEngineConfig.DRAGON_INITIAL_Y
 
@@ -19,6 +21,7 @@ class GameEngine(
         ObstacleGenerator(
             areaWidth = gameAreaWidth,
             random = random,
+            difficulty = initialDifficulty,
         )
 
     private var lives: Int =
@@ -172,6 +175,7 @@ class GameEngine(
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
+        val obstacleSpeed = difficulty.obstacleSpeedAt(activeTimeSeconds)
         if (currentZone == GameZone.BOSS) {
             if (!isRunning) {
                 projectileField.reset()
@@ -214,12 +218,12 @@ class GameEngine(
         )
         coinField.advance(
             elapsedSeconds = delta,
-            distance = GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * delta,
+            distance = obstacleSpeed * delta,
             leftBoundary = leftBoundary,
         )
         extraLifeField.advance(
             elapsedSeconds = delta,
-            distance = GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * delta,
+            distance = obstacleSpeed * delta,
             leftBoundary = leftBoundary,
         )
         val zone = GameEngineConfig.zoneAt(activeTimeSeconds)
@@ -236,7 +240,8 @@ class GameEngine(
         )
     }
 
-    fun restart() {
+    fun restart(difficulty: GameDifficulty = this.difficulty) {
+        this.difficulty = difficulty
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
@@ -254,7 +259,7 @@ class GameEngine(
         bossVolley.reset()
         pendingBossPattern = null
 
-        obstacleGenerator.reset()
+        obstacleGenerator.reset(difficulty)
         coinField.reset()
         extraLifeField.reset()
         runCoins = 0

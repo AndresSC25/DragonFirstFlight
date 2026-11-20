@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.screens
+package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
@@ -29,6 +29,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
+import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
@@ -209,6 +210,7 @@ internal suspend fun Container.createGameplayScreen(
             RockImpactView.create(container = container(), rockMap = rockImpactBitmap, sparkMap = hitSparkBitmap)
         lateinit var dragonView: DragonView
         lateinit var hitSparkView: HitSparkView
+        lateinit var rushWarningView: RushWarningView
 
         clipContainer(
             size =
@@ -230,6 +232,12 @@ internal suspend fun Container.createGameplayScreen(
                 HitSparkView.create(
                     container = this,
                     spriteMap = hitSparkBitmap,
+                )
+
+            rushWarningView =
+                RushWarningView.create(
+                    parent = this,
+                    views = views,
                 )
         }
 
@@ -281,6 +289,7 @@ internal suspend fun Container.createGameplayScreen(
             elapsedSeconds: Double,
         ) {
             catapultView.update(snapshot)
+            rushWarningView.update(snapshot)
             projectileView.update(snapshot)
             rockImpactView.update(snapshot)
             obstacleView.update(
