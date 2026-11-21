@@ -1,6 +1,8 @@
 package com.redcrow.dragonsfirstflight
 
 import korlibs.image.bitmap.Bitmap32
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.concurrent.atomic.AtomicReference
 
 internal class IntroFrameTexture(
@@ -13,6 +15,29 @@ internal class IntroFrameTexture(
     @Volatile
     var hasVisiblePixels = false
         private set
+
+    fun publishBgra(
+        buffer: ByteBuffer,
+        sourceWidth: Int,
+        sourceHeight: Int,
+        strideBytes: Int,
+    ) {
+        require(sourceWidth > 0 && sourceHeight > 0 && strideBytes >= sourceWidth * 4 && strideBytes % 4 == 0)
+        val bytes = buffer.duplicate().order(ByteOrder.LITTLE_ENDIAN)
+        bytes.clear()
+        require(bytes.limit().toLong() >= (sourceHeight - 1L) * strideBytes + sourceWidth * 4L)
+        val source = bytes.asIntBuffer()
+        val stride = strideBytes / 4
+        val pixels = IntArray(bitmap.width * bitmap.height)
+        for (y in 0 until bitmap.height) {
+            val sourceRow = (y * sourceHeight / bitmap.height) * stride
+            val targetRow = y * bitmap.width
+            for (x in 0 until bitmap.width) {
+                pixels[targetRow + x] = source.get(sourceRow + x * sourceWidth / bitmap.width)
+            }
+        }
+        publishArgb(pixels)
+    }
 
     fun publishArgb(pixels: IntArray) {
         require(pixels.size == bitmap.ints.size)

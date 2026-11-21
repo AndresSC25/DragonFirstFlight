@@ -1,6 +1,6 @@
 package com.redcrow.dragonsfirstflight
 
-import javafx.embed.swing.JFXPanel
+import javafx.application.Platform
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -12,6 +12,7 @@ import kotlinx.coroutines.withTimeout
 import java.nio.file.Files
 import kotlin.math.abs
 import kotlin.test.Test
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class DesktopIntroDecoderTest {
@@ -24,7 +25,7 @@ class DesktopIntroDecoderTest {
             }
             val texture = IntroFrameTexture(1080, 720)
             val completed = CompletableDeferred<Unit>()
-            val bridge = withContext(Dispatchers.Swing) { JFXPanel() }
+            val bridge = withContext(Dispatchers.Swing) { createDesktopIntroBridge() }
             val decoder = DesktopIntroDecoder(bridge, source, texture) { completed.complete(Unit) }
             try {
                 decoder.setPaused(true)
@@ -42,6 +43,10 @@ class DesktopIntroDecoderTest {
                     }
                 }
                 assertTrue(texture.applyLatest(), "Decoded pixels must reach the KorGE texture")
+                val firstPicture = texture.bitmap.ints.copyOf()
+                delay(500)
+                assertTrue(texture.applyLatest(), "Frame capture must keep running without a visible JavaFX window")
+                assertFalse(firstPicture.contentEquals(texture.bitmap.ints), "The captured video must advance visually")
                 decoder.setPaused(true)
                 delay(250)
                 val pausedAt = checkNotNull(decoder.positionSeconds)
@@ -50,11 +55,28 @@ class DesktopIntroDecoderTest {
                 assertTrue(!completed.isCompleted, "Pausing must not end the introduction")
 
                 decoder.setPaused(false)
-                withTimeout(20_000) { completed.await() }
+                var movingPictures = 0
+                var previousPicture = texture.bitmap.ints.copyOf()
+                withTimeout(20_000) {
+                    while (!completed.isCompleted) {
+                        delay(250)
+                        if (texture.applyLatest()) {
+                            val picture = texture.bitmap.ints.copyOf()
+                            if (!picture.contentEquals(previousPicture)) movingPictures++
+                            previousPicture = picture
+                        }
+                    }
+                }
+                assertTrue(movingPictures >= 10, "The video must keep changing throughout playback")
+                assertTrue(
+                    checkNotNull(decoder.capturedPositionSeconds) > 12.0,
+                    "Frames must reach the end of the video",
+                )
                 assertTrue(checkNotNull(decoder.positionSeconds) > 12.0, "The complete bundled video must play")
             } finally {
                 withContext(NonCancellable) { decoder.close() }
-                Files.deleteIfExists(source)
+                Platform.exit()
+                deleteIntroSource(source)
             }
         }
 }

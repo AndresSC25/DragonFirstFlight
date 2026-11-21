@@ -2,7 +2,6 @@ package com.redcrow.dragonsfirstflight
 
 import android.app.Activity
 import android.graphics.Color
-import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -105,18 +104,16 @@ internal class IntroVideoPlayer(
                 fun dp(value: Int): Int = (value * density).toInt()
                 val skip =
                     Button(activity).apply {
-                        text = "Skip"
-                        contentDescription = "Skip introduction"
+                        setText(R.string.skip_intro)
+                        contentDescription = activity.getString(R.string.skip_intro_description)
                         isAllCaps = false
-                        setTextColor(Color.WHITE)
-                        minHeight = dp(48)
-                        minWidth = dp(100)
-                        this.background =
-                            GradientDrawable().apply {
-                                setColor(Color.rgb(16, 24, 39))
-                                setStroke(dp(1), Color.rgb(248, 214, 109))
-                                cornerRadius = dp(8).toFloat()
-                            }
+                        setTextColor(Color.rgb(16, 24, 39))
+                        textSize = 24f
+                        gravity = Gravity.CENTER
+                        minHeight = dp(60)
+                        minWidth = dp(160)
+                        setPadding(dp(16), dp(8), dp(16), dp(8))
+                        this.background = createIntroSkipBackground(activity)
                         setOnClickListener {
                             if (finished.complete(Unit)) isEnabled = false
                         }
@@ -140,6 +137,8 @@ internal class IntroVideoPlayer(
                     } else {
                         @Suppress("DEPRECATION")
                         buttonLayout.topMargin = dp(16) + insets.systemWindowInsetTop
+                        @Suppress("DEPRECATION")
+                        buttonLayout.marginEnd = dp(16) + insets.systemWindowInsetRight
                     }
                     skip.layoutParams = buttonLayout
                     insets

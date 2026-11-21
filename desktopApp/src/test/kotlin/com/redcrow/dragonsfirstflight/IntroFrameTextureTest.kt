@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight
 
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -8,6 +10,38 @@ import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class IntroFrameTextureTest {
+    @Test
+    fun nativeFramesRespectRowPaddingAndColorChannels() {
+        val buffer = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN)
+        for (pixel in intArrayOf(0xffff0000.toInt(), 0xff00ff00.toInt(), 0, 0xff0000ff.toInt(), -1, 0)) {
+            buffer.putInt(pixel)
+        }
+        val texture = IntroFrameTexture(2, 2)
+
+        texture.publishBgra(buffer, 2, 2, 12)
+
+        assertTrue(texture.applyLatest())
+        assertContentEquals(
+            intArrayOf(0xff0000ff.toInt(), 0xff00ff00.toInt(), 0xffff0000.toInt(), -1),
+            texture.bitmap.ints,
+        )
+        assertEquals(24, buffer.position())
+    }
+
+    @Test
+    fun nativeFramesResizeIntoTheRenderTextureWithoutReadingPadding() {
+        val buffer = ByteBuffer.allocate(24).order(ByteOrder.LITTLE_ENDIAN)
+        for (pixel in intArrayOf(0xffff0000.toInt(), 0xff00ff00.toInt(), 0, 0xff0000ff.toInt(), -1, 0)) {
+            buffer.putInt(pixel)
+        }
+        val texture = IntroFrameTexture(1, 2)
+
+        texture.publishBgra(buffer, 2, 2, 12)
+
+        assertTrue(texture.applyLatest())
+        assertContentEquals(intArrayOf(0xff0000ff.toInt(), 0xffff0000.toInt()), texture.bitmap.ints)
+    }
+
     @Test
     fun decodedColorsReachTheRenderBitmapAndInvalidateItsTexture() {
         val texture = IntroFrameTexture(3, 1)

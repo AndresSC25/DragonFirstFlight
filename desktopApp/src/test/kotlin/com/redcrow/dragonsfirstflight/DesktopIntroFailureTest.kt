@@ -1,6 +1,6 @@
 package com.redcrow.dragonsfirstflight
 
-import javafx.embed.swing.JFXPanel
+import javafx.application.Platform
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -18,7 +18,7 @@ class DesktopIntroFailureTest {
         runBlocking {
             val source = Files.createTempFile("invalid-game-intro-", ".mp4")
             Files.write(source, byteArrayOf(1, 2, 3, 4))
-            val bridge = withContext(Dispatchers.Swing) { JFXPanel() }
+            val bridge = withContext(Dispatchers.Swing) { createDesktopIntroBridge() }
             val finished = CompletableDeferred<Unit>()
             val texture = IntroFrameTexture(1080, 720)
             val decoder = DesktopIntroDecoder(bridge, source, texture) { finished.complete(Unit) }
@@ -28,7 +28,8 @@ class DesktopIntroFailureTest {
                 assertFalse(texture.hasVisiblePixels)
             } finally {
                 withContext(NonCancellable) { decoder.close() }
-                Files.deleteIfExists(source)
+                Platform.exit()
+                deleteIntroSource(source)
             }
         }
 }

@@ -18,8 +18,9 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
 
 - Android app: `./gradlew :androidApp:assembleDebug`
 - Desktop app:
-  - Hot reload: `./gradlew :desktopApp:hotRun --auto`
+  - In Android Studio, select the shared **Desktop** run configuration for Run and Rerun.
   - Standard run: `./gradlew :desktopApp:run`
+  - Each standard launch creates a fresh game process, including the introduction.
 - iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
 
 ### Running tests
@@ -34,8 +35,9 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 Android and Desktop play `shared/src/commonMain/resources/video/intro.mp4` before
 creating the main menu. The bundled introduction is a silent, 12.5-second H.264
-video (1536 x 1024, 24 fps). Playback preserves its aspect ratio with black bands
-where needed. It runs once per game launch; starting or retrying a run does not
+video (1536 x 1024, 24 fps). Desktop fills the window while preserving the video
+aspect ratio, cropping the edges where needed. Android fits the complete image
+with black bands where needed. It runs once per game launch; starting or retrying a run does not
 replay it. A playback error falls back to the menu.
 
 Android uses the system VideoView. Desktop decodes video frames with JavaFX and
@@ -43,11 +45,31 @@ renders them as a KorGE texture; Gradle selects native JavaFX libraries for the 
 machine. Build distributables on their target OS/architecture.
 Android includes `kotlinx-coroutines-android` to provide the main-thread dispatcher
 required by the video player and Activity integration.
+Desktop disposes each media player after the introduction while keeping JavaFX
+available for subsequent playback in the same process.
+Desktop receives native decoded-frame callbacks from the pinned JavaFX media
+runtime and uploads their BGRA pixels directly to KorGE. It does not capture a
+hidden JavaFX scene or depend on snapshots, animation pulses or sampling timers.
+Frame conversion respects native row strides and resizes to the render texture.
+Playback monitoring tracks delivered frames; a video ending without a moving
+picture is reported as a playback error.
 
 The Skip button ends playback and opens the menu once. Desktop also accepts Esc,
-Space and Enter. Playback pauses when Desktop loses focus or is minimized, and
+Space and Enter; Tab shows a persistent keyboard focus outline. Its opaque gold
+background and dark text have a calculated contrast ratio of 12.5:1 on both platforms. The Desktop
+button measures 160 x 60 virtual pixels and uses 24-pixel text.
+It reuses the main menu's medieval button frame with a uniformly gold interior
+and centered text; the source menu texture remains unchanged.
+Android uses the same frame, gold fill and centered dark label, with a minimum
+160 x 60 dp touch target and 24 sp text that follows the system font size.
+Skip is available throughout the intro, including while the video prepares.
+The native Android button supports accessibility services, keyboard focus and
+touch feedback, and stays inside the system bar and display cutout insets.
+Playback pauses when Desktop loses focus or is minimized, and
 when Android enters the background. Returning resumes from the saved position.
 Android saves the intro position/completion flag across Activity recreation.
+Losing focus or backgrounding also pauses an active game. Returning leaves the
+pause menu open until the player selects Resume.
 Neither platform persists an "already watched" preference: a fresh app launch
 shows the introduction again. Decoder startup stalls time out after 15 seconds;
 playback stalls time out after 5 seconds without progress. Background time does
@@ -61,7 +83,7 @@ Manual acceptance checklist (run separately on Desktop and an Android device):
 | Check | Expected result |
 |---|---|
 | Fresh launch | Intro appears before the menu; the complete video lasts 12.5 seconds. |
-| Image | No blue screen, distortion or cropping; black side bands are expected on 16:9. |
+| Image | No blue screen or distortion. Desktop fills the window with centered cropping; Android fits the complete image with black bands where needed. |
 | Natural end | Main menu appears once, and gameplay starts only after Play. |
 | Skip early/midway/near end | Menu opens once, with no frozen frame or background playback. |
 | Rapid repeated Skip | No duplicate menus and no accidental Play activation. |
@@ -89,13 +111,17 @@ For the full validation set, run:
 
 Validation recorded on November 20, 2026:
 
-- Shared JVM and Android host suites: 307 tests passed.
-- Desktop texture tests: 3 passed; native playback and corrupt-video checks: 2 passed.
+- Shared JVM and Android host suites: 310 tests passed, including window-focus
+  pause and explicit-resume coverage.
+- Desktop texture, button-style and keyboard tests: 9 passed; native playback, corrupt-video and repeated-start
+  checks: 3 passed.
 - Android Debug APK generation, `ktlintCheck` and `:androidApp:lintDebug` passed.
-  Android lint reported no errors and 14 warnings.
+  Android lint reported no errors and 13 warnings.
 - A Pixel 6 emulator running API 37 verified introduction playback, natural
   completion, repeated Skip presses without accidental Play activation, resuming
   after 31 seconds in the background, and starting and advancing a game with Play.
+  The updated gold Skip frame and centered label were visually checked; Android's
+  accessibility hierarchy exposes an enabled, clickable button named "Skip introduction".
 
 ---
 
