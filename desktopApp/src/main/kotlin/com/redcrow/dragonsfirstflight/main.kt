@@ -12,5 +12,6 @@ suspend fun main() {
                 fullscreen = false,
                 resizable = false,
             ),
+        beforeMenu = { views -> playIntroVideo(views) },
     )
 }
