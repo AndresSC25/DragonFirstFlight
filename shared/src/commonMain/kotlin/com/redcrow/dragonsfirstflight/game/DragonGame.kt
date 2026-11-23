@@ -13,6 +13,8 @@ import com.redcrow.dragonsfirstflight.ui.screens.createGameplayScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createInventoryScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createMainMenuScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createShopScreen
+import korlibs.event.FocusEvent
+import korlibs.event.PauseEvent
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
@@ -20,6 +22,7 @@ import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Container
 import korlibs.korge.view.Views
 import korlibs.korge.view.solidRect
+import korlibs.render.GameWindow
 
 suspend fun Container.createDragonGame(views: Views) {
     val coinWallet = CoinWallet(views.storage)
@@ -28,6 +31,8 @@ suspend fun Container.createDragonGame(views: Views) {
             gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH,
             coinWallet = coinWallet,
         )
+
+    pauseGameWhenWindowInactive(controller, views.gameWindow)
 
     val skinInventory = SkinInventory(views.storage)
     val skinShop = SkinShop(wallet = coinWallet, inventory = skinInventory)
@@ -130,4 +135,12 @@ suspend fun Container.createDragonGame(views: Views) {
         )
 
     updateScreenVisibility()
+}
+
+internal fun pauseGameWhenWindowInactive(
+    controller: GameController,
+    window: GameWindow,
+) {
+    window.onEvent(FocusEvent.Type.BLUR) { controller.pauseGame() }
+    window.onEvent(PauseEvent) { controller.pauseGame() }
 }

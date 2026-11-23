@@ -9,6 +9,7 @@ internal class ExtraLifeField(
     private var nextId = 0
     private var lastSeenObstacleId = -1
     private var extraLivesSpawned = 0
+    private var endlessWindowElapsedSeconds = 0.0
     private var secondsUntilNextAttempt = GameEngineConfig.EXTRA_LIFE_FIRST_ATTEMPT_SECONDS
     private var scrollX = 0.0
 
@@ -23,6 +24,7 @@ internal class ExtraLifeField(
         nextId = 0
         lastSeenObstacleId = -1
         extraLivesSpawned = 0
+        endlessWindowElapsedSeconds = 0.0
         secondsUntilNextAttempt = GameEngineConfig.EXTRA_LIFE_FIRST_ATTEMPT_SECONDS
         scrollX = 0.0
     }
@@ -35,7 +37,15 @@ internal class ExtraLifeField(
         elapsedSeconds: Double,
         distance: Double,
         leftBoundary: Double,
+        isEndless: Boolean = false,
     ) {
+        if (isEndless) {
+            endlessWindowElapsedSeconds += elapsedSeconds
+            if (endlessWindowElapsedSeconds >= GameEngineConfig.ENDLESS_EXTRA_LIFE_WINDOW_SECONDS) {
+                endlessWindowElapsedSeconds %= GameEngineConfig.ENDLESS_EXTRA_LIFE_WINDOW_SECONDS
+                extraLivesSpawned = 0
+            }
+        }
         secondsUntilNextAttempt -= elapsedSeconds
         scrollX += distance
         activeExtraLives.removeAll {

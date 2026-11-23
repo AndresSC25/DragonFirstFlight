@@ -27,8 +27,11 @@ internal class ZoneTransitionOverlay private constructor(
     private val title: Text,
     private val subtitle: Text,
 ) {
-    fun update(snapshot: GameSnapshot) {
-        if (!snapshot.isZoneTransitioning) {
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean = false,
+    ) {
+        if (!snapshot.isZoneTransitioning || isPaused) {
             shade.alpha = 0.0
             shade.visible = false
             announcement.alpha = 0.0

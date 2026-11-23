@@ -120,6 +120,12 @@ class GameController(
         screenState = GameScreenState.MENU
     }
 
+    fun restartGame() {
+        if (!isGameVisible || engine.isRunning) return
+        restartRun()
+        isPaused = false
+    }
+
     fun pauseGame() {
         if (isGameVisible && engine.isRunning) {
             isPaused = true
@@ -149,7 +155,7 @@ class GameController(
         if (engine.isRunning) {
             engine.flap()
         } else {
-            restartRun()
+            restartGame()
         }
     }
 

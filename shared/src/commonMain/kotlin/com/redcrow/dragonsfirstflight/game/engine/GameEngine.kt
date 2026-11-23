@@ -242,6 +242,7 @@ class GameEngine(
             elapsedSeconds = delta,
             distance = obstacleSpeed * delta,
             leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
         )
         val zone = GameEngineConfig.zoneAt(profileTimeSeconds)
         coinField.spawnForNewObstacles(
@@ -255,6 +256,12 @@ class GameEngine(
             rightBoundary = rightBoundary,
             zone = zone,
         )
+        // Endless sessions must not retain collision history for enemies that have left the field.
+        if (mode == GameMode.ENDLESS) {
+            val activeIds = obstacleGenerator.activeObstacles.mapTo(mutableSetOf()) { it.id }
+            collisionRegistered.retainAll(activeIds)
+            pointRegistered.retainAll(activeIds)
+        }
     }
 
     fun continueEndless() {
