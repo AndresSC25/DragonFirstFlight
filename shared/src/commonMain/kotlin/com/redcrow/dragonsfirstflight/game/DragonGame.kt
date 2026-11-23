@@ -8,6 +8,7 @@ import com.redcrow.dragonsfirstflight.game.skins.NyanSkin
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
 import com.redcrow.dragonsfirstflight.game.skins.SkinShop
 import com.redcrow.dragonsfirstflight.ui.gameplay.createDragonFlightAnimation
+import com.redcrow.dragonsfirstflight.ui.screens.createEndlessSetupScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createGameplayScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createInventoryScreen
 import com.redcrow.dragonsfirstflight.ui.screens.createMainMenuScreen
@@ -47,12 +48,14 @@ suspend fun Container.createDragonGame(views: Views) {
     var gameContainer: Container? = null
     var inventoryContainer: Container? = null
     var shopContainer: Container? = null
+    var endlessSetupContainer: Container? = null
 
     fun updateScreenVisibility() {
         menuContainer.visible = controller.isMenuVisible
         gameContainer?.visible = controller.isGameVisible
         inventoryContainer?.visible = controller.isInventoryVisible
         shopContainer?.visible = controller.isShopVisible
+        endlessSetupContainer?.visible = controller.isEndlessSetupVisible
     }
 
     menuContainer =
@@ -64,12 +67,30 @@ suspend fun Container.createDragonGame(views: Views) {
                 controller.startGame(difficulty)
                 updateScreenVisibility()
             },
+            onEndless = { difficulty ->
+                controller.openEndlessSetup(difficulty)
+                updateScreenVisibility()
+            },
             onInventory = {
                 controller.openInventory()
                 updateScreenVisibility()
             },
             onShop = {
                 controller.openShop()
+                updateScreenVisibility()
+            },
+        )
+
+    endlessSetupContainer =
+        createEndlessSetupScreen(
+            views = views,
+            controller = controller,
+            onStart = {
+                controller.confirmEndlessSetup()
+                updateScreenVisibility()
+            },
+            onBack = {
+                controller.returnToMenu()
                 updateScreenVisibility()
             },
         )

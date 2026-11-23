@@ -323,6 +323,7 @@ internal suspend fun Container.createGameplayScreen(
         addUpdater { delta ->
             if (controller.runNumber != appliedRunNumber) {
                 appliedRunNumber = controller.runNumber
+                obstacleView.reset()
                 val path = rollFlightSpritePath(skinInventory.equipped, Random.Default)
                 dragonView.setAnimation(skinAnimations.getValue(path))
             }

@@ -26,6 +26,9 @@ class GameController(
     var activeDifficulty: GameDifficulty = GameDifficulty.EASY
         private set
 
+    var selectedEndlessZone: GameZone = GameZone.ZONE_ONE
+        private set
+
     var runNumber: Int = 0
         private set
 
@@ -41,6 +44,9 @@ class GameController(
 
     val isInventoryVisible: Boolean
         get() = screenState == GameScreenState.INVENTORY
+
+    val isEndlessSetupVisible: Boolean
+        get() = screenState == GameScreenState.ENDLESS_SETUP
 
     val isShopVisible: Boolean
         get() = screenState == GameScreenState.SHOP
@@ -71,6 +77,20 @@ class GameController(
         restartRun(mode = GameMode.NORMAL)
         isPaused = false
         screenState = GameScreenState.PLAYING
+    }
+
+    fun openEndlessSetup(difficulty: GameDifficulty = activeDifficulty) {
+        if (!isMenuVisible) return
+        activeDifficulty = difficulty
+        screenState = GameScreenState.ENDLESS_SETUP
+    }
+
+    fun selectEndlessZone(zone: GameZone) {
+        if (isEndlessSetupVisible) selectedEndlessZone = zone
+    }
+
+    fun confirmEndlessSetup() {
+        if (isEndlessSetupVisible) startEndless(selectedEndlessZone, activeDifficulty)
     }
 
     fun startEndless(
