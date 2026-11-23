@@ -5,6 +5,7 @@ import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.engine.GameEngine
 import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
+import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import com.redcrow.dragonsfirstflight.game.state.GameScreenState
 import korlibs.korge.service.storage.InmemoryStorage
@@ -57,6 +58,9 @@ class GameController(
     val isGameRunning: Boolean
         get() = isGameVisible && engine.isRunning && !isPaused
 
+    val canContinueEndless: Boolean
+        get() = isGameVisible && engine.mode == GameMode.NORMAL && engine.status == GameStatus.WON
+
     val coinBalance: Int
         get() = coinWallet.balance + (engine.runCoins - bankedRunCoins)
 
@@ -101,6 +105,13 @@ class GameController(
         restartRun(mode = GameMode.ENDLESS, endlessZone = zone)
         isPaused = false
         screenState = GameScreenState.PLAYING
+    }
+
+    fun continueEndless() {
+        if (!canContinueEndless) return
+        bankRunCoins()
+        engine.continueEndless()
+        isPaused = false
     }
 
     fun returnToMenu() {

@@ -249,6 +249,26 @@ class GameEngine(
         )
     }
 
+    fun continueEndless() {
+        if (mode != GameMode.NORMAL || status != GameStatus.WON) return
+        mode = GameMode.ENDLESS
+        endlessZone = GameZone.BOSS
+        dragonY = GameEngineConfig.DRAGON_INITIAL_Y
+        verticalVelocity = 0.0
+        impactFeedbackRemainingSeconds = 0.0
+        impactObstacleId = null
+        impactPosition = null
+        rockImpacts.clear()
+        zoneTransitionRemainingSeconds = GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
+        resetBossEncounter()
+        // Keep obstacle ids and reward limits: this continues the same run.
+        obstacleGenerator.beginZoneTransition(GameZone.ZONE_THREE)
+        coinField.clear()
+        extraLifeField.clear()
+        collisionRegistered.clear()
+        pointRegistered.clear()
+    }
+
     fun restart(
         difficulty: GameDifficulty = this.difficulty,
         mode: GameMode = this.mode,
@@ -267,12 +287,7 @@ class GameEngine(
         impactPosition = null
         invulnerabilityRemainingSeconds = 0.0
         zoneTransitionRemainingSeconds = 0.0
-        catapultEntrySeconds = 0.0
-        catapultAttack.reset()
-        projectileField.reset()
-        bossPatternPlanner.reset()
-        bossVolley.reset()
-        pendingBossPattern = null
+        resetBossEncounter()
 
         obstacleGenerator.reset(difficulty, GameEngineConfig.zoneAt(obstacleProfileTimeAt(0.0)))
         coinField.reset()
@@ -280,6 +295,15 @@ class GameEngine(
         runCoins = 0
         collisionRegistered.clear()
         pointRegistered.clear()
+    }
+
+    private fun resetBossEncounter() {
+        catapultEntrySeconds = 0.0
+        catapultAttack.reset()
+        projectileField.reset()
+        bossPatternPlanner.reset()
+        bossVolley.reset()
+        pendingBossPattern = null
     }
 
     fun snapshot(): GameSnapshot {

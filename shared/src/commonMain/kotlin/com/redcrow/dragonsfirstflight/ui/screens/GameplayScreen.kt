@@ -274,6 +274,7 @@ internal suspend fun Container.createGameplayScreen(
                 buttonBitmap = gameButtonBitmap,
                 onResume = controller::resumeGame,
                 onRestart = controller::startGame,
+                onContinueEndless = controller::continueEndless,
                 onBackToMenu = onBackToMenu,
             )
 
