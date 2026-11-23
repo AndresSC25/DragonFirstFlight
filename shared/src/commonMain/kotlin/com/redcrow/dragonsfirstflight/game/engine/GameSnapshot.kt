@@ -26,6 +26,7 @@ data class GameSnapshot(
     val projectiles: List<Projectile> = emptyList(),
     val impactPosition: ImpactPosition? = null,
     val rockImpacts: List<RockImpact> = emptyList(),
+    val mode: GameMode = GameMode.NORMAL,
 ) {
     val firstObstacle: Obstacle?
         get() = obstacles.firstOrNull()

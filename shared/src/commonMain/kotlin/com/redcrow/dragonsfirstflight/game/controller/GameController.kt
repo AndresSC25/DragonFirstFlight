@@ -3,7 +3,9 @@ package com.redcrow.dragonsfirstflight.game.controller
 import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.engine.GameEngine
+import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
+import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import com.redcrow.dragonsfirstflight.game.state.GameScreenState
 import korlibs.korge.service.storage.InmemoryStorage
 import kotlin.random.Random
@@ -66,7 +68,17 @@ class GameController(
 
     fun startGame(difficulty: GameDifficulty = activeDifficulty) {
         activeDifficulty = difficulty
-        restartRun()
+        restartRun(mode = GameMode.NORMAL)
+        isPaused = false
+        screenState = GameScreenState.PLAYING
+    }
+
+    fun startEndless(
+        zone: GameZone,
+        difficulty: GameDifficulty = activeDifficulty,
+    ) {
+        activeDifficulty = difficulty
+        restartRun(mode = GameMode.ENDLESS, endlessZone = zone)
         isPaused = false
         screenState = GameScreenState.PLAYING
     }
@@ -142,9 +154,12 @@ class GameController(
         }
     }
 
-    private fun restartRun() {
+    private fun restartRun(
+        mode: GameMode = engine.mode,
+        endlessZone: GameZone = engine.snapshot().zone,
+    ) {
         bankRunCoins()
-        engine.restart(activeDifficulty)
+        engine.restart(activeDifficulty, mode, endlessZone)
         runNumber++
         bankedRunCoins = 0
     }
