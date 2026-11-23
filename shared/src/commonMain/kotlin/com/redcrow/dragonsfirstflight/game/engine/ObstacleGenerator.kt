@@ -104,15 +104,13 @@ internal class ObstacleGenerator(
         delta: Double,
         activeTimeSeconds: Double,
         profileTimeSeconds: Double = activeTimeSeconds,
+        obstacleSpeed: Double = difficulty.obstacleSpeedAt(profileTimeSeconds),
+        obstacleSeparation: Double = difficulty.obstacleSeparationAt(profileTimeSeconds),
     ) {
         if (GameEngineConfig.zoneAt(profileTimeSeconds) == GameZone.BOSS) {
             beginZoneTransition(GameZone.BOSS)
             return
         }
-        val obstacleSpeed =
-            difficulty.obstacleSpeedAt(profileTimeSeconds)
-        val obstacleSeparation =
-            difficulty.obstacleSeparationAt(profileTimeSeconds)
         val zone =
             GameEngineConfig.zoneAt(profileTimeSeconds)
 
@@ -177,6 +175,7 @@ internal class ObstacleGenerator(
                                 GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
                     ),
                 activeTimeSeconds = profileTimeSeconds,
+                separation = obstacleSeparation,
             )
         }
     }
@@ -226,6 +225,7 @@ internal class ObstacleGenerator(
     private fun spawnObstacle(
         x: Double,
         activeTimeSeconds: Double,
+        separation: Double = difficulty.obstacleSeparationAt(activeTimeSeconds),
     ) {
         val shouldSpawnGroundObstacle =
             currentZone == GameZone.ZONE_ONE &&
@@ -347,7 +347,7 @@ internal class ObstacleGenerator(
                 maxOf(
                     x,
                     obstacles.last().x +
-                        difficulty.obstacleSeparationAt(activeTimeSeconds) *
+                        separation *
                         patternSeparationMultiplier,
                 )
             } else {
@@ -359,7 +359,7 @@ internal class ObstacleGenerator(
                 maxOf(
                     patternAdjustedX,
                     obstacles.last().x +
-                        difficulty.obstacleSeparationAt(activeTimeSeconds) *
+                        separation *
                         horizontalBehavior.separationMultiplier,
                 )
             } else {

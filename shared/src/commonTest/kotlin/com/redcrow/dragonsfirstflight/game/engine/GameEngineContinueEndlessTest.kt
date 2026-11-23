@@ -47,7 +47,10 @@ class GameEngineContinueEndlessTest {
             engine.update(0.05)
             val moved = assertNotNull(engine.snapshot().firstObstacle)
             assertEquals(
-                difficulty.obstacleSpeedAt(GameEngineConfig.ZONE_DURATION_SECONDS * 2) * 0.05,
+                (
+                    difficulty.endlessStartingSpeed(GameZone.BOSS, afterVictory = true) +
+                        difficulty.endless.speedIncreasePerSecond * 0.05
+                ) * 0.05,
                 enemy.x - moved.x,
                 0.000001,
             )

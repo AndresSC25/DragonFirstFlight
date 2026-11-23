@@ -27,6 +27,8 @@ data class GameSnapshot(
     val impactPosition: ImpactPosition? = null,
     val rockImpacts: List<RockImpact> = emptyList(),
     val mode: GameMode = GameMode.NORMAL,
+    val endlessElapsedSeconds: Double = 0.0,
+    val obstacleSpeed: Double = 0.0,
 ) {
     val firstObstacle: Obstacle?
         get() = obstacles.firstOrNull()

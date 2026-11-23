@@ -1,7 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.controller
 
 import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
-import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import kotlin.random.Random
@@ -54,9 +53,8 @@ class EndlessSetupTest {
                 val obstacle = assertNotNull(initial.firstObstacle)
                 controller.update(0.05)
                 val moved = assertNotNull(controller.snapshot().firstObstacle)
-                val enemyZone = if (zone == GameZone.BOSS) GameZone.ZONE_THREE else zone
-                val profileTime = enemyZone.ordinal * GameEngineConfig.ZONE_DURATION_SECONDS
-                assertEquals(difficulty.obstacleSpeedAt(profileTime) * 0.05, obstacle.x - moved.x, 0.000001)
+                val speed = difficulty.endlessStartingSpeed(zone) + difficulty.endless.speedIncreasePerSecond * 0.05
+                assertEquals(speed * 0.05, obstacle.x - moved.x, 0.000001)
             }
         }
     }
