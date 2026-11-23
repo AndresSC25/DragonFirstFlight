@@ -31,7 +31,6 @@ suspend fun Container.createDragonGame(views: Views) {
             gameAreaWidth = DragonGameConfig.GAME_AREA_WIDTH,
             coinWallet = coinWallet,
         )
-
     pauseGameWhenWindowInactive(controller, views.gameWindow)
 
     val skinInventory = SkinInventory(views.storage)

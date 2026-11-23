@@ -25,11 +25,11 @@ suspend fun launchDragonGame(
                 clipBorders = false,
             ),
         windowCreationConfig = windowCreationConfig,
-        backgroundColor = Colors["#101827"],
+        backgroundColor = Colors.BLACK,
     ).start {
-        beforeMenu(views)
-        createDragonGame(
-            views = views,
+        runGameStartup(
+            showIntro = { beforeMenu(views) },
+            showMenu = { createDragonGame(views = views) },
         )
     }
 }
