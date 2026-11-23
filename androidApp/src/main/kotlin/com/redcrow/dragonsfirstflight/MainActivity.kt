@@ -2,6 +2,7 @@
 
 import android.os.Bundle
 import com.redcrow.dragonsfirstflight.game.launchDragonGame
+import korlibs.event.FocusEvent
 import korlibs.render.GameWindowCreationConfig
 import korlibs.render.KorgwActivity
 import kotlinx.coroutines.Dispatchers
@@ -73,5 +74,20 @@ class MainActivity :
                 }
             },
         )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Keep GPU resources available across ordinary Home/Resume interruptions.
+        mGLView?.preserveEGLContextOnPause = true
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (!hasFocus) {
+            gameWindow?.let { window ->
+                window.queue { window.dispatch(FocusEvent(FocusEvent.Type.BLUR)) }
+            }
+        }
     }
 }
