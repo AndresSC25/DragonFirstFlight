@@ -26,8 +26,6 @@ class MainActivity :
         introFinished = savedInstanceState?.getBoolean("intro.finished") ?: false
         restoredIntroPosition = savedInstanceState?.getInt("intro.position") ?: 0
         super.onCreate(savedInstanceState)
-        // Keep GPU resources available across ordinary Home/Resume interruptions.
-        mGLView?.preserveEGLContextOnPause = true
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -76,6 +74,12 @@ class MainActivity :
                 }
             },
         )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        // Keep GPU resources available across ordinary Home/Resume interruptions.
+        mGLView?.preserveEGLContextOnPause = true
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {

@@ -12,25 +12,6 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
     Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
     folder is the appropriate location.
 
-### Running the apps
-
-Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
-
-- Android app: `./gradlew :androidApp:assembleDebug`
-- Desktop app:
-  - In Android Studio, select the shared **Desktop** run configuration for Run and Rerun.
-  - Standard run: `./gradlew :desktopApp:run`
-  - Each standard launch creates a fresh game process, including the introduction.
-- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
-
-### Running tests
-
-Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
-
-- Android tests: `./gradlew :shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :shared:jvmTest`
-- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
-
 ### Endless mode
 
 Select a difficulty in the main menu, then choose Endless and a map preview.
@@ -51,6 +32,25 @@ Coins are banked once across pause, defeat, victory continuation and menu change
 Extra lives retain the five-life cap and minimum spawn interval. Normal runs offer
 at most two extra lives per run; Endless renews that offer budget every 60 seconds
 of active play, allowing rare recovery opportunities during long sessions.
+
+### Running the apps
+
+Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:
+
+- Android app: `./gradlew :androidApp:assembleDebug`
+- Desktop app:
+  - In Android Studio, select the shared **Desktop** run configuration for Run and Rerun.
+  - Standard run: `./gradlew :desktopApp:run`
+  - Each standard launch creates a fresh game process, including the introduction.
+- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+
+### Running tests
+
+Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
+
+- Android tests: `./gradlew :shared:testAndroidHostTest`
+- Desktop tests: `./gradlew :shared:jvmTest`
+- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
 ### Game introduction
 
