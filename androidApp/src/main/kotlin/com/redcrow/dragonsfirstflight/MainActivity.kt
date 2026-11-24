@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight
+package com.redcrow.dragonsfirstflight
 
 import android.os.Bundle
 import com.redcrow.dragonsfirstflight.game.launchDragonGame
@@ -84,10 +84,9 @@ class MainActivity :
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (!hasFocus) {
-            gameWindow?.let { window ->
-                window.queue { window.dispatch(FocusEvent(FocusEvent.Type.BLUR)) }
-            }
+        gameWindow.let { window ->
+            val type = if (hasFocus) FocusEvent.Type.FOCUS else FocusEvent.Type.BLUR
+            window.queue { window.dispatch(FocusEvent(type)) }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
 import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
@@ -25,6 +26,8 @@ import korlibs.korge.view.solidRect
 import korlibs.render.GameWindow
 
 suspend fun Container.createDragonGame(views: Views) {
+    val audio = GameAudio.load(views.coroutineContext, views.storage)
+    audio.bindWindow(views.gameWindow)
     val coinWallet = CoinWallet(views.storage)
     val controller =
         GameController(
@@ -65,6 +68,7 @@ suspend fun Container.createDragonGame(views: Views) {
     menuContainer =
         createMainMenuScreen(
             views = views,
+            audio = audio,
             skinInventory = skinInventory,
             skinAnimations = skinAnimations,
             onPlay = { difficulty ->
@@ -128,6 +132,9 @@ suspend fun Container.createDragonGame(views: Views) {
             skinInventory = skinInventory,
             skinAnimations = skinAnimations,
             onBackToMenu = {
+                audio.stopEffects()
+                audio.music(active = false, paused = false, boss = false)
+                audio.charge(active = false, paused = false)
                 controller.returnToMenu()
                 updateScreenVisibility()
             },
