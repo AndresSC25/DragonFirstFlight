@@ -16,6 +16,7 @@ object GameEngineConfig {
     const val ZONE_TRANSITION_DURATION_SECONDS: Double = 2.0
     const val EXTRA_LIFE_SIZE: Double = 56.0
     const val EXTRA_LIFE_MAX_PER_RUN: Int = 2
+    const val ENDLESS_EXTRA_LIFE_WINDOW_SECONDS: Double = 60.0
     const val EXTRA_LIFE_FIRST_ATTEMPT_SECONDS: Double = 5.0
     const val EXTRA_LIFE_MIN_INTERVAL_SECONDS: Double = 18.0
     const val EXTRA_LIFE_OBSTACLE_GAP: Double = 72.0

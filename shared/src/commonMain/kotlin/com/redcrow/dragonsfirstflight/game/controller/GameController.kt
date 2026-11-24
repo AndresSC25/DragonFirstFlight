@@ -3,7 +3,10 @@ package com.redcrow.dragonsfirstflight.game.controller
 import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.engine.GameEngine
+import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
+import com.redcrow.dragonsfirstflight.game.engine.GameStatus
+import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import com.redcrow.dragonsfirstflight.game.state.GameScreenState
 import korlibs.korge.service.storage.InmemoryStorage
 import kotlin.random.Random
@@ -24,6 +27,9 @@ class GameController(
     var activeDifficulty: GameDifficulty = GameDifficulty.EASY
         private set
 
+    var selectedEndlessZone: GameZone = GameZone.ZONE_ONE
+        private set
+
     var runNumber: Int = 0
         private set
 
@@ -40,6 +46,9 @@ class GameController(
     val isInventoryVisible: Boolean
         get() = screenState == GameScreenState.INVENTORY
 
+    val isEndlessSetupVisible: Boolean
+        get() = screenState == GameScreenState.ENDLESS_SETUP
+
     val isShopVisible: Boolean
         get() = screenState == GameScreenState.SHOP
 
@@ -48,6 +57,9 @@ class GameController(
 
     val isGameRunning: Boolean
         get() = isGameVisible && engine.isRunning && !isPaused
+
+    val canContinueEndless: Boolean
+        get() = isGameVisible && engine.mode == GameMode.NORMAL && engine.status == GameStatus.WON
 
     val coinBalance: Int
         get() = coinWallet.balance + (engine.runCoins - bankedRunCoins)
@@ -66,15 +78,52 @@ class GameController(
 
     fun startGame(difficulty: GameDifficulty = activeDifficulty) {
         activeDifficulty = difficulty
-        restartRun()
+        restartRun(mode = GameMode.NORMAL)
         isPaused = false
         screenState = GameScreenState.PLAYING
+    }
+
+    fun openEndlessSetup(difficulty: GameDifficulty = activeDifficulty) {
+        if (!isMenuVisible) return
+        activeDifficulty = difficulty
+        screenState = GameScreenState.ENDLESS_SETUP
+    }
+
+    fun selectEndlessZone(zone: GameZone) {
+        if (isEndlessSetupVisible) selectedEndlessZone = zone
+    }
+
+    fun confirmEndlessSetup() {
+        if (isEndlessSetupVisible) startEndless(selectedEndlessZone, activeDifficulty)
+    }
+
+    fun startEndless(
+        zone: GameZone,
+        difficulty: GameDifficulty = activeDifficulty,
+    ) {
+        activeDifficulty = difficulty
+        restartRun(mode = GameMode.ENDLESS, endlessZone = zone)
+        isPaused = false
+        screenState = GameScreenState.PLAYING
+    }
+
+    fun continueEndless() {
+        if (!canContinueEndless) return
+        bankRunCoins()
+        engine.continueEndless()
+        isPaused = false
     }
 
     fun returnToMenu() {
         bankRunCoins()
         isPaused = false
         screenState = GameScreenState.MENU
+    }
+
+    fun restartGame() {
+        if (!isGameVisible || engine.isRunning) return
+        restartRun()
+        isPaused = false
     }
 
     fun pauseGame() {
@@ -106,7 +155,7 @@ class GameController(
         if (engine.isRunning) {
             engine.flap()
         } else {
-            restartRun()
+            restartGame()
         }
     }
 
@@ -142,9 +191,12 @@ class GameController(
         }
     }
 
-    private fun restartRun() {
+    private fun restartRun(
+        mode: GameMode = engine.mode,
+        endlessZone: GameZone = engine.snapshot().zone,
+    ) {
         bankRunCoins()
-        engine.restart(activeDifficulty)
+        engine.restart(activeDifficulty, mode, endlessZone)
         runNumber++
         bankedRunCoins = 0
     }

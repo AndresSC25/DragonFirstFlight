@@ -9,9 +9,16 @@ class GameEngine(
     gameAreaWidth: Double,
     random: Random = Random.Default,
     initialDifficulty: GameDifficulty = GameDifficulty.EASY,
+    initialMode: GameMode = GameMode.NORMAL,
+    initialEndlessZone: GameZone = GameZone.ZONE_ONE,
     private val onDamageEvent: (DamageEvent) -> Unit = {},
 ) {
     private var difficulty: GameDifficulty = initialDifficulty
+    var mode: GameMode = initialMode
+        private set
+    private var endlessZone: GameZone = initialEndlessZone
+    private var endlessElapsedSeconds = 0.0
+    private var endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone)
     private var dragonY: Double =
         GameEngineConfig.DRAGON_INITIAL_Y
 
@@ -22,6 +29,7 @@ class GameEngine(
             areaWidth = gameAreaWidth,
             random = random,
             difficulty = initialDifficulty,
+            initialZone = GameEngineConfig.zoneAt(obstacleProfileTimeAt(0.0)),
         )
 
     private var lives: Int =
@@ -62,7 +70,8 @@ class GameEngine(
                     GameStatus.LOST
                 }
 
-                scoreTracker.score.activeTimeSeconds >=
+                mode == GameMode.NORMAL &&
+                    scoreTracker.score.activeTimeSeconds >=
                     GameEngineConfig.TIME_TO_WIN_SECONDS -> {
                     GameStatus.WON
                 }
@@ -84,7 +93,7 @@ class GameEngine(
         obstacleGenerator.resize(
             newLeftBoundary = leftBoundary,
             newRightBoundary = rightBoundary,
-            spawnIfEmpty = !isZoneTransitioning && currentZone != GameZone.BOSS,
+            spawnIfEmpty = !isZoneTransitioning && !isBossEncounter,
         )
     }
 
@@ -150,13 +159,14 @@ class GameEngine(
                 lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
             }
         }
+        if (mode == GameMode.ENDLESS && isRunning) endlessElapsedSeconds += delta
         scoreTracker.update(elapsedSeconds)
         val currentZone =
-            GameEngineConfig.zoneAt(
+            zoneAt(
                 scoreTracker.score.activeTimeSeconds,
             )
         val previousZone =
-            GameEngineConfig.zoneAt(
+            zoneAt(
                 (
                     scoreTracker.score.activeTimeSeconds -
                         elapsedSeconds
@@ -175,8 +185,12 @@ class GameEngine(
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
-        val obstacleSpeed = difficulty.obstacleSpeedAt(activeTimeSeconds)
-        if (currentZone == GameZone.BOSS) {
+        val profileTimeSeconds = obstacleProfileTimeAt(activeTimeSeconds)
+        val obstacleSpeed = currentObstacleSpeed
+        val obstacleSeparation =
+            difficulty.obstacleSeparationAt(profileTimeSeconds) *
+                if (mode == GameMode.ENDLESS) obstacleSpeed / endlessInitialSpeed else 1.0
+        if (isBossEncounter) {
             if (!isRunning) {
                 projectileField.reset()
                 bossVolley.reset()
@@ -215,6 +229,9 @@ class GameEngine(
         obstacleGenerator.update(
             delta = delta,
             activeTimeSeconds = activeTimeSeconds,
+            profileTimeSeconds = profileTimeSeconds,
+            obstacleSpeed = obstacleSpeed,
+            obstacleSeparation = obstacleSeparation,
         )
         coinField.advance(
             elapsedSeconds = delta,
@@ -225,8 +242,9 @@ class GameEngine(
             elapsedSeconds = delta,
             distance = obstacleSpeed * delta,
             leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
         )
-        val zone = GameEngineConfig.zoneAt(activeTimeSeconds)
+        val zone = GameEngineConfig.zoneAt(profileTimeSeconds)
         coinField.spawnForNewObstacles(
             obstacles = obstacleGenerator.activeObstacles,
             rightBoundary = rightBoundary,
@@ -238,10 +256,46 @@ class GameEngine(
             rightBoundary = rightBoundary,
             zone = zone,
         )
+        // Endless sessions must not retain collision history for enemies that have left the field.
+        if (mode == GameMode.ENDLESS) {
+            val activeIds = obstacleGenerator.activeObstacles.mapTo(mutableSetOf()) { it.id }
+            collisionRegistered.retainAll(activeIds)
+            pointRegistered.retainAll(activeIds)
+        }
     }
 
-    fun restart(difficulty: GameDifficulty = this.difficulty) {
+    fun continueEndless() {
+        if (mode != GameMode.NORMAL || status != GameStatus.WON) return
+        mode = GameMode.ENDLESS
+        endlessZone = GameZone.BOSS
+        endlessElapsedSeconds = 0.0
+        endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone, afterVictory = true)
+        dragonY = GameEngineConfig.DRAGON_INITIAL_Y
+        verticalVelocity = 0.0
+        impactFeedbackRemainingSeconds = 0.0
+        impactObstacleId = null
+        impactPosition = null
+        rockImpacts.clear()
+        zoneTransitionRemainingSeconds = GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
+        resetBossEncounter()
+        // Keep obstacle ids and reward limits: this continues the same run.
+        obstacleGenerator.beginZoneTransition(GameZone.ZONE_THREE)
+        coinField.clear()
+        extraLifeField.clear()
+        collisionRegistered.clear()
+        pointRegistered.clear()
+    }
+
+    fun restart(
+        difficulty: GameDifficulty = this.difficulty,
+        mode: GameMode = this.mode,
+        endlessZone: GameZone = this.endlessZone,
+    ) {
         this.difficulty = difficulty
+        this.mode = mode
+        this.endlessZone = endlessZone
+        endlessElapsedSeconds = 0.0
+        endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone)
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
@@ -252,19 +306,23 @@ class GameEngine(
         impactPosition = null
         invulnerabilityRemainingSeconds = 0.0
         zoneTransitionRemainingSeconds = 0.0
+        resetBossEncounter()
+
+        obstacleGenerator.reset(difficulty, GameEngineConfig.zoneAt(obstacleProfileTimeAt(0.0)))
+        coinField.reset()
+        extraLifeField.reset()
+        runCoins = 0
+        collisionRegistered.clear()
+        pointRegistered.clear()
+    }
+
+    private fun resetBossEncounter() {
         catapultEntrySeconds = 0.0
         catapultAttack.reset()
         projectileField.reset()
         bossPatternPlanner.reset()
         bossVolley.reset()
         pendingBossPattern = null
-
-        obstacleGenerator.reset(difficulty)
-        coinField.reset()
-        extraLifeField.reset()
-        runCoins = 0
-        collisionRegistered.clear()
-        pointRegistered.clear()
     }
 
     fun snapshot(): GameSnapshot {
@@ -294,7 +352,7 @@ class GameEngine(
             isInvulnerable = isInvulnerable,
             isInvulnerabilityBlinkDim = isInvulnerabilityBlinkDim,
             zone =
-                GameEngineConfig.zoneAt(
+                zoneAt(
                     scoreTracker.score.activeTimeSeconds,
                 ),
             isZoneTransitioning = isZoneTransitioning,
@@ -314,15 +372,39 @@ class GameEngine(
             projectiles = projectileField.snapshot(),
             impactPosition = impactPosition,
             rockImpacts = rockImpacts.toList(),
+            mode = mode,
+            endlessElapsedSeconds = endlessElapsedSeconds,
+            obstacleSpeed = currentObstacleSpeed,
         )
     }
 
     private val currentZone: GameZone
-        get() = GameEngineConfig.zoneAt(scoreTracker.score.activeTimeSeconds)
+        get() = zoneAt(scoreTracker.score.activeTimeSeconds)
+
+    private val currentObstacleSpeed: Double
+        get() =
+            if (mode == GameMode.ENDLESS) {
+                difficulty.endless.speedAt(endlessElapsedSeconds, endlessInitialSpeed)
+            } else {
+                difficulty.obstacleSpeedAt(scoreTracker.score.activeTimeSeconds)
+            }
+
+    private fun zoneAt(activeTimeSeconds: Double): GameZone =
+        if (mode == GameMode.ENDLESS) endlessZone else GameEngineConfig.zoneAt(activeTimeSeconds)
+
+    private val isBossEncounter: Boolean
+        get() = mode == GameMode.NORMAL && currentZone == GameZone.BOSS
+
+    private fun obstacleProfileTimeAt(activeTimeSeconds: Double): Double {
+        if (mode == GameMode.NORMAL) return activeTimeSeconds
+        // The battlefield is a visual choice in Endless; use regular forest enemies there.
+        val enemyZone = if (endlessZone == GameZone.BOSS) GameZone.ZONE_THREE else endlessZone
+        return enemyZone.ordinal * GameEngineConfig.ZONE_DURATION_SECONDS
+    }
 
     private val isBossFurious: Boolean
         get() =
-            currentZone == GameZone.BOSS &&
+            isBossEncounter &&
                 isRunning &&
                 bossElapsedSeconds >= GameEngineConfig.BOSS_FURY_START_SECONDS
 
@@ -330,7 +412,7 @@ class GameEngine(
         get() = GameEngineConfig.zoneElapsedAt(scoreTracker.score.activeTimeSeconds)
 
     private fun catapultSnapshot(): CatapultSnapshot? {
-        if (currentZone != GameZone.BOSS) return null
+        if (!isBossEncounter) return null
 
         val progress = catapultEntrySeconds / GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS
         val easedProgress = progress * progress * (3.0 - 2.0 * progress)

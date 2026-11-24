@@ -12,6 +12,27 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
     Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
     folder is the appropriate location.
 
+### Endless mode
+
+Select a difficulty in the main menu, then choose Endless and a map preview.
+After a normal victory, Continue Endless keeps the remaining lives, score, coins
+and difficulty on the final battlefield. Endless never activates the catapult
+or a victory timer. The HUD identifies the mode as ENDLESS.
+
+Enemy speed increases with active play time and stops at a configurable maximum
+for each difficulty. Spacing grows with speed to preserve reaction time and RUSH
+warnings. Pauses and the transition into Endless do not advance this progression.
+
+Losing focus, minimizing or backgrounding pauses an active session; returning
+leaves the pause menu open until Resume. Play again retries the current mode,
+map and difficulty with fresh lives, score and speed progression. Returning to
+the main menu allows a new normal or Endless run.
+
+Coins are banked once across pause, defeat, victory continuation and menu changes.
+Extra lives retain the five-life cap and minimum spawn interval. Normal runs offer
+at most two extra lives per run; Endless renews that offer budget every 60 seconds
+of active play, allowing rare recovery opportunities during long sessions.
+
 ### Running the apps
 
 Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and options:

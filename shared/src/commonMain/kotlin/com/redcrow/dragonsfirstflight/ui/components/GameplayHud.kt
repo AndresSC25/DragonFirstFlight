@@ -1,6 +1,7 @@
 ﻿package com.redcrow.dragonsfirstflight.ui.components
 
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
+import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import korlibs.image.bitmap.Bitmap
@@ -49,6 +50,7 @@ internal class GameplayHud private constructor(
     private val pointsText: Text,
     private val coinsText: Text,
     private val pauseButton: Image,
+    private val modeLabel: Container,
 ) {
     private var displayedPoints: Int? = null
     private var displayedCoins: Int? = null
@@ -58,6 +60,7 @@ internal class GameplayHud private constructor(
         isPaused: Boolean,
     ) {
         anchorToViewportCorners()
+        modeLabel.visible = snapshot.mode == GameMode.ENDLESS
 
         fullLifeIcons.forEachIndexed { index, icon ->
             icon.visible = index < snapshot.lives.coerceAtMost(INITIAL_LIVES)
@@ -118,9 +121,20 @@ internal class GameplayHud private constructor(
             val extraLifeIcons = mutableListOf<Image>()
             lateinit var pointsText: Text
             lateinit var coinsText: Text
+            lateinit var modeLabel: Container
 
             val statusGroup =
                 container.container {
+                    modeLabel =
+                        container {
+                            y = HUD_ITEM_HEIGHT + 8.0
+                            visible = false
+                            hudImage(bitmap = scorePlateBitmap, x = 0.0, width = SCORE_PLATE_WIDTH)
+                            text("ENDLESS", textSize = 22.0, color = Colors["#F8D66D"]) {
+                                x = (SCORE_PLATE_WIDTH - width) / 2.0
+                                y = (HUD_ITEM_HEIGHT - height) / 2.0 + SCORE_TEXT_OFFSET_Y
+                            }
+                        }
                     hudImage(
                         bitmap = scorePlateBitmap,
                         x = SCORE_PLATE_X,
@@ -213,6 +227,7 @@ internal class GameplayHud private constructor(
                 pointsText = pointsText,
                 coinsText = coinsText,
                 pauseButton = pauseButton,
+                modeLabel = modeLabel,
             )
         }
 

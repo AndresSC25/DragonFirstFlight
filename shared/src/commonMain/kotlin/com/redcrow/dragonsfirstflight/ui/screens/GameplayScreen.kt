@@ -273,7 +273,8 @@ internal suspend fun Container.createGameplayScreen(
                 panelBitmap = sessionPanelBitmap,
                 buttonBitmap = gameButtonBitmap,
                 onResume = controller::resumeGame,
-                onRestart = controller::startGame,
+                onRestart = controller::restartGame,
+                onContinueEndless = controller::continueEndless,
                 onBackToMenu = onBackToMenu,
             )
 
@@ -317,12 +318,14 @@ internal suspend fun Container.createGameplayScreen(
                 isPaused = controller.isPaused,
                 coinBalance = controller.coinBalance,
             )
-            zoneTransitionOverlay.update(snapshot)
+            // Keep the pause controls above an interrupted transition announcement.
+            zoneTransitionOverlay.update(snapshot, isPaused = controller.isPaused)
         }
 
         addUpdater { delta ->
             if (controller.runNumber != appliedRunNumber) {
                 appliedRunNumber = controller.runNumber
+                obstacleView.reset()
                 val path = rollFlightSpritePath(skinInventory.equipped, Random.Default)
                 dragonView.setAnimation(skinAnimations.getValue(path))
             }

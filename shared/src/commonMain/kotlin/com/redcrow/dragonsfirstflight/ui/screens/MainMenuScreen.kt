@@ -43,6 +43,7 @@ internal suspend fun Container.createMainMenuScreen(
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
     onPlay: (GameDifficulty) -> Unit,
+    onEndless: (GameDifficulty) -> Unit,
     onShop: () -> Unit,
     onInventory: () -> Unit,
 ): Container {
@@ -153,12 +154,23 @@ internal suspend fun Container.createMainMenuScreen(
         createMedievalImageButton(
             x = innerX + MENU_PADDING,
             y = innerY + 226.0,
-            width = innerWidth - 2.0 * MENU_PADDING,
+            width = buttonWidth,
             height = MENU_BUTTON_HEIGHT,
             texture = buttonBitmap,
             label = "Play",
             textSize = 28.0,
             onClick = { onPlay(selectedDifficulty) },
+        )
+
+        createMedievalImageButton(
+            x = (screenWidth + MENU_BUTTON_GAP) / 2.0,
+            y = innerY + 226.0,
+            width = buttonWidth,
+            height = MENU_BUTTON_HEIGHT,
+            texture = buttonBitmap,
+            label = "Endless",
+            textSize = 28.0,
+            onClick = { onEndless(selectedDifficulty) },
         )
 
         createMedievalImageButton(

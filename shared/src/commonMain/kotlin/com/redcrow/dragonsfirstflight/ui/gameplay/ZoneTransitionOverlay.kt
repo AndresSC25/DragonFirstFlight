@@ -1,6 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
+import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameZone
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
@@ -26,8 +27,11 @@ internal class ZoneTransitionOverlay private constructor(
     private val title: Text,
     private val subtitle: Text,
 ) {
-    fun update(snapshot: GameSnapshot) {
-        if (!snapshot.isZoneTransitioning) {
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean = false,
+    ) {
+        if (!snapshot.isZoneTransitioning || isPaused) {
             shade.alpha = 0.0
             shade.visible = false
             announcement.alpha = 0.0
@@ -41,18 +45,26 @@ internal class ZoneTransitionOverlay private constructor(
         shade.visible = shade.alpha > 0.0
 
         val zoneText =
-            when (snapshot.zone) {
-                GameZone.ZONE_ONE -> "THE COURTYARD"
-                GameZone.ZONE_TWO -> "THE TOWERS"
-                GameZone.ZONE_THREE -> "THE WILDS"
-                GameZone.BOSS -> "FINAL ASSAULT"
+            if (snapshot.mode == GameMode.ENDLESS) {
+                "ENDLESS"
+            } else {
+                when (snapshot.zone) {
+                    GameZone.ZONE_ONE -> "THE COURTYARD"
+                    GameZone.ZONE_TWO -> "THE TOWERS"
+                    GameZone.ZONE_THREE -> "THE WILDS"
+                    GameZone.BOSS -> "FINAL ASSAULT"
+                }
             }
         val zoneSubtitle =
-            when (snapshot.zone) {
-                GameZone.ZONE_ONE -> "Take flight from the fortress"
-                GameZone.ZONE_TWO -> "Climb beyond the fortress walls"
-                GameZone.ZONE_THREE -> "Escape through the outer forest"
-                GameZone.BOSS -> "Break through the siege"
+            if (snapshot.mode == GameMode.ENDLESS) {
+                "THE FLIGHT CONTINUES"
+            } else {
+                when (snapshot.zone) {
+                    GameZone.ZONE_ONE -> "Take flight from the fortress"
+                    GameZone.ZONE_TWO -> "Climb beyond the fortress walls"
+                    GameZone.ZONE_THREE -> "Escape through the outer forest"
+                    GameZone.BOSS -> "Break through the siege"
+                }
             }
 
         if (title.text != zoneText) {

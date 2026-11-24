@@ -6,6 +6,7 @@ internal class ObstacleGenerator(
     areaWidth: Double,
     private val random: Random = Random.Default,
     private var difficulty: GameDifficulty = GameDifficulty.EASY,
+    initialZone: GameZone = GameZone.ZONE_ONE,
 ) {
     private val obstacleSpritePathsByZone =
         listOf(
@@ -71,7 +72,7 @@ internal class ObstacleGenerator(
         ObstaclePatternSequencer(random)
 
     init {
-        reset()
+        reset(initialZone = initialZone)
     }
 
     fun resize(
@@ -94,7 +95,7 @@ internal class ObstacleGenerator(
         if (spawnIfEmpty && currentZone != GameZone.BOSS && obstacles.isEmpty()) {
             spawnObstacle(
                 x = rightBoundary,
-                activeTimeSeconds = 0.0,
+                activeTimeSeconds = currentZone.ordinal * GameEngineConfig.ZONE_DURATION_SECONDS,
             )
         }
     }
@@ -102,17 +103,16 @@ internal class ObstacleGenerator(
     fun update(
         delta: Double,
         activeTimeSeconds: Double,
+        profileTimeSeconds: Double = activeTimeSeconds,
+        obstacleSpeed: Double = difficulty.obstacleSpeedAt(profileTimeSeconds),
+        obstacleSeparation: Double = difficulty.obstacleSeparationAt(profileTimeSeconds),
     ) {
-        if (GameEngineConfig.zoneAt(activeTimeSeconds) == GameZone.BOSS) {
+        if (GameEngineConfig.zoneAt(profileTimeSeconds) == GameZone.BOSS) {
             beginZoneTransition(GameZone.BOSS)
             return
         }
-        val obstacleSpeed =
-            difficulty.obstacleSpeedAt(activeTimeSeconds)
-        val obstacleSeparation =
-            difficulty.obstacleSeparationAt(activeTimeSeconds)
         val zone =
-            GameEngineConfig.zoneAt(activeTimeSeconds)
+            GameEngineConfig.zoneAt(profileTimeSeconds)
 
         if (zone != currentZone) {
             beginZoneTransition(zone)
@@ -174,28 +174,34 @@ internal class ObstacleGenerator(
                             rightBoundary -
                                 GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
                     ),
-                activeTimeSeconds = activeTimeSeconds,
+                activeTimeSeconds = profileTimeSeconds,
+                separation = obstacleSeparation,
             )
         }
     }
 
-    fun reset(difficulty: GameDifficulty = this.difficulty) {
+    fun reset(
+        difficulty: GameDifficulty = this.difficulty,
+        initialZone: GameZone = GameZone.ZONE_ONE,
+    ) {
         this.difficulty = difficulty
         obstacles.clear()
         nextId = 0
         spritePaths.clear()
         groundSpritePaths.clear()
-        currentZone = GameZone.ZONE_ONE
+        currentZone = initialZone
         lastLane = null
         consecutiveLaneCount = 0
         previousWasRush = false
         previousWasGround = false
         laneUsage.clear()
         patternSequencer.reset()
-        spawnObstacle(
-            x = rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
-            activeTimeSeconds = 0.0,
-        )
+        if (initialZone != GameZone.BOSS) {
+            spawnObstacle(
+                x = rightBoundary - GameEngineConfig.INITIAL_OBSTACLE_MARGIN,
+                activeTimeSeconds = initialZone.ordinal * GameEngineConfig.ZONE_DURATION_SECONDS,
+            )
+        }
     }
 
     val activeObstacles: List<Obstacle>
@@ -219,6 +225,7 @@ internal class ObstacleGenerator(
     private fun spawnObstacle(
         x: Double,
         activeTimeSeconds: Double,
+        separation: Double = difficulty.obstacleSeparationAt(activeTimeSeconds),
     ) {
         val shouldSpawnGroundObstacle =
             currentZone == GameZone.ZONE_ONE &&
@@ -340,7 +347,7 @@ internal class ObstacleGenerator(
                 maxOf(
                     x,
                     obstacles.last().x +
-                        difficulty.obstacleSeparationAt(activeTimeSeconds) *
+                        separation *
                         patternSeparationMultiplier,
                 )
             } else {
@@ -352,7 +359,7 @@ internal class ObstacleGenerator(
                 maxOf(
                     patternAdjustedX,
                     obstacles.last().x +
-                        difficulty.obstacleSeparationAt(activeTimeSeconds) *
+                        separation *
                         horizontalBehavior.separationMultiplier,
                 )
             } else {

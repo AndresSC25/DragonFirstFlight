@@ -48,6 +48,11 @@ internal class ObstacleView private constructor(
 ) {
     private val viewsById = mutableMapOf<Int, RenderedObstacle>()
 
+    fun reset() {
+        viewsById.values.forEach { it.view.removeFromParent() }
+        viewsById.clear()
+    }
+
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,
