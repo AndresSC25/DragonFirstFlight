@@ -1,13 +1,16 @@
 package com.redcrow.dragonsfirstflight.game.audio
 
+import korlibs.audio.format.WAV
 import korlibs.audio.sound.AudioData
 import korlibs.audio.sound.PlaybackParameters
 import korlibs.audio.sound.PlaybackTimes
 import korlibs.audio.sound.Sound
 import korlibs.audio.sound.SoundChannel
 import korlibs.audio.sound.SoundChannelState
+import korlibs.audio.sound.readAudioData
 import korlibs.event.FocusEvent
 import korlibs.event.ResumeEvent
+import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.service.storage.InmemoryStorage
 import korlibs.render.GameWindow
 import kotlinx.coroutines.delay
@@ -22,6 +25,27 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 class GameAudioTest {
+    @Test
+    fun everyBundledClipDecodesAndContainsAudibleSamples() =
+        runBlocking {
+            val paths = GameSound.entries.map { it.path } + GameMusic.entries.map { it.path } + INTRO_EFFECTS_PATH
+            for (path in paths) {
+                val data = resourcesVfs[path].readAudioData(WAV)
+                assertEquals(44100, data.rate, path)
+                val stereo = path == GameMusic.INTRO.path || path == GameMusic.BOSS.path
+                assertEquals(if (stereo) 2 else 1, data.channels, path)
+                assertTrue(data.totalSamples > 1000, path)
+                assertTrue((0 until data.totalSamples).any { data.samples[0, it].toInt() != 0 }, path)
+                val seconds = data.totalSamples.toDouble() / data.rate
+                when (path) {
+                    GameMusic.STAGES.path -> assertTrue(seconds > 90, path)
+                    GameMusic.BOSS.path -> assertTrue(seconds in 60.0..90.0, path)
+                    GameMusic.INTRO.path -> assertEquals(12.5, seconds, path)
+                    INTRO_EFFECTS_PATH -> assertEquals(12.5, seconds, path)
+                }
+            }
+        }
+
     @Test
     fun musicAndChargeResumeTheSameChannelAndNeverDuplicateLoops() {
         val fixture = Fixture()
