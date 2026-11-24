@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game.audio
 
 import korlibs.audio.sound.AudioData
 import korlibs.audio.sound.PlaybackParameters
+import korlibs.audio.sound.PlaybackTimes
 import korlibs.audio.sound.Sound
 import korlibs.audio.sound.SoundChannel
 import korlibs.audio.sound.SoundChannelState
@@ -20,6 +21,52 @@ import kotlin.test.assertTrue
 import kotlin.time.Duration
 
 class GameAudioTest {
+    @Test
+    fun musicAndChargeResumeTheSameChannelAndNeverDuplicateLoops() {
+        val fixture = Fixture()
+        repeat(100) {
+            fixture.audio.music(active = true, paused = false, boss = false)
+            fixture.audio.charge(active = true, paused = false)
+        }
+        assertEquals(2, fixture.sound.channels.size)
+        assertTrue(fixture.sound.parameters.all { it.times == PlaybackTimes.INFINITE })
+        fixture.audio.music(active = true, paused = true, boss = false)
+        fixture.audio.charge(active = true, paused = true)
+        assertTrue(fixture.sound.channels.all { it.state == SoundChannelState.PAUSED })
+        fixture.audio.music(active = true, paused = false, boss = true)
+        fixture.audio.charge(active = true, paused = false)
+        assertEquals(2, fixture.sound.channels.size)
+        assertTrue(fixture.sound.channels.all { it.state == SoundChannelState.PLAYING })
+        assertEquals(
+            0.18,
+            fixture.sound.channels
+                .first()
+                .volume,
+        )
+        fixture.audio.close()
+        assertTrue(fixture.sound.channels.all { it.state == SoundChannelState.STOPPED })
+    }
+
+    @Test
+    fun bossReplacesStageMusicAndEndlessReturnsToANewStageLoop() {
+        val stage = RecordingSound(EmptyCoroutineContext)
+        val boss = RecordingSound(EmptyCoroutineContext)
+        val audio = GameAudio(EmptyCoroutineContext, InmemoryStorage(), mutableMapOf(), stage, boss)
+        audio.music(active = true, paused = false, boss = false)
+        repeat(100) { audio.music(active = true, paused = false, boss = true) }
+        assertEquals(SoundChannelState.STOPPED, stage.channels.single().state)
+        assertEquals(1, boss.channels.size)
+        assertEquals(PlaybackTimes.INFINITE, boss.parameters.single().times)
+        audio.music(active = true, paused = true, boss = true)
+        assertEquals(SoundChannelState.PAUSED, boss.channels.single().state)
+        audio.music(active = true, paused = false, boss = true)
+        assertEquals(1, boss.channels.size)
+        audio.music(active = true, paused = false, boss = false)
+        assertEquals(SoundChannelState.STOPPED, boss.channels.single().state)
+        assertEquals(2, stage.channels.size)
+        audio.close()
+    }
+
     @Test
     fun backgroundStopsEffectsAndFocusAloneDoesNotRestartTheMusic() {
         val fixture = Fixture()

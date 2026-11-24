@@ -27,6 +27,7 @@ internal class GameAudioDirector(
         paused: Boolean,
     ) {
         if (!visible) {
+            output.music(active = false, paused = false, boss = false)
             previous = null
             wasVisible = false
             wasPaused = false
@@ -42,12 +43,14 @@ internal class GameAudioDirector(
         }
         val before = previous
         val running = snapshot.status == GameStatus.RUNNING
+        val boss = snapshot.catapult
         if (paused && !wasPaused) {
             output.stopEffects()
             output.play(GameSound.PAUSE)
         } else if (!paused && wasPaused) {
             output.play(GameSound.RESUME)
         }
+        output.music(active = running, paused = paused, boss = boss != null)
         if (!paused) {
             val continued = before?.mode == GameMode.NORMAL && snapshot.mode == GameMode.ENDLESS
             if (continued) {

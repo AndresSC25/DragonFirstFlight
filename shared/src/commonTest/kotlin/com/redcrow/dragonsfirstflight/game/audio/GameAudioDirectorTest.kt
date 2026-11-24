@@ -64,6 +64,14 @@ class GameAudioDirectorTest {
     }
 
     @Test
+    fun finalBattlefieldInEndlessDoesNotAnnounceABoss() {
+        repeat(50) { update(initial.copy(mode = GameMode.ENDLESS, zone = GameZone.BOSS)) }
+        assertFalse(output.cues.any { it.first == GameSound.BOSS_INTRO })
+        assertFalse(output.chargeActive)
+        assertTrue(output.musicActive)
+    }
+
+    @Test
     fun retryResetsCollectionHistoryAndAlternatesFlaps() {
         update(initial.copy(runCoins = 500, damageCount = 4))
         output.cues.clear()
