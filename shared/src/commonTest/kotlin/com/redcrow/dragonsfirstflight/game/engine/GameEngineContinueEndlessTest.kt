@@ -67,6 +67,31 @@ class GameEngineContinueEndlessTest {
     }
 
     @Test
+    fun hitEffectsEndWhenContinuingEndless() {
+        val engine = GameEngine(1280.0, Random(7))
+        repeat(3) {
+            engine.update(GameEngineConfig.ZONE_DURATION_SECONDS)
+            while (engine.snapshot().isZoneTransitioning) engine.update(0.05)
+        }
+        engine.update(GameEngineConfig.BOSS_DURATION_SECONDS - 0.03125)
+        val beforeVictory = engine.snapshot()
+        assertEquals(GameZone.BOSS, beforeVictory.zone)
+        assertEquals(GameStatus.RUNNING, beforeVictory.status)
+        assertFalse(beforeVictory.isZoneTransitioning)
+        engine.handleDamageEvent(DamageEvent)
+        engine.update(0.05)
+        val victory = engine.snapshot()
+        assertEquals(GameStatus.WON, victory.status)
+        assertTrue(victory.isInvulnerable)
+        assertTrue(victory.isImpactFeedbackActive)
+
+        engine.continueEndless()
+        val continued = engine.snapshot()
+        assertFalse(continued.isInvulnerable)
+        assertFalse(continued.isImpactFeedbackActive)
+    }
+
+    @Test
     fun theEndlessTransitionFreezesFlightAndDelaysEnemiesUntilTheCardFinishes() {
         val engine = GameEngine(1280.0, Random(7))
         engine.update(GameEngineConfig.TIME_TO_WIN_SECONDS)

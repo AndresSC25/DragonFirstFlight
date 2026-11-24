@@ -186,6 +186,7 @@ class GameEngine(
             obstacleGenerator.beginZoneTransition(currentZone)
             coinField.clear()
             extraLifeField.clear()
+            clearHitEffects()
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
@@ -276,9 +277,7 @@ class GameEngine(
         endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone, afterVictory = true)
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
-        impactFeedbackRemainingSeconds = 0.0
-        impactObstacleId = null
-        impactPosition = null
+        clearHitEffects()
         rockImpacts.clear()
         zoneTransitionRemainingSeconds = GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
         resetBossEncounter()
@@ -307,10 +306,7 @@ class GameEngine(
         extraLivesCollected = 0
         scoreTracker.reset()
         rockImpacts.clear()
-        impactFeedbackRemainingSeconds = 0.0
-        impactObstacleId = null
-        impactPosition = null
-        invulnerabilityRemainingSeconds = 0.0
+        clearHitEffects()
         zoneTransitionRemainingSeconds = 0.0
         resetBossEncounter()
 
@@ -320,6 +316,13 @@ class GameEngine(
         runCoins = 0
         collisionRegistered.clear()
         pointRegistered.clear()
+    }
+
+    private fun clearHitEffects() {
+        impactFeedbackRemainingSeconds = 0.0
+        impactObstacleId = null
+        impactPosition = null
+        invulnerabilityRemainingSeconds = 0.0
     }
 
     private fun resetBossEncounter() {
