@@ -71,7 +71,9 @@ internal class RagePowerUpField(
             shieldPowerUpActive ||
             otherPowerUpsPresent ||
             activePowerUps.isNotEmpty()
-        ) return
+        ) {
+            return
+        }
         if (secondsUntilNextAttempt > 0.0) return
         if (!isEndless && (zone != GameZone.ZONE_THREE || spawnedInNormalZone)) return
         if (isEndless && spawnedInEndlessWindow) return

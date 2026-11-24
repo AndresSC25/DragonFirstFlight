@@ -31,9 +31,9 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.RagePowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
-import com.redcrow.dragonsfirstflight.ui.gameplay.RagePowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ShieldPowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
