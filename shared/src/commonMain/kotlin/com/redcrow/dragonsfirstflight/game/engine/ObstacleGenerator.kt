@@ -126,23 +126,19 @@ internal class ObstacleGenerator(
             val warningRemainingSeconds =
                 (obstacle.rushWarningRemainingSeconds - delta).coerceAtLeast(0.0)
 
-            val movedObstacle =
+            obstacles[index] =
                 obstacle.copy(
                     x =
                         obstacle.x -
                             obstacleSpeed *
                             obstacle.horizontalBehavior.speedMultiplier *
                             movementDelta,
-                    rushWarningRemainingSeconds = warningRemainingSeconds,
-                )
-
-            obstacles[index] =
-                movedObstacle.copy(
                     y =
                         ObstacleMovementCalculator.yAt(
-                            obstacle = movedObstacle,
+                            obstacle = obstacle,
                             activeTimeSeconds = activeTimeSeconds,
                         ),
+                    rushWarningRemainingSeconds = warningRemainingSeconds,
                 )
         }
 
