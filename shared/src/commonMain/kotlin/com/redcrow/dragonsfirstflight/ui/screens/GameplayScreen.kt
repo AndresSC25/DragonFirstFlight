@@ -18,6 +18,8 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.CatapultView
 import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ExtraLifeView
+import com.redcrow.dragonsfirstflight.ui.gameplay.FirePowerUpView
+import com.redcrow.dragonsfirstflight.ui.gameplay.FireBallView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
@@ -85,6 +87,10 @@ private const val COIN_ICON_PATH: String =
     "sprites/coins/coin_icon.png"
 private const val EXTRA_LIFE_PATH: String =
     "sprites/power-ups/extra_life.png"
+private const val FIRE_POWER_UP_PATH: String =
+    "sprites/power-ups/fire_power_up.png"
+private const val FIRE_BALL_PATH: String =
+    "sprites/power-ups/fire_ball.png"
 
 private val OBSTACLE_PATHS =
     listOf(
@@ -144,6 +150,10 @@ internal suspend fun Container.createGameplayScreen(
         resourcesVfs[COIN_ICON_PATH].readBitmap()
     val extraLifeBitmap =
         resourcesVfs[EXTRA_LIFE_PATH].readBitmap()
+    val firePowerUpBitmap =
+        resourcesVfs[FIRE_POWER_UP_PATH].readBitmap()
+    val fireBallBitmap =
+        resourcesVfs[FIRE_BALL_PATH].readBitmap()
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
@@ -196,6 +206,17 @@ internal suspend fun Container.createGameplayScreen(
                 container = container(),
                 bitmap = extraLifeBitmap,
                 views = views,
+            )
+        val firePowerUpView =
+            FirePowerUpView.create(
+                container = container(),
+                bitmap = firePowerUpBitmap,
+                views = views,
+            )
+        val fireBallView =
+            FireBallView.create(
+                container = container(),
+                bitmap = fireBallBitmap,
             )
 
         var appliedRunNumber = controller.runNumber
@@ -304,6 +325,14 @@ internal suspend fun Container.createGameplayScreen(
                 elapsedSeconds = elapsedSeconds,
             )
             extraLifeView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            firePowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            fireBallView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
             )
