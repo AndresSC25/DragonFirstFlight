@@ -19,6 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 class GameAudioTest {
     @Test
@@ -65,6 +66,121 @@ class GameAudioTest {
         assertEquals(SoundChannelState.STOPPED, boss.channels.single().state)
         assertEquals(2, stage.channels.size)
         audio.close()
+    }
+
+    @Test
+    fun introFollowsRestoredVideoPositionsAndStopsPermanentlyOnSkip() {
+        val sound = RecordingSound(EmptyCoroutineContext)
+        val intro = IntroMusicPlayback(EmptyCoroutineContext, sound)
+        intro.update(null, paused = false)
+        assertTrue(sound.channels.isEmpty())
+        intro.update(4.0, paused = false)
+        assertEquals(4.seconds, sound.parameters.single().startTime)
+        assertEquals(PlaybackTimes.ONE, sound.parameters.single().times)
+        intro.pause()
+        assertEquals(SoundChannelState.PAUSED, sound.channels.single().state)
+        intro.update(4.1, paused = false)
+        assertEquals(1, sound.channels.size)
+        assertEquals(4.1.seconds, sound.channels.single().current)
+        intro.update(8.0, paused = false)
+        assertEquals(4.1.seconds, sound.channels.single().current)
+        assertEquals(1, sound.channels.single().seekCount)
+        intro.close()
+        intro.close()
+        intro.update(9.0, paused = false)
+        assertEquals(SoundChannelState.STOPPED, sound.channels.single().state)
+        assertEquals(1, sound.channels.size)
+    }
+
+    @Test
+    fun bufferedAudioClockAndIrregularVideoFramesDoNotCauseRepeatedSeeks() {
+        val music = RecordingSound(EmptyCoroutineContext)
+        val effects = RecordingSound(EmptyCoroutineContext)
+        val intro = IntroMusicPlayback(EmptyCoroutineContext, music, effects)
+        intro.update(0.0, paused = false)
+        repeat(300) { frame ->
+            val videoTime = (frame / 24.0).coerceAtMost(12.49)
+            // Audio backends can include buffered samples in their reported cursor.
+            music.channels.single().reportedPosition = (videoTime + 0.45).seconds
+            effects.channels.single().reportedPosition = (videoTime + 0.6).seconds
+            intro.update(videoTime, paused = false)
+        }
+        assertEquals(0, music.channels.single().seekCount)
+        assertEquals(0, effects.channels.single().seekCount)
+        assertEquals(1, music.channels.size)
+        assertEquals(1, effects.channels.size)
+        intro.close()
+    }
+
+    @Test
+    fun anAsynchronousResumeIsIssuedOnceEvenIfTheBackendStillReportsPaused() {
+        val sound = RecordingSound(EmptyCoroutineContext)
+        val intro = IntroMusicPlayback(EmptyCoroutineContext, sound)
+        intro.update(1.0, paused = false)
+        val channel = sound.channels.single()
+        channel.deferResume = true
+        repeat(40) { intro.update(1.2, paused = true) }
+        repeat(40) { intro.update(1.2 + it / 24.0, paused = false) }
+        assertEquals(1, channel.seekCount)
+        assertEquals(1, channel.resumeCount)
+        assertEquals(1, channel.pauseCount)
+        intro.close()
+    }
+
+    @Test
+    fun completedIntroMusicDoesNotReplayAndMusicMuteAlsoAppliesToTheIntro() =
+        runBlocking {
+            val sound = RecordingSound(EmptyCoroutineContext)
+            val intro = IntroMusicPlayback(EmptyCoroutineContext, sound)
+            intro.update(0.0, paused = false)
+            sound.channels.single().stop()
+            repeat(20) { intro.update(12.5, paused = false) }
+            assertEquals(1, sound.channels.size)
+            intro.close()
+            val muted = IntroMusicPlayback.load(EmptyCoroutineContext, enabled = false)
+            muted.update(0.0, paused = false)
+            muted.pause()
+            muted.close()
+        }
+
+    @Test
+    fun introMusicAndEffectsStayTogetherAcrossPauseSeekAndSkip() {
+        val music = RecordingSound(EmptyCoroutineContext)
+        val effects = RecordingSound(EmptyCoroutineContext)
+        val intro = IntroMusicPlayback(EmptyCoroutineContext, music, effects)
+        intro.update(2.5, paused = false)
+        assertEquals(2.5.seconds, music.parameters.single().startTime)
+        assertEquals(2.5.seconds, effects.parameters.single().startTime)
+        assertEquals(0.30, music.parameters.single().volume)
+        assertEquals(INTRO_EFFECTS_VOLUME, effects.parameters.single().volume)
+        intro.pause()
+        assertEquals(SoundChannelState.PAUSED, music.channels.single().state)
+        assertEquals(SoundChannelState.PAUSED, effects.channels.single().state)
+        intro.update(2.7, paused = false)
+        assertEquals(2.7.seconds, music.channels.single().current)
+        assertEquals(2.7.seconds, effects.channels.single().current)
+        intro.close()
+        intro.update(3.0, paused = false)
+        assertEquals(SoundChannelState.STOPPED, music.channels.single().state)
+        assertEquals(SoundChannelState.STOPPED, effects.channels.single().state)
+        assertEquals(1, effects.channels.size)
+    }
+
+    @Test
+    fun introEffectsWorkWithMusicMutedAndMusicWorksWithEffectsMuted() {
+        val effects = RecordingSound(EmptyCoroutineContext)
+        val onlyEffects = IntroMusicPlayback(EmptyCoroutineContext, null, effects)
+        onlyEffects.update(0.0, paused = false)
+        assertEquals(1, effects.channels.size)
+        onlyEffects.pause()
+        assertEquals(SoundChannelState.PAUSED, effects.channels.single().state)
+        onlyEffects.close()
+        assertEquals(SoundChannelState.STOPPED, effects.channels.single().state)
+        val music = RecordingSound(EmptyCoroutineContext)
+        val onlyMusic = IntroMusicPlayback(EmptyCoroutineContext, music)
+        onlyMusic.update(0.0, paused = false)
+        assertEquals(1, music.channels.size)
+        onlyMusic.close()
     }
 
     @Test
