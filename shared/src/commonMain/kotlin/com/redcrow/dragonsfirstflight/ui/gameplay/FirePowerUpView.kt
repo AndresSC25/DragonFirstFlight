@@ -4,11 +4,10 @@ import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import korlibs.image.bitmap.Bitmap
+import korlibs.image.bitmap.sliceWithSize
 import korlibs.korge.view.Container
-import korlibs.korge.view.Sprite
 import korlibs.korge.view.Views
 import korlibs.korge.view.image
-import korlibs.image.bitmap.sliceWithSize
 
 private const val FIRE_POWER_UP_FRAME_SIZE: Int = 384
 private const val FIRE_POWER_UP_FRAME_COUNT: Int = 6
@@ -20,7 +19,10 @@ internal class FirePowerUpView private constructor(
 ) {
     private val pool = ArrayList<AnimatedSpriteView>()
 
-    fun update(snapshot: GameSnapshot, isPaused: Boolean) {
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean,
+    ) {
         val isRunning = snapshot.status == GameStatus.RUNNING
         val visibleCount = if (isRunning) snapshot.firePowerUps.size else 0
         while (pool.size < visibleCount) {
@@ -55,8 +57,11 @@ internal class FirePowerUpView private constructor(
     }
 
     companion object {
-        fun create(container: Container, bitmap: Bitmap, views: Views): FirePowerUpView =
-            FirePowerUpView(container, bitmap, views)
+        fun create(
+            container: Container,
+            bitmap: Bitmap,
+            views: Views,
+        ): FirePowerUpView = FirePowerUpView(container, bitmap, views)
     }
 }
 
@@ -66,7 +71,10 @@ internal class FireBallView private constructor(
 ) {
     private val pool = mutableListOf<korlibs.korge.view.Image>()
 
-    fun update(snapshot: GameSnapshot, isPaused: Boolean) {
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean,
+    ) {
         val visibleCount =
             if (snapshot.status == GameStatus.RUNNING && !isPaused) {
                 snapshot.fireBalls.size
@@ -95,7 +103,10 @@ internal class FireBallView private constructor(
     }
 
     companion object {
-        fun create(container: Container, bitmap: Bitmap): FireBallView {
+        fun create(
+            container: Container,
+            bitmap: Bitmap,
+        ): FireBallView {
             require(bitmap.width == 192 && bitmap.height == 32) {
                 "Fire ball sprite must be 192x32, but was ${bitmap.width}x${bitmap.height}."
             }
@@ -111,25 +122,31 @@ internal class FireBallView private constructor(
 internal class DragonFlamesView private constructor(
     private val animatedSprite: AnimatedSpriteView,
 ) {
-    fun update(snapshot: GameSnapshot, isPaused: Boolean) {
+    fun update(
+        snapshot: GameSnapshot,
+        isPaused: Boolean,
+    ) {
         val visible = snapshot.isFirePowerActive && snapshot.status == GameStatus.RUNNING
         val sprite = animatedSprite.view
         sprite.visible = visible
         if (!visible) return
         sprite.x =
             snapshot.dragonX +
-                snapshot.dragonSize -
-                12.0
+            snapshot.dragonSize -
+            12.0
         sprite.y =
             snapshot.dragonY +
-                (snapshot.dragonSize - GameEngineConfig.FIRE_FLAME_SIZE) / 2.0
+            (snapshot.dragonSize - GameEngineConfig.FIRE_FLAME_SIZE) / 2.0
         animatedSprite.update(
             shouldAnimate = !isPaused && snapshot.status == GameStatus.RUNNING,
         )
     }
 
     companion object {
-        fun create(container: Container, bitmap: Bitmap): DragonFlamesView {
+        fun create(
+            container: Container,
+            bitmap: Bitmap,
+        ): DragonFlamesView {
             val frameSize = 362
             require(bitmap.width == frameSize * 6 && bitmap.height == frameSize * 2) {
                 "Invalid flames_dragon sprite dimensions: ${bitmap.width}x${bitmap.height}"

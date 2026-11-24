@@ -18,13 +18,13 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.CatapultView
 import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ExtraLifeView
-import com.redcrow.dragonsfirstflight.ui.gameplay.FirePowerUpView
-import com.redcrow.dragonsfirstflight.ui.gameplay.FireBallView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FireBallView
+import com.redcrow.dragonsfirstflight.ui.gameplay.FirePowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
