@@ -31,7 +31,32 @@ dependencies {
     implementation(compose.desktop.currentOs)
     implementation(libs.kotlinx.coroutinesSwing)
     implementation(libs.compose.uiToolingPreview)
+
+    // JavaFX decodes MP4 frames; KorGE renders them using its own OpenGL texture.
+    val platform =
+        when {
+            System.getProperty("os.name").startsWith("Windows") -> "win"
+            System.getProperty("os.name").startsWith("Mac") ->
+                if (System.getProperty("os.arch") == "aarch64") "mac-aarch64" else "mac"
+            else ->
+                if (System.getProperty("os.arch") == "aarch64") "linux-aarch64" else "linux"
+        }
+    val javafxVersion = libs.versions.javafx.get()
+    for (module in listOf("base", "graphics", "media", "swing")) {
+        implementation("org.openjfx:javafx-$module:$javafxVersion:$platform") {
+            isTransitive = false
+        }
+    }
+    testImplementation(libs.kotlin.testJunit)
 }
+
+val introMediaJvmArgs =
+    listOf(
+        "com.sun.media.jfxmedia",
+        "com.sun.media.jfxmedia.control",
+        "com.sun.media.jfxmedia.events",
+        "com.sun.media.jfxmedia.locator",
+    ).map { "--add-exports=javafx.media/$it=ALL-UNNAMED" }
 
 val korGeJvmArgs =
     listOf(
@@ -44,7 +69,7 @@ val korGeJvmArgs =
         "--add-opens=java.desktop/com.apple.eawt.event=ALL-UNNAMED",
         "--add-exports=java.desktop/com.apple.eawt=ALL-UNNAMED",
         "--add-exports=java.desktop/com.apple.eawt.event=ALL-UNNAMED",
-    )
+    ) + introMediaJvmArgs
 
 compose.desktop {
     application {
@@ -67,6 +92,27 @@ compose.desktop {
 
 tasks.withType<JavaExec>().configureEach {
     jvmArgs(korGeJvmArgs)
+}
+
+tasks.withType<Test>().configureEach {
+    jvmArgs(introMediaJvmArgs)
+}
+
+tasks.test {
+    // Native media checks need a graphical session; keep ordinary unit tests headless.
+    exclude("**/DesktopIntroDecoderTest*", "**/DesktopIntroFailureTest*", "**/DesktopIntroRerunTest*")
+}
+
+tasks.register<Test>("verifyIntroPlayback") {
+    group = "verification"
+    description = "Verifies real MP4 playback, pause/resume and decoder failures in a graphical session."
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+    include("**/DesktopIntroDecoderTest*", "**/DesktopIntroFailureTest*", "**/DesktopIntroRerunTest*")
+    // Each native test class shuts down its toolkit and owns a fresh JVM.
+    forkEvery = 1
+    maxParallelForks = 1
+    shouldRunAfter(tasks.test)
 }
 
 ktlint {

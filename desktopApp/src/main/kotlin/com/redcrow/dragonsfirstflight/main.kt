@@ -12,5 +12,9 @@ suspend fun main() {
                 fullscreen = false,
                 resizable = false,
             ),
+        beforeMenu = { views ->
+            installDesktopWindowLifecycle(views.gameWindow)
+            playIntroVideo(views)
+        },
     )
 }
