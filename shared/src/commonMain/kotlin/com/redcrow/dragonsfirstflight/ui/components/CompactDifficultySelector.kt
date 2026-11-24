@@ -25,6 +25,7 @@ internal fun Container.createCompactDifficultySelector(
     height: Double,
     texture: Bitmap,
     initialDifficulty: GameDifficulty = GameDifficulty.EASY,
+    onInteraction: () -> Unit = {},
     onSelectionChanged: (GameDifficulty) -> Unit,
 ) {
     require(width > SELECTOR_ARROW_AREA_WIDTH * 2.0) {
@@ -145,6 +146,7 @@ internal fun Container.createCompactDifficultySelector(
     }
 
     fun moveSelection(step: Int) {
+        onInteraction()
         val difficulties = GameDifficulty.entries
         val currentIndex = difficulties.indexOf(selectedDifficulty)
         val nextIndex =

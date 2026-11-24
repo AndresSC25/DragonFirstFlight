@@ -35,6 +35,9 @@ class GameEngine(
     private var lives: Int =
         GameEngineConfig.INITIAL_LIVES
 
+    private var damageCount = 0
+    private var extraLivesCollected = 0
+
     private val scoreTracker =
         ScoreTracker(
             pointsPerSecond = GameEngineConfig.POINTS_PER_SECOND,
@@ -157,6 +160,7 @@ class GameEngine(
                 )
             ) {
                 lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
+                extraLivesCollected++
             }
         }
         if (mode == GameMode.ENDLESS && isRunning) endlessElapsedSeconds += delta
@@ -299,6 +303,8 @@ class GameEngine(
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
+        damageCount = 0
+        extraLivesCollected = 0
         scoreTracker.reset()
         rockImpacts.clear()
         impactFeedbackRemainingSeconds = 0.0
@@ -375,6 +381,8 @@ class GameEngine(
             mode = mode,
             endlessElapsedSeconds = endlessElapsedSeconds,
             obstacleSpeed = currentObstacleSpeed,
+            damageCount = damageCount,
+            extraLivesCollected = extraLivesCollected,
         )
     }
 
@@ -591,6 +599,7 @@ class GameEngine(
         }
 
         lives = (lives - 1).coerceAtLeast(0)
+        damageCount++
         if (lives > 0) {
             invulnerabilityRemainingSeconds =
                 GameEngineConfig.INVULNERABILITY_DURATION_SECONDS

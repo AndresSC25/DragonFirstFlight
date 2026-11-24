@@ -58,6 +58,14 @@ val introMediaJvmArgs =
         "com.sun.media.jfxmedia.locator",
     ).map { "--add-exports=javafx.media/$it=ALL-UNNAMED" }
 
+tasks.register<JavaExec>("previewAudio") {
+    group = "application"
+    description = "Opens a soundboard for all game effects and the stage music loop."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.redcrow.dragonsfirstflight.MainKt")
+    systemProperty("dragons.audioPreview", "true")
+}
+
 val korGeJvmArgs =
     listOf(
         "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",

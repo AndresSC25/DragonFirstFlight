@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.screens
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameSound
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.skins.DragonSkin
 import com.redcrow.dragonsfirstflight.game.skins.SkinShop
@@ -37,6 +39,7 @@ private const val COIN_TEXT_GAP = 8.0
 
 internal suspend fun Container.createShopScreen(
     views: Views,
+    audio: GameAudio,
     skinShop: SkinShop,
     skinAnimations: Map<String, SpriteAnimation>,
     onBack: () -> Unit,
@@ -135,7 +138,9 @@ internal suspend fun Container.createShopScreen(
                             texture = buttonBitmap,
                             label = "Buy",
                             textVerticalOffset = 0.0,
-                            onClick = { skinShop.buy(skin) },
+                            onClick = {
+                                audio.play(if (skinShop.buy(skin)) GameSound.PURCHASE else GameSound.INSUFFICIENT_COINS)
+                            },
                         )
                     }
                 val refresh: () -> Unit = {

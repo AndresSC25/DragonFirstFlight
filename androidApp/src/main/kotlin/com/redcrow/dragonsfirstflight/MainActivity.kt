@@ -1,8 +1,10 @@
 ﻿package com.redcrow.dragonsfirstflight
 
 import android.os.Bundle
+import com.redcrow.dragonsfirstflight.game.audio.IntroMusicPlayback
 import com.redcrow.dragonsfirstflight.game.launchDragonGame
 import korlibs.event.FocusEvent
+import korlibs.korge.service.storage.storage
 import korlibs.render.GameWindowCreationConfig
 import korlibs.render.KorgwActivity
 import kotlinx.coroutines.Dispatchers
@@ -54,19 +56,26 @@ class MainActivity :
 
     override suspend fun activityMain() {
         launchDragonGame(
-            beforeMenu = {
+            beforeMenu = { views ->
+                val music =
+                    IntroMusicPlayback.load(
+                        views.coroutineContext,
+                        !introFinished && views.storage.getOrNull("audio.music") != "false",
+                        effectsEnabled = !introFinished && views.storage.getOrNull("audio.sound") != "false",
+                    )
                 val player =
                     withContext(Dispatchers.Main) {
                         if (introFinished) {
                             null
                         } else {
-                            IntroVideoPlayer(this@MainActivity, foreground, restoredIntroPosition)
+                            IntroVideoPlayer(this@MainActivity, foreground, restoredIntroPosition, music)
                                 .also { introPlayer = it }
                         }
                     }
                 try {
                     player?.play()
                 } finally {
+                    music.close()
                     withContext(NonCancellable + Dispatchers.Main) {
                         introFinished = !isChangingConfigurations && !isDestroyed
                         introPlayer = null
@@ -84,10 +93,9 @@ class MainActivity :
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
         super.onWindowFocusChanged(hasFocus)
-        if (!hasFocus) {
-            gameWindow?.let { window ->
-                window.queue { window.dispatch(FocusEvent(FocusEvent.Type.BLUR)) }
-            }
+        gameWindow.let { window ->
+            val type = if (hasFocus) FocusEvent.Type.FOCUS else FocusEvent.Type.BLUR
+            window.queue { window.dispatch(FocusEvent(type)) }
         }
     }
 }

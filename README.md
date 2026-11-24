@@ -12,6 +12,55 @@ This is a Kotlin Multiplatform project targeting Android, iOS, Desktop (JVM).
     Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
     folder is the appropriate location.
 
+### Game audio
+
+Sound effects are bundled under `shared/src/commonMain/resources/audio/sfx`.
+The stage/Endless, boss battle and cinematic music are under `audio/music`.
+All audio is local and works offline. The cinematic track follows the video clock,
+including pauses and restored positions, and stops immediately on Skip or completion.
+The two short intro tracks are decoded before playback. They play continuously
+between pauses; synchronization seeks happen only at startup/restoration or once
+on resume, avoiding repeated jumps caused by buffered audio cursor differences.
+
+The introduction also has a separate 12.5-second Foley track in
+`audio/cinematic/intro_effects.wav`, controlled by Sound independently of Music.
+It follows the same video clock and covers torches, the shell cracking/opening,
+the hatchling chirp, running/claws and guard armor, inhaling/fire, wall cracks and
+collapse, falling stones, takeoff, wingbeats and flight wind. These original
+procedural sounds are generated from `tools/audio/intro-effects.json`; the three
+existing flap variations are reused for consistency. Cue timing was reviewed
+against quarter-second frames of the bundled cinematic.
+
+To adjust cue timing/gain or regenerate the individual clips and the synchronized
+mix, edit that manifest and run `powershell -NoProfile -File tools/audio/GenerateIntroEffects.ps1`.
+
+The main menu has independent Music and Sound toggles; preferences survive app
+restarts, including the cinematic music preference. Stages and Endless share a quiet
+music loop; the normal final battle switches to its own loop at a lower volume so
+warnings remain audible. Continuing into Endless restores the stage music.
+Pausing or backgrounding pauses music and catapult charging. Returning to the game
+keeps them paused until Resume. Leaving a run stops its audio and pending result
+cues. Retry starts a fresh music loop.
+
+Effects cover coins, actual damage, defeat, extra lives, three alternating flaps,
+RUSH warnings, buttons, difficulty and map selection, purchases, insufficient
+funds, equipped skins, stage changes, victory and continuation into Endless.
+The normal boss encounter adds an arrival cue, a looping charge, a warning,
+shots, projectile flybys and a destruction cue before victory. Selecting the final
+battlefield in Endless does not activate boss sounds.
+
+To audition all 27 effects and the three music tracks without playing through every stage:
+
+```powershell
+.\gradlew.bat :desktopApp:previewAudio
+```
+
+This separate developer soundboard has a button for each effect, Stage music,
+Boss music, Intro music, Intro effects and Stop all. The catapult-charge button toggles its loop. Normal Run still opens
+the game. To check integration, exercise menu navigation and both audio toggles,
+collect coins and extra lives, take damage, pause/resume, retry, cross stages and
+finish the normal boss encounter; then continue into Endless.
+
 ### Endless mode
 
 Select a difficulty in the main menu, then choose Endless and a map preview.
@@ -55,8 +104,9 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 ### Game introduction
 
 Android and Desktop play `shared/src/commonMain/resources/video/intro.mp4` before
-creating the main menu. The bundled introduction is a silent, 12.5-second H.264
-video (1536 x 1024, 24 fps). Desktop fills the window while preserving the video
+creating the main menu. The bundled introduction is a 12.5-second H.264
+video (1536 x 1024, 24 fps), accompanied by `audio/music/intro_cinematic.wav`
+when Music is enabled. Desktop fills the window while preserving the video
 aspect ratio, cropping the edges where needed. Android fits the complete image
 with black bands where needed. It runs once per game launch; starting or retrying a run does not
 replay it. A playback error falls back to the menu.
