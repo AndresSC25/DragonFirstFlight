@@ -365,16 +365,25 @@ internal suspend fun Container.createGameplayScreen(
                     GameZone.BOSS -> ZoneBackground.BOSS_BATTLEFIELD
                 }
 
-            if (
-                !snapshot.isZoneTransitioning ||
-                snapshot.zoneTransitionProgress >=
-                ZoneTransitionOverlay.TRANSITION_MIDPOINT
-            ) {
+            val backgroundBlend =
+                if (snapshot.isZoneTransitioning) {
+                    ZoneTransitionOverlay.backgroundBlend(snapshot.zoneTransitionProgress)
+                } else {
+                    1.0
+                }
+
+            if (backgroundBlend >= 1.0) {
                 displayedBackground = targetBackground
             }
 
+            val isCrossfading = displayedBackground != targetBackground && backgroundBlend > 0.0
+            val fadingBackground = maxOf(displayedBackground, targetBackground)
+            val fadingAlpha =
+                if (fadingBackground == targetBackground) backgroundBlend else 1.0 - backgroundBlend
+
             scrollingBackgrounds.forEach { (zone, background) ->
-                background.visible = zone == displayedBackground
+                background.visible = zone == displayedBackground || (isCrossfading && zone == targetBackground)
+                background.alpha = if (isCrossfading && zone == fadingBackground) fadingAlpha else 1.0
                 background.update(
                     if (
                         zone == displayedBackground &&

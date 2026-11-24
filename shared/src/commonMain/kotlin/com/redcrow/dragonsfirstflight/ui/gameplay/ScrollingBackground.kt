@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.gameplay
+package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import korlibs.image.bitmap.Bitmap
@@ -16,6 +16,12 @@ internal class ScrollingBackground private constructor(
         set(value) {
             field = value
             layers.forEach { it.visible = value }
+        }
+
+    var alpha: Double = 1.0
+        set(value) {
+            field = value
+            layers.forEach { it.alpha = value }
         }
 
     fun update(elapsedSeconds: Double) {
@@ -99,6 +105,12 @@ private class ScrollingLayer(
         set(value) {
             field = value
             layerContainer.visible = value
+        }
+
+    var alpha: Double = 1.0
+        set(value) {
+            field = value
+            layerContainer.alpha = value
         }
 
     private val tiles =
