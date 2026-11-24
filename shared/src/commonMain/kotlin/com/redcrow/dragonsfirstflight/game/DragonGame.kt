@@ -1,6 +1,7 @@
 package com.redcrow.dragonsfirstflight.game
 
 import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameSound
 import com.redcrow.dragonsfirstflight.game.coins.CoinWallet
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
@@ -76,14 +77,17 @@ suspend fun Container.createDragonGame(views: Views) {
                 updateScreenVisibility()
             },
             onEndless = { difficulty ->
+                audio.play(GameSound.MENU_CLICK)
                 controller.openEndlessSetup(difficulty)
                 updateScreenVisibility()
             },
             onInventory = {
+                audio.play(GameSound.MENU_CLICK)
                 controller.openInventory()
                 updateScreenVisibility()
             },
             onShop = {
+                audio.play(GameSound.MENU_CLICK)
                 controller.openShop()
                 updateScreenVisibility()
             },
@@ -92,12 +96,14 @@ suspend fun Container.createDragonGame(views: Views) {
     endlessSetupContainer =
         createEndlessSetupScreen(
             views = views,
+            audio = audio,
             controller = controller,
             onStart = {
                 controller.confirmEndlessSetup()
                 updateScreenVisibility()
             },
             onBack = {
+                audio.play(GameSound.MENU_BACK)
                 controller.returnToMenu()
                 updateScreenVisibility()
             },
@@ -106,9 +112,11 @@ suspend fun Container.createDragonGame(views: Views) {
     inventoryContainer =
         createInventoryScreen(
             views = views,
+            audio = audio,
             skinInventory = skinInventory,
             skinAnimations = skinAnimations,
             onBack = {
+                audio.play(GameSound.MENU_BACK)
                 controller.returnToMenu()
                 updateScreenVisibility()
             },
@@ -117,9 +125,11 @@ suspend fun Container.createDragonGame(views: Views) {
     shopContainer =
         createShopScreen(
             views = views,
+            audio = audio,
             skinShop = skinShop,
             skinAnimations = skinAnimations,
             onBack = {
+                audio.play(GameSound.MENU_BACK)
                 controller.returnToMenu()
                 updateScreenVisibility()
             },
@@ -135,6 +145,7 @@ suspend fun Container.createDragonGame(views: Views) {
                 audio.stopEffects()
                 audio.music(active = false, paused = false, boss = false)
                 audio.charge(active = false, paused = false)
+                audio.play(GameSound.MENU_BACK)
                 controller.returnToMenu()
                 updateScreenVisibility()
             },

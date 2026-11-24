@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.screens
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameSound
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameZone
@@ -43,6 +45,7 @@ private val maps =
 
 internal suspend fun Container.createEndlessSetupScreen(
     views: Views,
+    audio: GameAudio,
     controller: GameController,
     onStart: () -> Unit,
     onBack: () -> Unit,
@@ -112,6 +115,7 @@ internal suspend fun Container.createEndlessSetupScreen(
                         y = 86.0
                     }
                 card.onClick {
+                    audio.play(GameSound.MAP_SELECT)
                     controller.selectEndlessZone(map.zone)
                     refreshSelection()
                 }

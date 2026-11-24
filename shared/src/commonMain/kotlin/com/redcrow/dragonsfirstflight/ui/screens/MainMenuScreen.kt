@@ -1,6 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.screens
 
 import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameSound
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
@@ -151,6 +152,7 @@ internal suspend fun Container.createMainMenuScreen(
             height = 46.0,
             texture = buttonBitmap,
             initialDifficulty = selectedDifficulty,
+            onInteraction = { audio.play(GameSound.MENU_CLICK) },
             onSelectionChanged = { selectedDifficulty = it },
         )
 
