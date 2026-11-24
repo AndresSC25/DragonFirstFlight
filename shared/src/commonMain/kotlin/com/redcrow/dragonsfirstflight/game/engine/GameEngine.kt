@@ -62,7 +62,9 @@ class GameEngine(
     private val extraLifeField = ExtraLifeField(random)
     private val firePowerUpField = FirePowerUpField(random)
     private val fireBallField = FireBallField()
+    private val shieldPowerUpField = ShieldPowerUpField(random)
     private var firePowerRemainingSeconds = 0.0
+    private var shieldRemainingSeconds = 0.0
     private var fireBallLaunchRemainingSeconds = 0.0
     private var leftBoundary: Double = 0.0
     private var rightBoundary: Double = gameAreaWidth
@@ -139,6 +141,8 @@ class GameEngine(
             (invulnerabilityRemainingSeconds - delta).coerceAtLeast(0.0)
         firePowerRemainingSeconds =
             (firePowerRemainingSeconds - delta).coerceAtLeast(0.0)
+        shieldRemainingSeconds =
+            (shieldRemainingSeconds - delta).coerceAtLeast(0.0)
 
         if (!isRunning) {
             return
@@ -170,6 +174,11 @@ class GameEngine(
             val destroyedIds =
                 fireBallField.removeColliding(obstacleGenerator.snapshot())
             if (destroyedIds.isNotEmpty()) {
+                val destroyedObstacles =
+                    obstacleGenerator.snapshot().filter { it.id in destroyedIds }
+                destroyedObstacles.forEach { obstacle ->
+                    registerPowerUpDestruction(obstacle)
+                }
                 obstacleGenerator.destroy(destroyedIds)
                 collisionRegistered += destroyedIds
                 pointRegistered += destroyedIds
@@ -183,7 +192,6 @@ class GameEngine(
                 shouldLaunch = false,
             )
         }
-        evaluateCollisionAndScore()
         if (isRunning) {
             runCoins += coinField.collect(dragonY)
             if (
@@ -194,12 +202,21 @@ class GameEngine(
             ) {
                 lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
             }
-            if (firePowerUpField.collect(dragonY)) {
-                firePowerRemainingSeconds =
-                    GameEngineConfig.FIRE_POWER_UP_DURATION_SECONDS
-                fireBallLaunchRemainingSeconds = 0.0
+            if (shieldRemainingSeconds <= 0.0) {
+                if (firePowerUpField.collect(dragonY)) {
+                    firePowerRemainingSeconds =
+                        GameEngineConfig.FIRE_POWER_UP_DURATION_SECONDS
+                    fireBallLaunchRemainingSeconds = 0.0
+                }
+            }
+            if (firePowerRemainingSeconds <= 0.0) {
+                if (shieldPowerUpField.collect(dragonY)) {
+                    shieldRemainingSeconds =
+                        GameEngineConfig.SHIELD_POWER_UP_DURATION_SECONDS
+                }
             }
         }
+        evaluateCollisionAndScore()
         if (mode == GameMode.ENDLESS && isRunning) endlessElapsedSeconds += delta
         scoreTracker.update(elapsedSeconds)
         val currentZone =
@@ -291,6 +308,12 @@ class GameEngine(
             leftBoundary = leftBoundary,
             isEndless = mode == GameMode.ENDLESS,
         )
+        shieldPowerUpField.advance(
+            elapsedSeconds = delta,
+            distance = obstacleSpeed * delta,
+            leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
+        )
         val zone = GameEngineConfig.zoneAt(profileTimeSeconds)
         coinField.spawnForNewObstacles(
             obstacles = obstacleGenerator.activeObstacles,
@@ -308,6 +331,16 @@ class GameEngine(
             rightBoundary = rightBoundary,
             zone = zone,
             isEndless = mode == GameMode.ENDLESS,
+            shieldPowerUpActive = shieldRemainingSeconds > 0.0,
+            shieldPowerUpsPresent = shieldPowerUpField.powerUps.isNotEmpty(),
+        )
+        shieldPowerUpField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
+            isEndless = mode == GameMode.ENDLESS,
+            firePowerUpActive = firePowerRemainingSeconds > 0.0,
+            firePowerUpsPresent = firePowerUpField.powerUps.isNotEmpty(),
         )
         // Endless sessions must not retain collision history for enemies that have left the field.
         if (mode == GameMode.ENDLESS) {
@@ -336,7 +369,10 @@ class GameEngine(
         coinField.clear()
         extraLifeField.clear()
         firePowerUpField.clear()
+        shieldPowerUpField.clear()
         fireBallField.reset()
+        firePowerRemainingSeconds = 0.0
+        shieldRemainingSeconds = 0.0
         collisionRegistered.clear()
         pointRegistered.clear()
     }
@@ -367,7 +403,9 @@ class GameEngine(
         coinField.reset()
         extraLifeField.reset()
         firePowerUpField.reset()
+        shieldPowerUpField.reset()
         firePowerRemainingSeconds = 0.0
+        shieldRemainingSeconds = 0.0
         fireBallLaunchRemainingSeconds = 0.0
         fireBallField.reset()
         runCoins = 0
@@ -432,6 +470,10 @@ class GameEngine(
             isFirePowerActive = firePowerRemainingSeconds > 0.0,
             firePowerRemainingSeconds = firePowerRemainingSeconds,
             fireBalls = fireBallField.fireBalls,
+            shieldPowerUps = shieldPowerUpField.powerUps,
+            shieldPowerUpScrollX = shieldPowerUpField.currentScrollX,
+            isShieldActive = shieldRemainingSeconds > 0.0,
+            shieldRemainingSeconds = shieldRemainingSeconds,
             catapult = catapultSnapshot(),
             projectiles = projectileField.snapshot(),
             impactPosition = impactPosition,
@@ -616,6 +658,11 @@ class GameEngine(
             if (collisionBoundsOverlap(dragonBounds, obstacleBounds)) {
                 collisionRegistered += obstacle.id
                 pointRegistered += obstacle.id
+                if (shieldRemainingSeconds > 0.0) {
+                    registerPowerUpDestruction(obstacle)
+                    obstacleGenerator.destroy(setOf(obstacle.id))
+                    continue
+                }
                 impactObstacleId = obstacle.id
                 impactPosition = null
                 return DamageEvent
@@ -642,8 +689,22 @@ class GameEngine(
         return DamageEvent
     }
 
+    private fun registerPowerUpDestruction(obstacle: Obstacle) {
+        impactObstacleId = null
+        impactPosition =
+            ImpactPosition(
+                x = obstacle.x + obstacle.width / 2.0,
+                y = obstacle.y + obstacle.height / 2.0,
+            )
+        impactFeedbackRemainingSeconds =
+            GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
+    }
+
     internal fun handleDamageEvent(event: DamageEvent) {
         if (!isRunning) {
+            return
+        }
+        if (shieldRemainingSeconds > 0.0) {
             return
         }
 

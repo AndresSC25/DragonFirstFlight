@@ -25,6 +25,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FireBallView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FirePowerUpView
+import com.redcrow.dragonsfirstflight.ui.gameplay.GreenShieldView
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
@@ -33,6 +34,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ShieldPowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_GIANT_HORNET_SPRITE_PATH
@@ -91,6 +93,10 @@ private const val FIRE_POWER_UP_PATH: String =
     "sprites/power-ups/fire_power_up.png"
 private const val FIRE_BALL_PATH: String =
     "sprites/power-ups/fire_ball.png"
+private const val SHIELD_POWER_UP_PATH: String =
+    "sprites/power-ups/shield_power_up.png"
+private const val GREEN_SHIELD_PATH: String =
+    "sprites/power-ups/green_shield.png"
 
 private val OBSTACLE_PATHS =
     listOf(
@@ -154,6 +160,10 @@ internal suspend fun Container.createGameplayScreen(
         resourcesVfs[FIRE_POWER_UP_PATH].readBitmap()
     val fireBallBitmap =
         resourcesVfs[FIRE_BALL_PATH].readBitmap()
+    val shieldPowerUpBitmap =
+        resourcesVfs[SHIELD_POWER_UP_PATH].readBitmap()
+    val greenShieldBitmap =
+        resourcesVfs[GREEN_SHIELD_PATH].readBitmap()
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
@@ -218,6 +228,12 @@ internal suspend fun Container.createGameplayScreen(
                 container = container(),
                 bitmap = fireBallBitmap,
             )
+        val shieldPowerUpView =
+            ShieldPowerUpView.create(
+                container = container(),
+                bitmap = shieldPowerUpBitmap,
+                views = views,
+            )
 
         var appliedRunNumber = controller.runNumber
         val catapultView =
@@ -230,6 +246,7 @@ internal suspend fun Container.createGameplayScreen(
         val rockImpactView =
             RockImpactView.create(container = container(), rockMap = rockImpactBitmap, sparkMap = hitSparkBitmap)
         lateinit var dragonView: DragonView
+        lateinit var greenShieldView: GreenShieldView
         lateinit var hitSparkView: HitSparkView
         lateinit var rushWarningView: RushWarningView
 
@@ -247,6 +264,11 @@ internal suspend fun Container.createGameplayScreen(
                 DragonView.create(
                     container = this,
                     animation = skinAnimations.getValue(skinInventory.equipped.spritePath),
+                )
+            greenShieldView =
+                GreenShieldView.create(
+                    container = this,
+                    bitmap = greenShieldBitmap,
                 )
 
             hitSparkView =
@@ -335,6 +357,15 @@ internal suspend fun Container.createGameplayScreen(
             fireBallView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
+            )
+            shieldPowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            greenShieldView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+                elapsedSeconds = elapsedSeconds,
             )
 
             gameplayHud.update(
@@ -444,6 +475,11 @@ internal suspend fun Container.createGameplayScreen(
         dragonView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused,
+        )
+        greenShieldView.update(
+            snapshot = initialSnapshot,
+            isPaused = controller.isPaused,
+            elapsedSeconds = 0.0,
         )
 
         hitSparkView.update(
