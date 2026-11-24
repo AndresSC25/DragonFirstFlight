@@ -138,6 +138,7 @@ suspend fun Container.createDragonGame(views: Views) {
     gameContainer =
         createGameplayScreen(
             views = views,
+            audio = audio,
             controller = controller,
             skinInventory = skinInventory,
             skinAnimations = skinAnimations,
