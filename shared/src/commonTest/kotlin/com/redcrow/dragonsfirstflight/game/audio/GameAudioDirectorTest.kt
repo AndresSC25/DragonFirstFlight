@@ -39,6 +39,46 @@ class GameAudioDirectorTest {
     }
 
     @Test
+    fun pauseFreezesLoopsAndReturningDoesNotResumeUntilRequested() {
+        val loading = initial.copy(catapult = boss(frame = 2))
+        update(loading)
+        output.cues.clear()
+        repeat(50) { update(loading, paused = true) }
+        assertEquals(listOf(GameSound.PAUSE to 0.0), output.cues)
+        assertTrue(output.musicPaused)
+        assertTrue(output.chargePaused)
+        update(loading)
+        assertEquals(GameSound.RESUME, output.cues.last().first)
+        assertFalse(output.musicPaused)
+        assertFalse(output.chargePaused)
+    }
+
+    @Test
+    fun catapultHasOneIntroWarningAndShotPerEvent() {
+        val entering = initial.copy(catapult = boss(frame = 0), isZoneTransitioning = true)
+        update(entering)
+        assertFalse(output.cues.any { it.first == GameSound.BOSS_INTRO })
+        val loading = entering.copy(catapult = boss(frame = 1), isZoneTransitioning = false)
+        repeat(20) { update(loading) }
+        assertTrue(output.chargeActive)
+        val warning = loading.copy(catapult = boss(frame = 4))
+        repeat(20) { update(warning) }
+        assertTrue(output.chargeActive)
+        val fired =
+            warning.copy(
+                catapult = boss(frame = 5),
+                projectiles = listOf(projectile(1, 800.0), projectile(2, 820.0)),
+            )
+        repeat(20) { update(fired) }
+        assertFalse(output.chargeActive)
+        assertEquals(1, output.cues.count { it.first == GameSound.BOSS_INTRO })
+        assertEquals(1, output.cues.count { it.first == GameSound.CATAPULT_WARNING })
+        assertEquals(1, output.cues.count { it.first == GameSound.CATAPULT_FIRE })
+        update(fired.copy(projectiles = listOf(projectile(1, 340.0), projectile(2, 350.0))))
+        assertEquals(1, output.cues.count { it.first == GameSound.PROJECTILE })
+    }
+
+    @Test
     fun rushWarningSoundsOncePerNewEnemy() {
         update(initial)
         val hazard = initial.obstacles.first().copy(rushWarningRemainingSeconds = 0.8)
@@ -69,6 +109,19 @@ class GameAudioDirectorTest {
         assertFalse(output.cues.any { it.first == GameSound.BOSS_INTRO })
         assertFalse(output.chargeActive)
         assertTrue(output.musicActive)
+    }
+
+    @Test
+    fun defeatFinishesBeforeGameOverAndVictoryFollowsDestruction() {
+        update(initial)
+        output.cues.clear()
+        repeat(20) { update(initial.copy(status = GameStatus.LOST, lives = 0)) }
+        assertEquals(listOf(GameSound.DEFEAT to 0.0, GameSound.GAME_OVER to 0.86), output.cues)
+        assertFalse(output.musicActive)
+        update(initial, run = 2)
+        output.cues.clear()
+        repeat(20) { update(initial.copy(catapult = boss(0), status = GameStatus.WON), run = 2) }
+        assertEquals(listOf(GameSound.CATAPULT_DESTROY to 0.0, GameSound.VICTORY to 0.8), output.cues)
     }
 
     @Test

@@ -12,6 +12,7 @@ internal class GameAudioDirector(
     private var previousRun = -1
     private var wasVisible = false
     private var wasPaused = false
+    private var bossAnnounced = false
     private var flapIndex = 0
 
     fun flap() {
@@ -28,6 +29,7 @@ internal class GameAudioDirector(
     ) {
         if (!visible) {
             output.music(active = false, paused = false, boss = false)
+            output.charge(active = false, paused = false)
             previous = null
             wasVisible = false
             wasPaused = false
@@ -37,6 +39,7 @@ internal class GameAudioDirector(
         if (newRun) {
             output.stopEffects()
             previous = null
+            bossAnnounced = false
             flapIndex = 0
             wasPaused = false
             output.play(GameSound.START)
@@ -51,6 +54,10 @@ internal class GameAudioDirector(
             output.play(GameSound.RESUME)
         }
         output.music(active = running, paused = paused, boss = boss != null)
+        output.charge(
+            active = running && !snapshot.isZoneTransitioning && boss != null && boss.frameIndex in 1..4,
+            paused = paused,
+        )
         if (!paused) {
             val continued = before?.mode == GameMode.NORMAL && snapshot.mode == GameMode.ENDLESS
             if (continued) {
@@ -58,6 +65,10 @@ internal class GameAudioDirector(
                 output.play(GameSound.ENDLESS)
             } else if (snapshot.isZoneTransitioning && before?.isZoneTransitioning == false) {
                 output.play(GameSound.TRANSITION)
+            }
+            if (boss != null && running && !snapshot.isZoneTransitioning && !bossAnnounced) {
+                bossAnnounced = true
+                output.play(GameSound.BOSS_INTRO)
             }
             if (before != null && !continued) {
                 if (snapshot.runCoins > before.runCoins) output.play(GameSound.COIN)
@@ -72,12 +83,24 @@ internal class GameAudioDirector(
                         }
                         GameStatus.WON -> {
                             output.stopEffects()
-                            output.play(GameSound.VICTORY)
+                            if (boss != null) output.play(GameSound.CATAPULT_DESTROY)
+                            output.play(GameSound.VICTORY, delaySeconds = if (boss != null) 0.8 else 0.0)
                         }
                         GameStatus.RUNNING -> Unit
                     }
                 }
                 if (running && !snapshot.isZoneTransitioning) {
+                    if (boss?.frameIndex == 4 &&
+                        before.catapult?.frameIndex != 4
+                    ) {
+                        output.play(GameSound.CATAPULT_WARNING)
+                    }
+                    val oldProjectiles = before.projectiles.associateBy { it.id }
+                    if (snapshot.projectiles.any { it.id !in oldProjectiles }) output.play(GameSound.CATAPULT_FIRE)
+                    val flyByX = snapshot.dragonX + 220.0
+                    if (snapshot.projectiles.any { it.x <= flyByX && (oldProjectiles[it.id]?.x ?: it.x) > flyByX }) {
+                        output.play(GameSound.PROJECTILE)
+                    }
                     val warnedIds =
                         before.obstacles
                             .filter { it.rushWarningRemainingSeconds > 0.0 }
