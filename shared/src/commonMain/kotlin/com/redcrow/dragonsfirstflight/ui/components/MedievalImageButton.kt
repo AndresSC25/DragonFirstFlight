@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.components
+package com.redcrow.dragonsfirstflight.ui.components
 
 import korlibs.image.bitmap.Bitmap
 import korlibs.image.color.Colors

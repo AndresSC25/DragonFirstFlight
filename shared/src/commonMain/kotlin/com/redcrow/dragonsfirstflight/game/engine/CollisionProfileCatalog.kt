@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
 internal object CollisionProfileCatalog {
     // Visible envelope shared by the eight 128x128 rock frames (pixels 27 through 100).

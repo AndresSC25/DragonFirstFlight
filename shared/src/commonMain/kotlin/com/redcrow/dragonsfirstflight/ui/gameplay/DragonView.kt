@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.gameplay
+package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot

@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.math.PI
 import kotlin.math.sin
