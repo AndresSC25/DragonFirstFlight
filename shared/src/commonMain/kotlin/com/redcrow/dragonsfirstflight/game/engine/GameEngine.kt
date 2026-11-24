@@ -63,8 +63,10 @@ class GameEngine(
     private val firePowerUpField = FirePowerUpField(random)
     private val fireBallField = FireBallField()
     private val shieldPowerUpField = ShieldPowerUpField(random)
+    private val ragePowerUpField = RagePowerUpField(random)
     private var firePowerRemainingSeconds = 0.0
     private var shieldRemainingSeconds = 0.0
+    private var rageRemainingSeconds = 0.0
     private var fireBallLaunchRemainingSeconds = 0.0
     private var leftBoundary: Double = 0.0
     private var rightBoundary: Double = gameAreaWidth
@@ -143,6 +145,8 @@ class GameEngine(
             (firePowerRemainingSeconds - delta).coerceAtLeast(0.0)
         shieldRemainingSeconds =
             (shieldRemainingSeconds - delta).coerceAtLeast(0.0)
+        rageRemainingSeconds =
+            (rageRemainingSeconds - delta).coerceAtLeast(0.0)
 
         if (!isRunning) {
             return
@@ -202,18 +206,27 @@ class GameEngine(
             ) {
                 lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
             }
-            if (shieldRemainingSeconds <= 0.0) {
+            if (rageRemainingSeconds <= 0.0 && shieldRemainingSeconds <= 0.0) {
                 if (firePowerUpField.collect(dragonY)) {
                     firePowerRemainingSeconds =
                         GameEngineConfig.FIRE_POWER_UP_DURATION_SECONDS
                     fireBallLaunchRemainingSeconds = 0.0
                 }
             }
-            if (firePowerRemainingSeconds <= 0.0) {
+            if (rageRemainingSeconds <= 0.0 && firePowerRemainingSeconds <= 0.0) {
                 if (shieldPowerUpField.collect(dragonY)) {
                     shieldRemainingSeconds =
                         GameEngineConfig.SHIELD_POWER_UP_DURATION_SECONDS
                 }
+            }
+            if (
+                rageRemainingSeconds <= 0.0 &&
+                firePowerRemainingSeconds <= 0.0 &&
+                shieldRemainingSeconds <= 0.0 &&
+                ragePowerUpField.collect(dragonY)
+            ) {
+                rageRemainingSeconds =
+                    GameEngineConfig.RAGE_POWER_UP_DURATION_SECONDS
             }
         }
         evaluateCollisionAndScore()
@@ -235,11 +248,13 @@ class GameEngine(
             scoreTracker.score.activeTimeSeconds <
             GameEngineConfig.TIME_TO_WIN_SECONDS
         ) {
+            rageRemainingSeconds = 0.0
             zoneTransitionRemainingSeconds =
                 GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
             obstacleGenerator.beginZoneTransition(currentZone)
             coinField.clear()
             extraLifeField.clear()
+            ragePowerUpField.clear()
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
@@ -314,6 +329,12 @@ class GameEngine(
             leftBoundary = leftBoundary,
             isEndless = mode == GameMode.ENDLESS,
         )
+        ragePowerUpField.advance(
+            elapsedSeconds = delta,
+            distance = obstacleSpeed * delta,
+            leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
+        )
         val zone = GameEngineConfig.zoneAt(profileTimeSeconds)
         coinField.spawnForNewObstacles(
             obstacles = obstacleGenerator.activeObstacles,
@@ -333,6 +354,8 @@ class GameEngine(
             isEndless = mode == GameMode.ENDLESS,
             shieldPowerUpActive = shieldRemainingSeconds > 0.0,
             shieldPowerUpsPresent = shieldPowerUpField.powerUps.isNotEmpty(),
+            ragePowerUpActive = rageRemainingSeconds > 0.0,
+            ragePowerUpsPresent = ragePowerUpField.powerUps.isNotEmpty(),
         )
         shieldPowerUpField.spawnForNewObstacles(
             obstacles = obstacleGenerator.activeObstacles,
@@ -341,6 +364,20 @@ class GameEngine(
             isEndless = mode == GameMode.ENDLESS,
             firePowerUpActive = firePowerRemainingSeconds > 0.0,
             firePowerUpsPresent = firePowerUpField.powerUps.isNotEmpty(),
+            ragePowerUpActive = rageRemainingSeconds > 0.0,
+            ragePowerUpsPresent = ragePowerUpField.powerUps.isNotEmpty(),
+        )
+        ragePowerUpField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
+            isEndless = mode == GameMode.ENDLESS,
+            rageActive = rageRemainingSeconds > 0.0,
+            firePowerUpActive = firePowerRemainingSeconds > 0.0,
+            shieldPowerUpActive = shieldRemainingSeconds > 0.0,
+            otherPowerUpsPresent =
+                firePowerUpField.powerUps.isNotEmpty() ||
+                    shieldPowerUpField.powerUps.isNotEmpty(),
         )
         // Endless sessions must not retain collision history for enemies that have left the field.
         if (mode == GameMode.ENDLESS) {
@@ -370,9 +407,11 @@ class GameEngine(
         extraLifeField.clear()
         firePowerUpField.clear()
         shieldPowerUpField.clear()
+        ragePowerUpField.clear()
         fireBallField.reset()
         firePowerRemainingSeconds = 0.0
         shieldRemainingSeconds = 0.0
+        rageRemainingSeconds = 0.0
         collisionRegistered.clear()
         pointRegistered.clear()
     }
@@ -404,8 +443,10 @@ class GameEngine(
         extraLifeField.reset()
         firePowerUpField.reset()
         shieldPowerUpField.reset()
+        ragePowerUpField.reset()
         firePowerRemainingSeconds = 0.0
         shieldRemainingSeconds = 0.0
+        rageRemainingSeconds = 0.0
         fireBallLaunchRemainingSeconds = 0.0
         fireBallField.reset()
         runCoins = 0
@@ -423,9 +464,11 @@ class GameEngine(
     }
 
     fun snapshot(): GameSnapshot {
-        val isInvulnerable = invulnerabilityRemainingSeconds > 0.0
+        val isInvulnerable =
+            invulnerabilityRemainingSeconds > 0.0 ||
+                rageRemainingSeconds > 0.0
         val isInvulnerabilityBlinkDim =
-            isInvulnerable &&
+            invulnerabilityRemainingSeconds > 0.0 &&
                 (
                     (
                         GameEngineConfig.INVULNERABILITY_DURATION_SECONDS -
@@ -481,6 +524,10 @@ class GameEngine(
             mode = mode,
             endlessElapsedSeconds = endlessElapsedSeconds,
             obstacleSpeed = currentObstacleSpeed,
+            ragePowerUps = ragePowerUpField.powerUps,
+            ragePowerUpScrollX = ragePowerUpField.currentScrollX,
+            isRageActive = rageRemainingSeconds > 0.0,
+            rageRemainingSeconds = rageRemainingSeconds,
         )
     }
 
@@ -490,9 +537,11 @@ class GameEngine(
     private val currentObstacleSpeed: Double
         get() =
             if (mode == GameMode.ENDLESS) {
-                difficulty.endless.speedAt(endlessElapsedSeconds, endlessInitialSpeed)
+                difficulty.endless.speedAt(endlessElapsedSeconds, endlessInitialSpeed) *
+                    if (rageRemainingSeconds > 0.0) GameEngineConfig.RAGE_SPEED_MULTIPLIER else 1.0
             } else {
-                difficulty.obstacleSpeedAt(scoreTracker.score.activeTimeSeconds)
+                difficulty.obstacleSpeedAt(scoreTracker.score.activeTimeSeconds) *
+                    if (rageRemainingSeconds > 0.0) GameEngineConfig.RAGE_SPEED_MULTIPLIER else 1.0
             }
 
     private fun zoneAt(activeTimeSeconds: Double): GameZone =
@@ -658,7 +707,10 @@ class GameEngine(
             if (collisionBoundsOverlap(dragonBounds, obstacleBounds)) {
                 collisionRegistered += obstacle.id
                 pointRegistered += obstacle.id
-                if (shieldRemainingSeconds > 0.0) {
+                if (
+                    shieldRemainingSeconds > 0.0 ||
+                    rageRemainingSeconds > 0.0
+                ) {
                     registerPowerUpDestruction(obstacle)
                     obstacleGenerator.destroy(setOf(obstacle.id))
                     continue
@@ -704,7 +756,10 @@ class GameEngine(
         if (!isRunning) {
             return
         }
-        if (shieldRemainingSeconds > 0.0) {
+        if (
+            shieldRemainingSeconds > 0.0 ||
+            rageRemainingSeconds > 0.0
+        ) {
             return
         }
 

@@ -59,8 +59,16 @@ internal class FirePowerUpField(
         isEndless: Boolean,
         shieldPowerUpActive: Boolean = false,
         shieldPowerUpsPresent: Boolean = false,
+        ragePowerUpActive: Boolean = false,
+        ragePowerUpsPresent: Boolean = false,
     ) {
-        if (shieldPowerUpActive || shieldPowerUpsPresent || activePowerUps.isNotEmpty()) return
+        if (
+            shieldPowerUpActive ||
+            shieldPowerUpsPresent ||
+            ragePowerUpActive ||
+            ragePowerUpsPresent ||
+            activePowerUps.isNotEmpty()
+        ) return
         if (secondsUntilNextAttempt > 0.0) return
         if (!isEndless && (zone != GameZone.ZONE_ONE || spawnedInNormalZone)) return
         if (isEndless && random.nextDouble() >= 0.08) {
