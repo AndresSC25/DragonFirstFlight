@@ -25,14 +25,19 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FireBallView
+import com.redcrow.dragonsfirstflight.ui.gameplay.FirePowerUpView
+import com.redcrow.dragonsfirstflight.ui.gameplay.GreenShieldView
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.RagePowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ShieldPowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_GIANT_HORNET_SPRITE_PATH
@@ -87,6 +92,16 @@ private const val COIN_ICON_PATH: String =
     "sprites/coins/coin_icon.png"
 private const val EXTRA_LIFE_PATH: String =
     "sprites/power-ups/extra_life.png"
+private const val FIRE_POWER_UP_PATH: String =
+    "sprites/power-ups/fire_power_up.png"
+private const val FIRE_BALL_PATH: String =
+    "sprites/power-ups/fire_ball.png"
+private const val SHIELD_POWER_UP_PATH: String =
+    "sprites/power-ups/shield_power_up.png"
+private const val GREEN_SHIELD_PATH: String =
+    "sprites/power-ups/green_shield.png"
+private const val RAGE_POWER_UP_PATH: String =
+    "sprites/power-ups/liquid_rage.png"
 
 private val OBSTACLE_PATHS =
     listOf(
@@ -148,6 +163,16 @@ internal suspend fun Container.createGameplayScreen(
         resourcesVfs[COIN_ICON_PATH].readBitmap()
     val extraLifeBitmap =
         resourcesVfs[EXTRA_LIFE_PATH].readBitmap()
+    val firePowerUpBitmap =
+        resourcesVfs[FIRE_POWER_UP_PATH].readBitmap()
+    val fireBallBitmap =
+        resourcesVfs[FIRE_BALL_PATH].readBitmap()
+    val shieldPowerUpBitmap =
+        resourcesVfs[SHIELD_POWER_UP_PATH].readBitmap()
+    val greenShieldBitmap =
+        resourcesVfs[GREEN_SHIELD_PATH].readBitmap()
+    val ragePowerUpBitmap =
+        resourcesVfs[RAGE_POWER_UP_PATH].readBitmap()
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
@@ -201,6 +226,29 @@ internal suspend fun Container.createGameplayScreen(
                 bitmap = extraLifeBitmap,
                 views = views,
             )
+        val firePowerUpView =
+            FirePowerUpView.create(
+                container = container(),
+                bitmap = firePowerUpBitmap,
+                views = views,
+            )
+        val fireBallView =
+            FireBallView.create(
+                container = container(),
+                bitmap = fireBallBitmap,
+            )
+        val shieldPowerUpView =
+            ShieldPowerUpView.create(
+                container = container(),
+                bitmap = shieldPowerUpBitmap,
+                views = views,
+            )
+        val ragePowerUpView =
+            RagePowerUpView.create(
+                container = container(),
+                bitmap = ragePowerUpBitmap,
+                views = views,
+            )
 
         var appliedRunNumber = controller.runNumber
         val catapultView =
@@ -213,6 +261,7 @@ internal suspend fun Container.createGameplayScreen(
         val rockImpactView =
             RockImpactView.create(container = container(), rockMap = rockImpactBitmap, sparkMap = hitSparkBitmap)
         lateinit var dragonView: DragonView
+        lateinit var greenShieldView: GreenShieldView
         lateinit var hitSparkView: HitSparkView
         lateinit var rushWarningView: RushWarningView
 
@@ -230,6 +279,11 @@ internal suspend fun Container.createGameplayScreen(
                 DragonView.create(
                     container = this,
                     animation = skinAnimations.getValue(skinInventory.equipped.spritePath),
+                )
+            greenShieldView =
+                GreenShieldView.create(
+                    container = this,
+                    bitmap = greenShieldBitmap,
                 )
 
             hitSparkView =
@@ -312,6 +366,27 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
             )
+            firePowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            fireBallView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            shieldPowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            ragePowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            greenShieldView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+                elapsedSeconds = elapsedSeconds,
+            )
 
             gameplayHud.update(
                 snapshot = snapshot,
@@ -391,7 +466,12 @@ internal suspend fun Container.createGameplayScreen(
                         !snapshot.isZoneTransitioning &&
                         !controller.isPaused
                     ) {
-                        elapsedSeconds
+                        elapsedSeconds *
+                            if (snapshot.isRageActive) {
+                                GameEngineConfig.RAGE_SPEED_MULTIPLIER
+                            } else {
+                                1.0
+                            }
                     } else {
                         0.0
                     },
@@ -431,6 +511,11 @@ internal suspend fun Container.createGameplayScreen(
         dragonView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused,
+        )
+        greenShieldView.update(
+            snapshot = initialSnapshot,
+            isPaused = controller.isPaused,
+            elapsedSeconds = 0.0,
         )
 
         hitSparkView.update(

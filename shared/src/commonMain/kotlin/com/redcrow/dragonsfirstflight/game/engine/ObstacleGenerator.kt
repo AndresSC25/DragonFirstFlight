@@ -205,6 +205,11 @@ internal class ObstacleGenerator(
 
     fun snapshot(): List<Obstacle> = obstacles.toList()
 
+    fun destroy(ids: Set<Int>) {
+        if (ids.isEmpty()) return
+        obstacles.removeAll { it.id in ids }
+    }
+
     fun beginZoneTransition(zone: GameZone) {
         obstacles.clear()
         spritePaths.clear()
