@@ -13,6 +13,7 @@ import android.view.WindowInsets
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.VideoView
+import com.redcrow.dragonsfirstflight.game.audio.IntroMusicPlayback
 import com.redcrow.dragonsfirstflight.game.intro.IntroPlaybackWatchdog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -26,21 +27,25 @@ internal class IntroVideoPlayer(
     private val activity: Activity,
     initiallyForeground: Boolean,
     initialPositionMillis: Int = 0,
+    private val music: IntroMusicPlayback? = null,
 ) {
     private var videoView: VideoView? = null
     private val finished = CompletableDeferred<Unit>()
     private var foreground = initiallyForeground
     private var prepared = false
+    private var playbackStarted = false
     private var savedPositionMillis = initialPositionMillis
 
     val positionMillis: Int
         get() = videoView?.currentPosition?.takeIf { prepared && it > 0 } ?: savedPositionMillis
 
     fun pause() {
+        music?.pause()
         foreground = false
         savedPositionMillis = positionMillis
         videoView?.suspend()
         prepared = false
+        playbackStarted = false
     }
 
     fun resume() {
@@ -49,6 +54,7 @@ internal class IntroVideoPlayer(
     }
 
     fun cancel() {
+        music?.close()
         finished.completeExceptionally(CancellationException("Intro activity destroyed"))
     }
 
@@ -72,8 +78,10 @@ internal class IntroVideoPlayer(
             object : Runnable {
                 override fun run() {
                     if (finished.isCompleted) return
+                    music?.update(if (prepared && playbackStarted) positionMillis / 1000.0 else null, !foreground)
                     if (watchdog.hasTimedOut(0.25, !foreground, if (prepared) positionMillis / 1000.0 else null)) {
                         Log.e("GameIntro", "Playback stopped making progress; opening menu.")
+                        music?.close()
                         finished.complete(Unit)
                     } else {
                         handler.postDelayed(this, 250)
@@ -115,7 +123,10 @@ internal class IntroVideoPlayer(
                         setPadding(dp(16), dp(8), dp(16), dp(8))
                         this.background = createIntroSkipBackground(activity)
                         setOnClickListener {
-                            if (finished.complete(Unit)) isEnabled = false
+                            if (finished.complete(Unit)) {
+                                music?.close()
+                                isEnabled = false
+                            }
                         }
                     }
                 val buttonLayout =
@@ -155,19 +166,30 @@ internal class IntroVideoPlayer(
                 video.setOnPreparedListener { player ->
                     if (finished.isCompleted) return@setOnPreparedListener
                     prepared = true
+                    playbackStarted = false
                     player.isLooping = false
                     if (savedPositionMillis > 0) {
                         player.setOnSeekCompleteListener {
-                            if (foreground && !finished.isCompleted) video.start()
+                            if (foreground && !finished.isCompleted) {
+                                video.start()
+                                playbackStarted = true
+                                music?.update(savedPositionMillis / 1000.0, paused = false)
+                            }
                         }
                         video.seekTo(savedPositionMillis)
                     } else if (foreground) {
                         video.start()
+                        playbackStarted = true
+                        music?.update(0.0, paused = false)
                     }
                 }
-                video.setOnCompletionListener { finished.complete(Unit) }
+                video.setOnCompletionListener {
+                    music?.close()
+                    finished.complete(Unit)
+                }
                 video.setOnErrorListener { _, what, extra ->
                     Log.e("GameIntro", "Video playback failed: $what / $extra")
+                    music?.close()
                     finished.complete(Unit)
                     true
                 }
@@ -186,6 +208,7 @@ internal class IntroVideoPlayer(
             // Consume the Skip release before the menu can receive input.
             delay(180)
         } finally {
+            music?.close()
             withContext(NonCancellable + Dispatchers.Main) {
                 handler.removeCallbacks(poll)
                 overlay?.animate()?.cancel()

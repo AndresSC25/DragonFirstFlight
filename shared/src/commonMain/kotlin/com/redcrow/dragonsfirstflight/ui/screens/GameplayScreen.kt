@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.screens
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameAudioDirector
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
@@ -119,11 +121,13 @@ private val OBSTACLE_PATHS =
 
 internal suspend fun Container.createGameplayScreen(
     views: Views,
+    audio: GameAudio,
     controller: GameController,
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
     onBackToMenu: () -> Unit,
 ): Container {
+    val audioDirector = GameAudioDirector(audio)
     val backgroundLayers =
         ZoneBackground.values().associateWith { it.loadLayers() }
 
@@ -293,6 +297,7 @@ internal suspend fun Container.createGameplayScreen(
 
         gameplayInputSurface.onClick {
             if (controller.isGameRunning) {
+                if (!controller.snapshot().isZoneTransitioning) audioDirector.flap()
                 controller.handleGameAreaInput()
             }
         }
@@ -409,6 +414,8 @@ internal suspend fun Container.createGameplayScreen(
 
             val snapshot =
                 controller.snapshot()
+
+            audioDirector.update(snapshot, controller.runNumber, controller.isGameVisible, controller.isPaused)
 
             val targetBackground =
                 when (snapshot.zone) {
