@@ -263,13 +263,12 @@ class GameEngine(
             scoreTracker.score.activeTimeSeconds <
             GameEngineConfig.TIME_TO_WIN_SECONDS
         ) {
-            rageRemainingSeconds = 0.0
             zoneTransitionRemainingSeconds =
                 GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
             obstacleGenerator.beginZoneTransition(currentZone)
             coinField.clear()
             extraLifeField.clear()
-            ragePowerUpField.clear()
+            clearPowerUps()
             clearHitEffects()
             return
         }
@@ -419,13 +418,7 @@ class GameEngine(
         obstacleGenerator.beginZoneTransition(GameZone.ZONE_THREE)
         coinField.clear()
         extraLifeField.clear()
-        firePowerUpField.clear()
-        shieldPowerUpField.clear()
-        ragePowerUpField.clear()
-        fireBallField.reset()
-        firePowerRemainingSeconds = 0.0
-        shieldRemainingSeconds = 0.0
-        rageRemainingSeconds = 0.0
+        clearPowerUps()
         collisionRegistered.clear()
         pointRegistered.clear()
     }
@@ -472,6 +465,16 @@ class GameEngine(
         impactObstacleId = null
         impactPosition = null
         invulnerabilityRemainingSeconds = 0.0
+    }
+
+    private fun clearPowerUps() {
+        firePowerUpField.clear()
+        shieldPowerUpField.clear()
+        ragePowerUpField.clear()
+        fireBallField.reset()
+        firePowerRemainingSeconds = 0.0
+        shieldRemainingSeconds = 0.0
+        rageRemainingSeconds = 0.0
     }
 
     private fun resetBossEncounter() {
