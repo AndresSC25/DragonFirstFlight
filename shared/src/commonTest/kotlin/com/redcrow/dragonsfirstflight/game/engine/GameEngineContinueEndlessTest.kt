@@ -11,6 +11,12 @@ import kotlin.test.assertTrue
 class GameEngineContinueEndlessTest {
     @Test
     fun victoryContinuesOnTheBattlefieldWithTheRemainingLivesAndScore() {
+        val zoneThreePaths =
+            setOf(
+                "sprites/obstacles/zone3/fairy_sprite.png",
+                "sprites/obstacles/zone3/giant_hornet.png",
+                "sprites/obstacles/zone3/wind_spirit.png",
+            )
         for (difficulty in GameDifficulty.entries) {
             val engine = GameEngine(1280.0, Random(7), initialDifficulty = difficulty)
             engine.handleDamageEvent(DamageEvent)
@@ -60,7 +66,7 @@ class GameEngineContinueEndlessTest {
             assertEquals(GameZone.BOSS, later.zone)
             assertTrue(later.points > victory.points)
             assertTrue(later.obstacles.isNotEmpty())
-            assertTrue(later.obstacles.all { "/zone3/" in it.spritePath })
+            assertTrue(later.obstacles.all { it.spritePath in zoneThreePaths })
             assertNull(later.catapult)
             assertTrue(later.projectiles.isEmpty())
         }

@@ -36,7 +36,6 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ShieldPowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_GIANT_HORNET_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_WIND_SPIRIT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH
@@ -107,7 +106,6 @@ private val OBSTACLE_PATHS =
         ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH,
         ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH,
         ZONE_THREE_FAIRY_SPRITE_PATH,
-        ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH,
         ZONE_THREE_GIANT_HORNET_SPRITE_PATH,
         ZONE_THREE_WIND_SPIRIT_SPRITE_PATH,
     )

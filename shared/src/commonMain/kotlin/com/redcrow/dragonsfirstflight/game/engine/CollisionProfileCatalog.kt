@@ -26,10 +26,9 @@ internal object CollisionProfileCatalog {
             "sprites/obstacles/zone2/flying_cursed_book.png" to margins(48, 36, 48, 60),
             "sprites/obstacles/zone2/flying_gargoyle.png" to margins(48, 36, 48, 12),
             "sprites/obstacles/zone2/ghost_knight.png" to margins(48, 12, 72, 12),
-            "sprites/obstacles/zone3/fairy_sprite.png" to margins(39, 13, 43, 26),
-            "sprites/obstacles/zone3/flying_forest_monster.png" to margins(37, 1, 18, 17),
-            "sprites/obstacles/zone3/giant_hornet.png" to margins(60, 15, 41, 43),
-            "sprites/obstacles/zone3/wind_spirit.png" to margins(95, 12, 95, 27),
+            "sprites/obstacles/zone3/fairy_sprite.png" to margins(72, 72, 12, 36),
+            "sprites/obstacles/zone3/giant_hornet.png" to margins(36, 12, 36, 24),
+            "sprites/obstacles/zone3/wind_spirit.png" to margins(72, 24, 72, 24),
         )
 
     fun obstacleMargins(spritePath: String): CollisionMargins =

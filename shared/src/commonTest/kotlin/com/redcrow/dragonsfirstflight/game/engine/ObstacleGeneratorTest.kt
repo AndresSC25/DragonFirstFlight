@@ -160,21 +160,21 @@ class ObstacleGeneratorTest {
         val zoneThreePaths =
             setOf(
                 "sprites/obstacles/zone3/fairy_sprite.png",
-                "sprites/obstacles/zone3/flying_forest_monster.png",
                 "sprites/obstacles/zone3/giant_hornet.png",
                 "sprites/obstacles/zone3/wind_spirit.png",
             )
 
-        repeat(420) { frame ->
+        val generatedPaths = mutableSetOf<String>()
+        val delta = 0.05
+
+        repeat((GameEngineConfig.ZONE_DURATION_SECONDS / delta).toInt()) { frame ->
             generator.update(
-                delta = 0.05,
-                activeTimeSeconds =
-                    GameEngineConfig.ZONE_DURATION_SECONDS * 2.0 +
-                        frame * 0.05,
+                delta = delta,
+                activeTimeSeconds = GameEngineConfig.ZONE_DURATION_SECONDS * 2.0 + frame * delta,
             )
+            generatedPaths += generator.snapshot().map { it.spritePath }
         }
-        assertTrue(
-            generator.snapshot().all { it.spritePath in zoneThreePaths },
-        )
+
+        assertEquals(zoneThreePaths, generatedPaths)
     }
 }
