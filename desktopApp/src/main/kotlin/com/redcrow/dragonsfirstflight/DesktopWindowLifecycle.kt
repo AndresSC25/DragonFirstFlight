@@ -27,6 +27,10 @@ internal suspend fun installDesktopWindowLifecycle(window: GameWindow) {
 
                 override fun windowLostFocus(event: WindowEvent) = pauseGame()
 
+                override fun windowGainedFocus(event: WindowEvent) {
+                    window.queue { window.dispatch(FocusEvent(FocusEvent.Type.FOCUS)) }
+                }
+
                 override fun windowDeactivated(event: WindowEvent) = pauseGame()
 
                 override fun windowIconified(event: WindowEvent) = pauseGame()

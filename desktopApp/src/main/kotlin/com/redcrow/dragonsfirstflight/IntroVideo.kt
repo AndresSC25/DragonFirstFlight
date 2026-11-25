@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight
 
+import com.redcrow.dragonsfirstflight.game.audio.IntroMusicPlayback
 import com.redcrow.dragonsfirstflight.game.intro.IntroPlaybackWatchdog
 import javafx.application.Platform
 import javafx.embed.swing.JFXPanel
@@ -7,6 +8,7 @@ import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 import korlibs.korge.input.onClick
+import korlibs.korge.service.storage.storage
 import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.container
@@ -79,8 +81,15 @@ internal suspend fun playIntroVideo(views: Views) {
     val background = overlay.solidRect(1.0, 1.0, Colors.BLACK)
     val video = overlay.image(texture.bitmap) { smoothing = false }
     val finished = CompletableDeferred<Unit>()
+    val music =
+        IntroMusicPlayback.load(
+            views.coroutineContext,
+            views.storage.getOrNull("audio.music") != "false",
+            effectsEnabled = views.storage.getOrNull("audio.sound") != "false",
+        )
 
     fun finishIntro(reason: String) {
+        views.gameWindow.queue { music.close() }
         if (finished.complete(Unit)) println("Game intro: $reason")
     }
     val skip = overlay.container()
@@ -140,6 +149,7 @@ internal suspend fun playIntroVideo(views: Views) {
             if (rendererReady.compareAndSet(false, true)) decoder?.setPaused(!foreground.get())
             if (texture.applyLatest()) displayedFrames++
             val currentDecoder = decoder
+            music.update(currentDecoder?.capturedPositionSeconds, !foreground.get() || !texture.hasVisiblePixels)
             if (watchdog.hasTimedOut(
                     elapsedSeconds = it.toDouble(DurationUnit.SECONDS).coerceAtMost(0.25),
                     isPaused = !foreground.get(),
@@ -158,6 +168,7 @@ internal suspend fun playIntroVideo(views: Views) {
             private fun setForeground(active: Boolean) {
                 if (foreground.get() != active) println("Game intro: foreground=$active.")
                 foreground.set(active)
+                if (!active) music.pause()
                 decoder?.setPaused(!active || !rendererReady.get())
             }
 
@@ -219,6 +230,7 @@ internal suspend fun playIntroVideo(views: Views) {
         }
         println("Game intro: displayed $displayedFrames frames in KorGE.")
     } finally {
+        music.close()
         updater.close()
         overlay.removeFromParent()
         withContext(NonCancellable + Dispatchers.Swing) {

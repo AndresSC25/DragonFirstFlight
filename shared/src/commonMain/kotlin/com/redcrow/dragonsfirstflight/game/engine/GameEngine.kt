@@ -35,6 +35,9 @@ class GameEngine(
     private var lives: Int =
         GameEngineConfig.INITIAL_LIVES
 
+    private var damageCount = 0
+    private var extraLivesCollected = 0
+
     private val scoreTracker =
         ScoreTracker(
             pointsPerSecond = GameEngineConfig.POINTS_PER_SECOND,
@@ -196,6 +199,7 @@ class GameEngine(
                 shouldLaunch = false,
             )
         }
+        evaluateCollisionAndScore()
         if (isRunning) {
             runCoins += coinField.collect(dragonY)
             if (
@@ -205,15 +209,18 @@ class GameEngine(
                 )
             ) {
                 lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
+                extraLivesCollected++
             }
-            if (rageRemainingSeconds <= 0.0 && shieldRemainingSeconds <= 0.0) {
-                if (firePowerUpField.collect(dragonY)) {
-                    firePowerRemainingSeconds =
-                        GameEngineConfig.FIRE_POWER_UP_DURATION_SECONDS
-                    fireBallLaunchRemainingSeconds = 0.0
-                }
+            if (
+                shieldRemainingSeconds <= 0.0 &&
+                rageRemainingSeconds <= 0.0 &&
+                firePowerUpField.collect(dragonY)
+            ) {
+                firePowerRemainingSeconds =
+                    GameEngineConfig.FIRE_POWER_UP_DURATION_SECONDS
+                fireBallLaunchRemainingSeconds = 0.0
             }
-            if (rageRemainingSeconds <= 0.0 && firePowerRemainingSeconds <= 0.0) {
+            if (firePowerRemainingSeconds <= 0.0 && rageRemainingSeconds <= 0.0) {
                 if (shieldPowerUpField.collect(dragonY)) {
                     shieldRemainingSeconds =
                         GameEngineConfig.SHIELD_POWER_UP_DURATION_SECONDS
@@ -231,7 +238,15 @@ class GameEngine(
         }
         evaluateCollisionAndScore()
         if (mode == GameMode.ENDLESS && isRunning) endlessElapsedSeconds += delta
-        scoreTracker.update(elapsedSeconds)
+        scoreTracker.update(
+            elapsedSeconds = elapsedSeconds,
+            pointsMultiplier =
+                1.0 +
+                    (
+                        if (rageRemainingSeconds > 0.0) delta / elapsedSeconds else 0.0
+                    ) *
+                    (GameEngineConfig.RAGE_SPEED_MULTIPLIER - 1.0),
+        )
         val currentZone =
             zoneAt(
                 scoreTracker.score.activeTimeSeconds,
@@ -429,6 +444,8 @@ class GameEngine(
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
+        damageCount = 0
+        extraLivesCollected = 0
         scoreTracker.reset()
         rockImpacts.clear()
         impactFeedbackRemainingSeconds = 0.0
@@ -528,6 +545,8 @@ class GameEngine(
             ragePowerUpScrollX = ragePowerUpField.currentScrollX,
             isRageActive = rageRemainingSeconds > 0.0,
             rageRemainingSeconds = rageRemainingSeconds,
+            damageCount = damageCount,
+            extraLivesCollected = extraLivesCollected,
         )
     }
 
@@ -771,6 +790,7 @@ class GameEngine(
         }
 
         lives = (lives - 1).coerceAtLeast(0)
+        damageCount++
         if (lives > 0) {
             invulnerabilityRemainingSeconds =
                 GameEngineConfig.INVULNERABILITY_DURATION_SECONDS

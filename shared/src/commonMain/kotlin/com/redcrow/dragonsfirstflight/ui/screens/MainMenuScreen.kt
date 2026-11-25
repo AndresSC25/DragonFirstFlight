@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.screens
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameSound
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameDifficulty
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
@@ -12,6 +14,7 @@ import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
 import korlibs.image.color.Colors
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
+import korlibs.korge.input.onClick
 import korlibs.korge.view.Container
 import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.Views
@@ -32,7 +35,7 @@ private const val MENU_DRAGON_FRAME_WIDTH = 32
 private const val MENU_DRAGON_FRAME_DURATION_MS = 140
 
 private const val MENU_PANEL_WIDTH = 600.0
-private const val MENU_PANEL_HEIGHT = 560.0
+private const val MENU_PANEL_HEIGHT = 640.0
 private const val MENU_PADDING = 24.0
 private const val MENU_BUTTON_GAP = 20.0
 private const val MENU_BUTTON_HEIGHT = 64.0
@@ -40,6 +43,7 @@ private const val MENU_DRAGON_DISPLAY_SIZE = 112.0
 
 internal suspend fun Container.createMainMenuScreen(
     views: Views,
+    audio: GameAudio,
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
     onPlay: (GameDifficulty) -> Unit,
@@ -148,6 +152,7 @@ internal suspend fun Container.createMainMenuScreen(
             height = 46.0,
             texture = buttonBitmap,
             initialDifficulty = selectedDifficulty,
+            onInteraction = { audio.play(GameSound.MENU_CLICK) },
             onSelectionChanged = { selectedDifficulty = it },
         )
 
@@ -194,6 +199,41 @@ internal suspend fun Container.createMainMenuScreen(
             textSize = 28.0,
             onClick = onInventory,
         )
+
+        fun audioToggle(
+            x: Double,
+            label: String,
+            enabled: () -> Boolean,
+            toggle: () -> Unit,
+        ) {
+            val caption = text("", textSize = 24.0, color = Colors.WHITE)
+
+            fun refresh() {
+                caption.text = "$label: ${if (enabled()) "On" else "Off"}"
+                caption.x = x + (buttonWidth - caption.width) / 2.0
+                caption.y = innerY + 394.0 + (MENU_BUTTON_HEIGHT - caption.height) / 2.0
+            }
+            val activate: () -> Unit = {
+                toggle()
+                refresh()
+            }
+            createMedievalImageButton(
+                x = x,
+                y = innerY + 394.0,
+                width = buttonWidth,
+                height = MENU_BUTTON_HEIGHT,
+                texture = buttonBitmap,
+                label = "",
+                onClick = activate,
+            )
+            // Keep the readable state label above the image and clickable as well.
+            caption.removeFromParent()
+            addChild(caption)
+            caption.onClick { activate() }
+            refresh()
+        }
+        audioToggle(innerX + MENU_PADDING, "Music", { audio.musicEnabled }, audio::toggleMusic)
+        audioToggle((screenWidth + MENU_BUTTON_GAP) / 2.0, "Sound", { audio.soundEnabled }, audio::toggleSound)
 
         val instructionText =
             text(
