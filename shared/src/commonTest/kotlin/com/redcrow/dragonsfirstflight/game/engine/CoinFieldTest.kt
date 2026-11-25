@@ -81,7 +81,7 @@ class CoinFieldTest {
                     obstacle(y = lane),
                     obstacle(y = lane, size = GameEngineConfig.ZONE_TWO_FLYING_GARGOYLE_SIZE),
                 )
-            } + obstacle(y = GameEngineConfig.OBSTACLE_BOTTOM_Y, size = GameEngineConfig.FOREST_MAGE_SIZE)
+            } + obstacle(y = GameEngineConfig.OBSTACLE_BOTTOM_Y, size = GameEngineConfig.KNIGHT_SWORD_SIZE)
 
         for (laneObstacle in cases) {
             for (offset in listOf(-sway, 0.0, sway)) {

@@ -21,10 +21,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ExtraLifeView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
@@ -90,11 +87,8 @@ private const val EXTRA_LIFE_PATH: String =
 
 private val OBSTACLE_PATHS =
     listOf(
-        FLYING_BAT_SPRITE_PATH,
         FLYING_CROWS_SPRITE_PATH,
-        FLYING_SWORD_SPRITE_PATH,
         FLAMING_ARROW_SPRITE_PATH,
-        FOREST_MAGE_SPRITE_PATH,
         KNIGHT_SWORD_SPRITE_PATH,
         ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH,
         ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH,

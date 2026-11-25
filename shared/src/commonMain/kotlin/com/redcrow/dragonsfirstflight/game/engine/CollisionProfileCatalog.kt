@@ -20,11 +20,8 @@ internal object CollisionProfileCatalog {
 
     private val obstacleMarginsBySpritePath =
         mapOf(
-            "sprites/obstacles/zone1/flaming_arrow.png" to margins(39, 22, 26, 37),
-            "sprites/obstacles/zone1/flying_bat.png" to margins(33, 20, 9, 10),
-            "sprites/obstacles/zone1/flying_crows.png" to margins(42, 44, 12, 56),
-            "sprites/obstacles/zone1/flying_sword.png" to margins(26, 34, 21, 44),
-            "sprites/obstacles/zone1/forest_mage.png" to margins(76, 42, 75, 21),
+            "sprites/obstacles/zone1/flaming_arrow.png" to margins(12, 68, 12, 68),
+            "sprites/obstacles/zone1/flying_crows.png" to margins(64, 32, 48, 32),
             "sprites/obstacles/zone1/knight_sword.png" to margins(8, 41, 15, 23),
             "sprites/obstacles/zone2/flying _skull_wisp.png" to margins(38, 3, 28, 31),
             "sprites/obstacles/zone2/flying_cursed_book.png" to margins(28, 24, 33, 29),

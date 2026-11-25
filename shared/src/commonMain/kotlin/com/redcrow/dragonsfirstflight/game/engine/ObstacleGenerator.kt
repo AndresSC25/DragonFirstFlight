@@ -11,9 +11,7 @@ internal class ObstacleGenerator(
     private val obstacleSpritePathsByZone =
         listOf(
             listOf(
-                "sprites/obstacles/zone1/flying_bat.png",
                 "sprites/obstacles/zone1/flying_crows.png",
-                "sprites/obstacles/zone1/flying_sword.png",
                 "sprites/obstacles/zone1/flaming_arrow.png",
             ),
             listOf(
@@ -41,7 +39,6 @@ internal class ObstacleGenerator(
 
     private val bottomOnlyObstaclePaths =
         setOf(
-            "sprites/obstacles/zone1/forest_mage.png",
             "sprites/obstacles/zone1/knight_sword.png",
         )
 
@@ -297,10 +294,6 @@ internal class ObstacleGenerator(
 
         val obstacleSize =
             when (spritePath) {
-                "sprites/obstacles/zone1/forest_mage.png" -> {
-                    GameEngineConfig.FOREST_MAGE_SIZE
-                }
-
                 "sprites/obstacles/zone1/knight_sword.png" -> {
                     GameEngineConfig.KNIGHT_SWORD_SIZE
                 }
