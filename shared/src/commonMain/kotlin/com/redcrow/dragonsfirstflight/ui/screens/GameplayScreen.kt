@@ -33,6 +33,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.RagePowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
@@ -99,6 +100,8 @@ private const val SHIELD_POWER_UP_PATH: String =
     "sprites/power-ups/shield_power_up.png"
 private const val GREEN_SHIELD_PATH: String =
     "sprites/power-ups/green_shield.png"
+private const val RAGE_POWER_UP_PATH: String =
+    "sprites/power-ups/liquid_rage.png"
 
 private val OBSTACLE_PATHS =
     listOf(
@@ -168,6 +171,8 @@ internal suspend fun Container.createGameplayScreen(
         resourcesVfs[SHIELD_POWER_UP_PATH].readBitmap()
     val greenShieldBitmap =
         resourcesVfs[GREEN_SHIELD_PATH].readBitmap()
+    val ragePowerUpBitmap =
+        resourcesVfs[RAGE_POWER_UP_PATH].readBitmap()
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
@@ -236,6 +241,12 @@ internal suspend fun Container.createGameplayScreen(
             ShieldPowerUpView.create(
                 container = container(),
                 bitmap = shieldPowerUpBitmap,
+                views = views,
+            )
+        val ragePowerUpView =
+            RagePowerUpView.create(
+                container = container(),
+                bitmap = ragePowerUpBitmap,
                 views = views,
             )
 
@@ -367,6 +378,10 @@ internal suspend fun Container.createGameplayScreen(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
             )
+            ragePowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
             greenShieldView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
@@ -442,7 +457,12 @@ internal suspend fun Container.createGameplayScreen(
                         !snapshot.isZoneTransitioning &&
                         !controller.isPaused
                     ) {
-                        elapsedSeconds
+                        elapsedSeconds *
+                            if (snapshot.isRageActive) {
+                                GameEngineConfig.RAGE_SPEED_MULTIPLIER
+                            } else {
+                                1.0
+                            }
                     } else {
                         0.0
                     },
