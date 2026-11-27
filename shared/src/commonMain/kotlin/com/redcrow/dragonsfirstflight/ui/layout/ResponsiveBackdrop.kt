@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.layout
+package com.redcrow.dragonsfirstflight.ui.layout
 
 import korlibs.image.bitmap.Bitmap
 import korlibs.korge.view.Container
