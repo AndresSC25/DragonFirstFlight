@@ -15,11 +15,9 @@ internal class ObstacleGenerator(
                 "sprites/obstacles/zone1/flaming_arrow.png",
             ),
             listOf(
-                "sprites/obstacles/zone2/flying _skull_wisp.png",
                 "sprites/obstacles/zone2/flying_cursed_book.png",
                 "sprites/obstacles/zone2/flying_gargoyle.png",
                 "sprites/obstacles/zone2/ghost_knight.png",
-                "sprites/obstacles/zone2/winged_imp.png",
             ),
             listOf(
                 "sprites/obstacles/zone3/fairy_sprite.png",

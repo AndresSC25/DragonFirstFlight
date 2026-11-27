@@ -41,9 +41,7 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_GIANT_HORNET_SPRITE
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_WIND_SPIRIT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WINGED_IMP_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneTransitionOverlay
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
@@ -105,11 +103,9 @@ private val OBSTACLE_PATHS =
         FLYING_CROWS_SPRITE_PATH,
         FLAMING_ARROW_SPRITE_PATH,
         KNIGHT_SWORD_SPRITE_PATH,
-        ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH,
         ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH,
         ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH,
         ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH,
-        ZONE_TWO_WINGED_IMP_SPRITE_PATH,
         ZONE_THREE_FAIRY_SPRITE_PATH,
         ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH,
         ZONE_THREE_GIANT_HORNET_SPRITE_PATH,
