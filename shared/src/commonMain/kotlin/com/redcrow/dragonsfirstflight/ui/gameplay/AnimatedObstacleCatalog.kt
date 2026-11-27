@@ -9,6 +9,9 @@ internal const val FLAMING_ARROW_SPRITE_PATH: String =
 internal const val KNIGHT_SWORD_SPRITE_PATH: String =
     "sprites/obstacles/zone1/knight_sword.png"
 
+internal const val ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH: String =
+    "sprites/obstacles/zone2/flying _skull_wisp.png"
+
 internal const val ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH: String =
     "sprites/obstacles/zone2/flying_cursed_book.png"
 

@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game
+package com.redcrow.dragonsfirstflight.game
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import korlibs.image.color.Colors

@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
 internal data class CollisionBounds(
     val x: Double,

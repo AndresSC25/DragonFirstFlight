@@ -121,17 +121,22 @@ internal class ZoneTransitionOverlay private constructor(
         return (1.0 - visibleProgress) * ENTRANCE_OFFSET_Y
     }
 
-    private fun smoothStep(value: Double): Double {
-        val normalized = value.coerceIn(0.0, 1.0)
-        return normalized * normalized * (3.0 - 2.0 * normalized)
-    }
-
     companion object {
-        const val TRANSITION_MIDPOINT = 0.50
+        private const val TRANSITION_MIDPOINT = 0.50
+        private const val BACKGROUND_BLEND_START = TRANSITION_MIDPOINT - 0.20
+        private const val BACKGROUND_BLEND_END = TRANSITION_MIDPOINT + 0.20
         private const val MAX_SHADE_ALPHA = 0.68
         private const val FADE_IN_END = 0.22
         private const val FADE_OUT_START = 0.74
         private const val ENTRANCE_OFFSET_Y = 18.0
+
+        fun backgroundBlend(progress: Double): Double =
+            smoothStep((progress - BACKGROUND_BLEND_START) / (BACKGROUND_BLEND_END - BACKGROUND_BLEND_START))
+
+        private fun smoothStep(value: Double): Double {
+            val normalized = value.coerceIn(0.0, 1.0)
+            return normalized * normalized * (3.0 - 2.0 * normalized)
+        }
 
         fun create(
             container: Container,

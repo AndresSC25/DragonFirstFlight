@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.components
+package com.redcrow.dragonsfirstflight.ui.components
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameMode

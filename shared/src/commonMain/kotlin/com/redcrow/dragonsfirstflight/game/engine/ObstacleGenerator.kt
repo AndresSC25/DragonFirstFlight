@@ -121,23 +121,19 @@ internal class ObstacleGenerator(
             val warningRemainingSeconds =
                 (obstacle.rushWarningRemainingSeconds - delta).coerceAtLeast(0.0)
 
-            val movedObstacle =
+            obstacles[index] =
                 obstacle.copy(
                     x =
                         obstacle.x -
                             obstacleSpeed *
                             obstacle.horizontalBehavior.speedMultiplier *
                             movementDelta,
-                    rushWarningRemainingSeconds = warningRemainingSeconds,
-                )
-
-            obstacles[index] =
-                movedObstacle.copy(
                     y =
                         ObstacleMovementCalculator.yAt(
-                            obstacle = movedObstacle,
+                            obstacle = obstacle,
                             activeTimeSeconds = activeTimeSeconds,
                         ),
+                    rushWarningRemainingSeconds = warningRemainingSeconds,
                 )
         }
 
@@ -203,6 +199,11 @@ internal class ObstacleGenerator(
         get() = obstacles
 
     fun snapshot(): List<Obstacle> = obstacles.toList()
+
+    fun destroy(ids: Set<Int>) {
+        if (ids.isEmpty()) return
+        obstacles.removeAll { it.id in ids }
+    }
 
     fun beginZoneTransition(zone: GameZone) {
         obstacles.clear()

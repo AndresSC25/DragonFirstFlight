@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight
+package com.redcrow.dragonsfirstflight
 
 import android.os.Bundle
 import com.redcrow.dragonsfirstflight.game.audio.IntroMusicPlayback

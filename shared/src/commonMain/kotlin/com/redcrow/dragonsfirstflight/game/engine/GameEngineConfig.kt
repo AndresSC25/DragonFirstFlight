@@ -23,6 +23,45 @@ object GameEngineConfig {
     const val EXTRA_LIFE_SPAWN_EDGE_TOLERANCE: Double = 24.0
     const val EXTRA_LIFE_SAFE_LANE_DISTANCE: Double = 96.0
 
+    const val FIRE_POWER_UP_SIZE: Double = 56.0
+    const val FIRE_POWER_UP_DURATION_SECONDS: Double = 8.0
+    const val FIRE_POWER_UP_FIRST_ATTEMPT_SECONDS: Double = 4.0
+    const val FIRE_POWER_UP_MIN_INTERVAL_SECONDS: Double = 28.0
+    const val FIRE_POWER_UP_OBSTACLE_GAP: Double = 72.0
+    const val FIRE_POWER_UP_SPAWN_EDGE_TOLERANCE: Double = 24.0
+    const val FIRE_POWER_UP_SAFE_LANE_DISTANCE: Double = 96.0
+    const val ENDLESS_FIRE_POWER_UP_WINDOW_SECONDS: Double = 60.0
+    const val FIRE_FLAME_SIZE: Double = 132.0
+    const val FIRE_BALL_SIZE: Double = 48.0
+    const val FIRE_BALL_SPEED: Double = 520.0
+    const val FIRE_BALL_INTERVAL_SECONDS: Double = 0.42
+
+    const val SHIELD_POWER_UP_SIZE: Double = 56.0
+    const val SHIELD_POWER_UP_DURATION_SECONDS: Double = 8.0
+    const val SHIELD_POWER_UP_FIRST_ATTEMPT_SECONDS: Double = 4.0
+    const val SHIELD_POWER_UP_MIN_INTERVAL_SECONDS: Double = 28.0
+    const val SHIELD_POWER_UP_OBSTACLE_GAP: Double = 72.0
+    const val SHIELD_POWER_UP_SPAWN_EDGE_TOLERANCE: Double = 24.0
+    const val SHIELD_POWER_UP_SAFE_LANE_DISTANCE: Double = 96.0
+    const val ENDLESS_SHIELD_POWER_UP_WINDOW_SECONDS: Double = 60.0
+    const val GREEN_SHIELD_SIZE: Double = 116.0
+
+    const val RAGE_POWER_UP_SIZE: Double = 56.0
+    const val RAGE_POWER_UP_DURATION_SECONDS: Double = 8.0
+    const val RAGE_POWER_UP_FIRST_ATTEMPT_SECONDS: Double = 4.0
+    const val RAGE_POWER_UP_MIN_INTERVAL_SECONDS: Double = 28.0
+    const val RAGE_POWER_UP_OBSTACLE_GAP: Double = 72.0
+    const val RAGE_POWER_UP_SPAWN_EDGE_TOLERANCE: Double = 24.0
+    const val RAGE_POWER_UP_SAFE_LANE_DISTANCE: Double = 96.0
+    const val ENDLESS_RAGE_POWER_UP_WINDOW_SECONDS: Double = 60.0
+    const val RAGE_SPEED_MULTIPLIER: Double = 2.5
+
+    fun firePowerUpChance(zone: GameZone): Double =
+        when (zone) {
+            GameZone.ZONE_ONE -> 0.20
+            else -> 0.0
+        }
+
     fun extraLifeChance(zone: GameZone): Double =
         when (zone) {
             GameZone.ZONE_ONE -> 0.16
