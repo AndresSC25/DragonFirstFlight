@@ -2,6 +2,10 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/**
+ * Spawns, moves and removes obstacles for the current zone and difficulty.
+ * Spawn positions and spacing use game-area pixels and are driven by gameplay time, not frame rate.
+ */
 internal class ObstacleGenerator(
     areaWidth: Double,
     private val random: Random = Random.Default,
@@ -69,6 +73,10 @@ internal class ObstacleGenerator(
         reset(initialZone = initialZone)
     }
 
+    /**
+     * Sets the horizontal spawn and removal bounds and drops obstacles fully left of [newLeftBoundary].
+     * Spawns one at the right boundary if none remain and [spawnIfEmpty] is true.
+     */
     fun resize(
         newLeftBoundary: Double,
         newRightBoundary: Double,
@@ -94,6 +102,11 @@ internal class ObstacleGenerator(
         }
     }
 
+    /**
+     * Advances obstacles by [delta] seconds and spawns a new one once the last has moved far enough from the right
+     * boundary.
+     * Switching to a new zone or the boss zone clears all obstacles first.
+     */
     fun update(
         delta: Double,
         activeTimeSeconds: Double,
@@ -170,6 +183,7 @@ internal class ObstacleGenerator(
         }
     }
 
+    /** Clears all obstacles and spawn history, then spawns the first one unless [initialZone] is the boss zone. */
     fun reset(
         difficulty: GameDifficulty = this.difficulty,
         initialZone: GameZone = GameZone.ZONE_ONE,
@@ -194,16 +208,20 @@ internal class ObstacleGenerator(
         }
     }
 
+    /** Live list of the current obstacles; use [snapshot] for a stable copy. */
     val activeObstacles: List<Obstacle>
         get() = obstacles
 
+    /** Returns a copy of the current obstacles. */
     fun snapshot(): List<Obstacle> = obstacles.toList()
 
+    /** Removes the obstacles with the given ids. */
     fun destroy(ids: Set<Int>) {
         if (ids.isEmpty()) return
         obstacles.removeAll { it.id in ids }
     }
 
+    /** Clears all obstacles and spawn history and switches to [zone] without spawning. */
     fun beginZoneTransition(zone: GameZone) {
         obstacles.clear()
         spritePaths.clear()

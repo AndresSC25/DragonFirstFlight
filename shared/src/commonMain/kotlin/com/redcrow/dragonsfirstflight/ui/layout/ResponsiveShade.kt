@@ -7,6 +7,9 @@ import korlibs.korge.view.Views
 import korlibs.korge.view.addUpdater
 import korlibs.korge.view.solidRect
 
+/**
+ * Adds a [color] rectangle of opacity [shadeAlpha] that covers the whole visible virtual viewport and follows resizes.
+ */
 internal fun Container.createResponsiveShade(
     views: Views,
     color: RGBA,

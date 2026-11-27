@@ -16,6 +16,7 @@ private const val FRAME_COUNT = 8
 private const val WARNING_FRAME_SIZE = 64
 private const val WARNING_SIZE = 80.0
 
+/** Draws the boss catapult and its attack warning icon from the snapshot; red tint grows while the boss is furious. */
 internal class CatapultView private constructor(
     private val image: Image,
     private val frames: List<BmpSlice>,

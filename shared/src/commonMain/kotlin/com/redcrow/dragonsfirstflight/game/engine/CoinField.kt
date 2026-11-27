@@ -19,12 +19,14 @@ internal class CoinField(
     val coins: List<Coin>
         get() = activeCoins
 
+    /** Horizontal distance scrolled in gameplay pixels, subtracted from each coin's world X to render it. */
     var scrollX: Double = 0.0
         private set
 
     private var lastSeenObstacleId: Int = -1
     private var secondsUntilNextRow: Double = GameEngineConfig.coinRowIntervalAt(GameZone.ZONE_ONE) * 0.5
 
+    /** Clears coins, scroll, and obstacle history and restores the initial delay before a row is due. */
     fun reset() {
         activeCoins.clear()
         scrollX = 0.0
@@ -37,6 +39,7 @@ internal class CoinField(
         activeCoins.clear()
     }
 
+    /** Ticks the row timer, scrolls by [distance] pixels, and culls coins fully past [leftBoundary]. */
     fun advance(
         elapsedSeconds: Double,
         distance: Double,
@@ -52,6 +55,7 @@ internal class CoinField(
         }
     }
 
+    /** Tries to place a due row at a new obstacle near the right edge and resets the timer on success. */
     fun spawnForNewObstacles(
         obstacles: List<Obstacle>,
         rightBoundary: Double,
@@ -75,6 +79,7 @@ internal class CoinField(
         }
     }
 
+    /** Removes all coins overlapping the dragon and returns their total value in colones. */
     fun collect(dragonY: Double): Int {
         var collected = 0
         for (index in activeCoins.lastIndex downTo 0) {

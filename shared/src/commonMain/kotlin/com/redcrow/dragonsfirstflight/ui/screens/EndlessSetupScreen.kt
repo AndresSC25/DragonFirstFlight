@@ -43,6 +43,9 @@ private val maps =
         MapPreview(GameZone.BOSS, "Final Battlefield", "backgrounds/boss/battlefield.png"),
     )
 
+/**
+ * Builds the hidden endless-mode screen where the player picks a map through [controller].
+ */
 internal suspend fun Container.createEndlessSetupScreen(
     views: Views,
     audio: GameAudio,

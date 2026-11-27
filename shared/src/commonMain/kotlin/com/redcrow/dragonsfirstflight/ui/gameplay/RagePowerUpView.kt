@@ -10,6 +10,7 @@ import korlibs.korge.view.Views
 private const val RAGE_POWER_UP_FRAME_SIZE: Int = 32
 private const val RAGE_POWER_UP_FRAME_COUNT: Int = 6
 
+/** Draws rage power-up pickups from a pool of animated sprites, scrolled by the snapshot's rage power-up offset. */
 internal class RagePowerUpView private constructor(
     private val container: Container,
     private val spriteMap: Bitmap,

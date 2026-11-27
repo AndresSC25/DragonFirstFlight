@@ -5,6 +5,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.random.Random
 
+/** Advances one run from flap input and elapsed time and exposes its state through [snapshot]. */
 class GameEngine(
     gameAreaWidth: Double,
     random: Random = Random.Default,
@@ -58,6 +59,7 @@ class GameEngine(
     private val bossVolley = BossVolley()
     private var pendingBossPattern: BossAttackPattern? = null
 
+    /** Total value of coins collected this run, in colones. */
     var runCoins: Int = 0
         private set
 
@@ -74,6 +76,7 @@ class GameEngine(
     private var leftBoundary: Double = 0.0
     private var rightBoundary: Double = gameAreaWidth
 
+    /** Reports a loss at zero lives or a win after surviving the full Normal run. */
     val status: GameStatus
         get() =
             when {
@@ -95,6 +98,7 @@ class GameEngine(
     val isRunning: Boolean
         get() = status == GameStatus.RUNNING
 
+    /** Updates the visible bounds in game pixels and removes obstacles that have passed the new left edge. */
     fun resizeGameArea(
         leftBoundary: Double,
         rightBoundary: Double,
@@ -108,6 +112,7 @@ class GameEngine(
         )
     }
 
+    /** Sets upward velocity during active flight and ignores input during zone transitions or after the run ends. */
     fun flap() {
         if (!isRunning || isZoneTransitioning) {
             return
@@ -117,6 +122,10 @@ class GameEngine(
             GameEngineConfig.FLAP_VELOCITY
     }
 
+    /**
+     * Advances the run by [elapsedSeconds]. Movement and timers step at most [GameEngineConfig.MAX_DELTA_SECONDS],
+     * while scoring receives the full elapsed time.
+     */
     fun update(elapsedSeconds: Double) {
         if (
             !elapsedSeconds.isFinite() ||
@@ -402,6 +411,7 @@ class GameEngine(
         }
     }
 
+    /** Continues a Normal victory in Endless with the same lives, points and coins and zone three enemies. */
     fun continueEndless() {
         if (mode != GameMode.NORMAL || status != GameStatus.WON) return
         mode = GameMode.ENDLESS
@@ -423,6 +433,7 @@ class GameEngine(
         pointRegistered.clear()
     }
 
+    /** Starts a fresh run and reuses the current difficulty, mode and Endless zone unless replacements are supplied. */
     fun restart(
         difficulty: GameDifficulty = this.difficulty,
         mode: GameMode = this.mode,
@@ -486,6 +497,7 @@ class GameEngine(
         pendingBossPattern = null
     }
 
+    /** Collects the current run state for rendering and feedback without advancing the simulation. */
     fun snapshot(): GameSnapshot {
         val isInvulnerable =
             invulnerabilityRemainingSeconds > 0.0 ||
@@ -777,6 +789,7 @@ class GameEngine(
             GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
     }
 
+    /** Reports hits during play unless shield or rage is active. Hit invulnerability prevents repeated life loss. */
     internal fun handleDamageEvent(event: DamageEvent) {
         if (!isRunning) {
             return
@@ -804,4 +817,5 @@ class GameEngine(
     }
 }
 
+/** Signals a hit to the damage callback even when hit invulnerability prevents life loss. */
 object DamageEvent

@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game
 
 import kotlinx.coroutines.CancellationException
 
+/** Runs [showIntro], then always [showMenu]; an intro failure is logged and skipped, cancellation propagates. */
 internal suspend fun runGameStartup(
     showIntro: suspend () -> Unit,
     showMenu: suspend () -> Unit,

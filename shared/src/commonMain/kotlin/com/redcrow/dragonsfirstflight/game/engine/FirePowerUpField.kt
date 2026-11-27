@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/** Places fireball pickups behind obstacles and tracks their scroll separately from the dragon's fireballs. */
 internal class FirePowerUpField(
     private val random: Random = Random.Default,
 ) {
@@ -19,6 +20,7 @@ internal class FirePowerUpField(
     val currentScrollX: Double
         get() = scrollX
 
+    /** Clears pickups and restores the starting scroll, spawn timing, and ID counters. */
     fun reset() {
         activePowerUps.clear()
         nextId = 0
@@ -29,10 +31,12 @@ internal class FirePowerUpField(
         scrollX = 0.0
     }
 
+    /** Removes current pickups and preserves scroll, spawn timing, and eligibility. */
     fun clear() {
         activePowerUps.clear()
     }
 
+    /** Ticks spawn timing, scrolls by [distance] pixels, and culls pickups fully past [leftBoundary]. */
     fun advance(
         elapsedSeconds: Double,
         distance: Double,
@@ -52,6 +56,7 @@ internal class FirePowerUpField(
         }
     }
 
+    /** Caps normal-mode spawns at one in zone one and rolls for each eligible attempt in Endless. */
     fun spawnForNewObstacles(
         obstacles: List<Obstacle>,
         rightBoundary: Double,
@@ -104,6 +109,7 @@ internal class FirePowerUpField(
         }
     }
 
+    /** Removes the first overlapping pickup found and reports collection so the caller can enable fireballs. */
     fun collect(dragonY: Double): Boolean {
         for (index in activePowerUps.lastIndex downTo 0) {
             val powerUp = activePowerUps[index]

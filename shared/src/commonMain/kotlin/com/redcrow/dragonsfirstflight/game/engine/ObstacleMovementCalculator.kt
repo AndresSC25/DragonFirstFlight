@@ -3,12 +3,14 @@ package com.redcrow.dragonsfirstflight.game.engine
 import kotlin.math.PI
 import kotlin.math.sin
 
+/** Computes an obstacle's vertical position over time from its movement type and phase. */
 internal object ObstacleMovementCalculator {
     private const val BOB_AMPLITUDE: Double = 22.0
     private const val BOB_CYCLES_PER_SECOND: Double = 0.52
     private const val WAVE_AMPLITUDE: Double = 36.0
     private const val WAVE_CYCLES_PER_SECOND: Double = 0.72
 
+    /** Returns y in pixels at [activeTimeSeconds], clamped to the dragon's minimum y and the game area bottom. */
     fun yAt(
         obstacle: Obstacle,
         activeTimeSeconds: Double,

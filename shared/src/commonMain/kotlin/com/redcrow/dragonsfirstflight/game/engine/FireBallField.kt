@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Tracks the dragon's fireballs independently of the catapult's stones. */
 internal class FireBallField {
     private val active = mutableListOf<Projectile>()
     private var nextId = 0
@@ -12,6 +13,7 @@ internal class FireBallField {
         nextId = 0
     }
 
+    /** Launches one fireball if requested, advances all fireballs by [delta] seconds, and culls off-screen shots. */
     fun update(
         delta: Double,
         dragonY: Double,
@@ -47,6 +49,7 @@ internal class FireBallField {
         }
     }
 
+    /** Consumes each overlapping fireball and returns the IDs of the first overlapping obstacle for each. */
     fun removeColliding(obstacles: List<Obstacle>): Set<Int> {
         val destroyedIds = mutableSetOf<Int>()
         for (ballIndex in active.indices.reversed()) {

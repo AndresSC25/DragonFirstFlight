@@ -4,6 +4,7 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
+/** Accumulates a [Score] from active time at [pointsPerSecond], optionally scaled by a multiplier. */
 class ScoreTracker(
     private val pointsPerSecond: Int,
 ) {
@@ -19,6 +20,10 @@ class ScoreTracker(
         }
     }
 
+    /**
+     * Adds [elapsedSeconds] of active time and scores it scaled by [pointsMultiplier].
+     * Invalid or non-positive values are ignored.
+     */
     fun update(
         elapsedSeconds: Double,
         pointsMultiplier: Double = 1.0,
@@ -51,6 +56,7 @@ class ScoreTracker(
             )
     }
 
+    /** Clears time and score back to zero. */
     fun reset() {
         activeTime = Duration.ZERO
         scoringTime = Duration.ZERO

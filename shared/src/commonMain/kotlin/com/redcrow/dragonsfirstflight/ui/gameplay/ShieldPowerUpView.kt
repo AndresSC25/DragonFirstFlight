@@ -12,6 +12,7 @@ import korlibs.korge.view.image
 private const val SHIELD_POWER_UP_FRAME_SIZE: Int = 32
 private const val SHIELD_POWER_UP_FRAME_COUNT: Int = 8
 
+/** Draws shield power-up pickups from a pool of animated sprites, scrolled by the snapshot's shield power-up offset. */
 internal class ShieldPowerUpView private constructor(
     private val container: Container,
     private val spriteMap: Bitmap,
@@ -65,6 +66,7 @@ internal class ShieldPowerUpView private constructor(
     }
 }
 
+/** Draws a translucent shield around the dragon while the shield power-up is active and the game is running. */
 internal class GreenShieldView private constructor(
     private val container: Container,
     private val spriteMap: Bitmap,

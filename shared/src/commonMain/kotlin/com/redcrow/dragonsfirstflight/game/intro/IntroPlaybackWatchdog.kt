@@ -13,6 +13,10 @@ class IntroPlaybackWatchdog(
         require(stallTimeoutSeconds.isFinite() && stallTimeoutSeconds > 0.0)
     }
 
+    /**
+     * Call every frame with foreground [elapsedSeconds] and the video [positionSeconds] (null when unknown).
+     * Returns true when no new position arrived within the startup or stall timeout. Paused frames do not count.
+     */
     fun hasTimedOut(
         elapsedSeconds: Double,
         isPaused: Boolean,

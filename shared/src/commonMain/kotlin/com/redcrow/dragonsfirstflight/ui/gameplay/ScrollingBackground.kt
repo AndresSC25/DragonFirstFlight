@@ -9,6 +9,10 @@ import korlibs.korge.view.container
 import korlibs.korge.view.image
 import kotlin.math.ceil
 
+/**
+ * Parallax background of tiled layers scrolling left at [GameEngineConfig.OBSTACLE_SPEED]
+ * times each layer's speed factor.
+ */
 internal class ScrollingBackground private constructor(
     private val layers: List<ScrollingLayer>,
 ) {
@@ -24,6 +28,7 @@ internal class ScrollingBackground private constructor(
             layers.forEach { it.alpha = value }
         }
 
+    /** Scrolls every layer by [elapsedSeconds] and relays tiles if the viewport changed; negative values throw. */
     fun update(elapsedSeconds: Double) {
         require(elapsedSeconds >= 0.0) {
             "Elapsed time must not be negative."
@@ -34,6 +39,10 @@ internal class ScrollingBackground private constructor(
         }
     }
 
+    /**
+     * One parallax layer. [speedFactor] scales the obstacle speed, [mirrorTiles] flips alternate tiles for
+     * seamless looping, and [heightFraction] and [offsetYFraction] are fractions of the viewport height.
+     */
     class Layer(
         val bitmap: Bitmap,
         val speedFactor: Double,
@@ -89,6 +98,7 @@ internal class ScrollingBackground private constructor(
     }
 }
 
+/** Returns how many tiles fill [viewportWidth], plus [tilesPerPeriod] spare tiles so scrolling never shows a gap. */
 internal fun tilesToCover(
     viewportWidth: Double,
     tileWidth: Double,

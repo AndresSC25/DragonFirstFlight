@@ -1,5 +1,9 @@
 package com.redcrow.dragonsfirstflight.game.audio
 
+/**
+ * Sound effects with file name (without extension), volume from 0.0 to 1.0, and the minimum seconds
+ * between two plays of the same sound.
+ */
 internal enum class GameSound(
     val fileName: String,
     val volume: Double = 0.65,
@@ -37,22 +41,27 @@ internal enum class GameSound(
     val path: String get() = "audio/sfx/$fileName.wav"
 }
 
+/** Sink for audio cues, so cue logic can run without a real audio device. */
 internal interface GameAudioOutput {
+    /** Plays [sound] once, after [delaySeconds] when positive. */
     fun play(
         sound: GameSound,
         delaySeconds: Double = 0.0,
     )
 
+    /** Sets the music state: [active] plays, [paused] holds the position, [boss] picks the boss track. */
     fun music(
         active: Boolean,
         paused: Boolean,
         boss: Boolean,
     )
 
+    /** Sets the looping catapult charge sound: [active] plays it and [paused] holds it. */
     fun charge(
         active: Boolean,
         paused: Boolean,
     )
 
+    /** Stops playing effects and cancels delayed ones; music and charge are unaffected. */
     fun stopEffects()
 }

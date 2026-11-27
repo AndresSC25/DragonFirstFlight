@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Pairs the volley pattern with one stone's target center Y in gameplay pixels. */
 internal data class BossProjectileLaunch(
     val pattern: BossAttackPattern,
     val centerY: Double,
@@ -11,6 +12,7 @@ internal class BossVolley {
     private var delayRemaining = 0.0
     private var secondaryAnimationElapsed: Double? = null
 
+    /** Returns the second stone's firing or recovery frame, or null when the main pose applies. */
     val secondaryFrameIndex: Int?
         get() {
             val elapsed = secondaryAnimationElapsed ?: return null
@@ -22,6 +24,7 @@ internal class BossVolley {
             }
         }
 
+    /** Returns the launches due now and defers the second stone of a double volley, replacing any pending launch. */
     fun start(pattern: BossAttackPattern): List<BossProjectileLaunch> {
         reset()
         val launches = pattern.projectileCenterYs.map { BossProjectileLaunch(pattern, it) }
@@ -33,6 +36,7 @@ internal class BossVolley {
         return launches
     }
 
+    /** Advances the delay and pose by [delta] seconds and emits the delayed launch as soon as it is due. */
     fun update(delta: Double): List<BossProjectileLaunch> {
         secondaryAnimationElapsed?.let { elapsed ->
             val duration = GameEngineConfig.CATAPULT_FIRE_SECONDS + GameEngineConfig.CATAPULT_RECOVERY_FRAME_SECONDS * 2
@@ -47,6 +51,7 @@ internal class BossVolley {
         return listOf(launch)
     }
 
+    /** Cancels the delayed launch and clears its firing and recovery pose. */
     fun reset() {
         pending = null
         delayRemaining = 0.0

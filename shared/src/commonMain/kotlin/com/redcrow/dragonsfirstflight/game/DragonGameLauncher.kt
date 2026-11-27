@@ -10,6 +10,10 @@ import korlibs.math.geom.ScaleMode
 import korlibs.math.geom.Size
 import korlibs.render.GameWindowCreationConfig
 
+/**
+ * Opens the KorGE window at the virtual size and runs startup: [beforeMenu] (the intro), then the menu.
+ * A failing intro is skipped; see [runGameStartup].
+ */
 suspend fun launchDragonGame(
     windowSize: Size = DragonGameConfig.VIRTUAL_SIZE,
     windowCreationConfig: GameWindowCreationConfig = GameWindowCreationConfig(),

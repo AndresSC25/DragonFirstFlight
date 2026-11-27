@@ -30,6 +30,7 @@ internal const val ZONE_THREE_GIANT_HORNET_SPRITE_PATH: String =
 internal const val ZONE_THREE_WIND_SPIRIT_SPRITE_PATH: String =
     "sprites/obstacles/zone3/wind_spirit.png"
 
+/** Sprite sheet layouts for animated obstacles, keyed by sprite path; paths missing here render as static images. */
 internal val ANIMATED_OBSTACLE_CONFIGS =
     mapOf(
         FLYING_CROWS_SPRITE_PATH to

@@ -42,6 +42,7 @@ private const val EXTRA_LIFE_STATUS_X: Double =
         INITIAL_LIVES * HUD_ITEM_HEIGHT +
         INITIAL_LIVES * LIFE_ICON_GAP
 
+/** In-game overlay with lives, points, run coins, endless mode label and the pause button. */
 internal class GameplayHud private constructor(
     private val views: Views,
     private val statusGroup: Container,
@@ -55,6 +56,7 @@ internal class GameplayHud private constructor(
     private var displayedPoints: Int? = null
     private var displayedCoins: Int? = null
 
+    /** Refreshes the HUD from [snapshot] and re-anchors it to the viewport corners; call once per frame. */
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,

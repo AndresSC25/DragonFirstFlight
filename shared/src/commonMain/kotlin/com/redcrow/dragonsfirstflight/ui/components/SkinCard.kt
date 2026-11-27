@@ -10,6 +10,7 @@ import korlibs.korge.view.sprite
 import korlibs.korge.view.text
 import korlibs.time.milliseconds
 
+/** Draws a card with a looping preview of [skin] and its name; returns the preview sprite. */
 internal fun Container.skinCard(
     skin: DragonSkin,
     animation: SpriteAnimation,

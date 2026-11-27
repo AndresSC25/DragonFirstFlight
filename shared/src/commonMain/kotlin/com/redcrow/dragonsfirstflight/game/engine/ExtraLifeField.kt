@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/** Places life pickups behind obstacles, with the spawn cap refreshed in each endless window. */
 internal class ExtraLifeField(
     private val random: Random = Random.Default,
 ) {
@@ -19,6 +20,7 @@ internal class ExtraLifeField(
     val currentScrollX: Double
         get() = scrollX
 
+    /** Clears pickups and restores the starting scroll, spawn budget, delay, and ID counters. */
     fun reset() {
         activeExtraLives.clear()
         nextId = 0
@@ -29,10 +31,12 @@ internal class ExtraLifeField(
         scrollX = 0.0
     }
 
+    /** Removes current pickups and preserves scroll, spawn timing, and eligibility. */
     fun clear() {
         activeExtraLives.clear()
     }
 
+    /** Ticks spawn timing, scrolls by [distance] pixels, and culls pickups fully past [leftBoundary]. */
     fun advance(
         elapsedSeconds: Double,
         distance: Double,
@@ -53,6 +57,7 @@ internal class ExtraLifeField(
         }
     }
 
+    /** Checks new obstacles near the right edge for a life pickup, subject to the spawn cap and zone odds. */
     fun spawnForNewObstacles(
         obstacles: List<Obstacle>,
         rightBoundary: Double,
@@ -91,6 +96,7 @@ internal class ExtraLifeField(
         }
     }
 
+    /** Removes an overlapping pickup if the dragon can gain a life and returns whether it was collected. */
     fun collect(
         dragonY: Double,
         canIncreaseLives: Boolean,
@@ -120,5 +126,6 @@ internal class ExtraLifeField(
         return false
     }
 
+    /** Returns the pickup's left edge in gameplay pixels after subtracting the current scroll. */
     fun screenX(extraLife: ExtraLife): Double = extraLife.worldX - scrollX
 }

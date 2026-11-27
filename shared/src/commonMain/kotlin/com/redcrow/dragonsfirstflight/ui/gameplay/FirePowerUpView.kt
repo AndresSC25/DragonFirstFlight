@@ -12,6 +12,7 @@ import korlibs.korge.view.image
 private const val FIRE_POWER_UP_FRAME_SIZE: Int = 384
 private const val FIRE_POWER_UP_FRAME_COUNT: Int = 6
 
+/** Draws fire power-up pickups from a pool of animated sprites, scrolled by the snapshot's fire power-up offset. */
 internal class FirePowerUpView private constructor(
     private val container: Container,
     private val spriteMap: Bitmap,
@@ -65,6 +66,7 @@ internal class FirePowerUpView private constructor(
     }
 }
 
+/** Draws the dragon's fireballs, picking the frame from each ball's age; hidden while paused. */
 internal class FireBallView private constructor(
     private val container: Container,
     private val frames: List<korlibs.image.bitmap.BmpSlice>,
@@ -119,6 +121,7 @@ internal class FireBallView private constructor(
     }
 }
 
+/** Draws the flame breath in front of the dragon while the fire power-up is active and the game is running. */
 internal class DragonFlamesView private constructor(
     private val animatedSprite: AnimatedSpriteView,
 ) {

@@ -26,6 +26,10 @@ import korlibs.korge.view.Views
 import korlibs.korge.view.solidRect
 import korlibs.render.GameWindow
 
+/**
+ * Builds the menu, endless setup, inventory, shop and gameplay screens in this container and wires them to one
+ * [GameController]. Only the screen matching the controller state is visible.
+ */
 suspend fun Container.createDragonGame(views: Views) {
     val audio = GameAudio.load(views.coroutineContext, views.storage)
     audio.bindWindow(views.gameWindow)
@@ -155,6 +159,7 @@ suspend fun Container.createDragonGame(views: Views) {
     updateScreenVisibility()
 }
 
+/** Pauses the running game when the window loses focus or the platform pauses the app. */
 internal fun pauseGameWhenWindowInactive(
     controller: GameController,
     window: GameWindow,

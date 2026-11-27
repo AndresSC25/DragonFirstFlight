@@ -2,13 +2,17 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/** One obstacle slot of a pattern: its lane, source pattern and spacing and rush rules. */
 internal data class ObstaclePatternStep(
     val lane: Double,
     val pattern: ObstaclePattern,
+    /** True when this step must not become a rush obstacle. */
     val suppressRush: Boolean,
+    /** Factor for the gap before this obstacle; above 1 only for the first step after an intense pattern. */
     val separationMultiplier: Double,
 )
 
+/** Hands out pattern lanes one obstacle at a time, picking a new pattern whenever the previous one is finished. */
 internal class ObstaclePatternSequencer(
     private val random: Random,
 ) {
@@ -17,6 +21,7 @@ internal class ObstaclePatternSequencer(
     private var lastPattern: ObstaclePattern? = null
     private var recoveryPending = false
 
+    /** Avoids repeating the previous pattern when another exists; [singleLane] only applies to the single pattern. */
     fun nextStep(
         zone: GameZone,
         difficulty: GameDifficulty,
@@ -76,6 +81,7 @@ internal class ObstaclePatternSequencer(
         )
     }
 
+    /** Drops any partly consumed pattern and pattern history. */
     fun reset() {
         pendingLanes.clear()
         activePattern = null

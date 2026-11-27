@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Scales obstacle speed and spacing and selects the speed progression for Endless play. */
 enum class GameDifficulty(
     val displayName: String,
     val description: String,
@@ -48,12 +49,15 @@ enum class GameDifficulty(
         }
     }
 
+    /** Returns the difficulty-adjusted scrolling speed in pixels per second at the given active run time. */
     fun obstacleSpeedAt(activeTimeSeconds: Double): Double =
         GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * obstacleSpeedMultiplier
 
+    /** Returns the zone's base obstacle spacing in pixels after applying the difficulty multiplier. */
     fun obstacleSeparationAt(activeTimeSeconds: Double): Double =
         GameEngineConfig.obstacleSeparationAt(activeTimeSeconds) * obstacleSeparationMultiplier
 
+    /** Uses the selected zone's entry speed or the final forest speed after victory, scaled by difficulty. */
     fun endlessStartingSpeed(
         zone: GameZone,
         afterVictory: Boolean = false,

@@ -37,6 +37,7 @@ private const val CARD_GAP = 14.0
 private const val COIN_ICON_SIZE = 28.0
 private const val COIN_TEXT_GAP = 8.0
 
+/** Builds the hidden shop screen where the player buys skins with coins through [skinShop]. */
 internal suspend fun Container.createShopScreen(
     views: Views,
     audio: GameAudio,

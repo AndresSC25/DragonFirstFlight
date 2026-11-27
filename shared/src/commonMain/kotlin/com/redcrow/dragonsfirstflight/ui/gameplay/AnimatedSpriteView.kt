@@ -7,6 +7,7 @@ import korlibs.korge.view.SpriteAnimation
 import korlibs.korge.view.sprite
 import korlibs.time.milliseconds
 
+/** Sprite sheet layout: frame size in pixels, grid size, and milliseconds per frame. All values must be positive. */
 internal data class AnimatedSpriteConfig(
     val frameWidth: Int,
     val frameHeight: Int,
@@ -27,6 +28,7 @@ internal data class AnimatedSpriteConfig(
     }
 }
 
+/** Looping sprite sheet animation that runs only while [update] is told to animate, so pausing freezes it. */
 internal class AnimatedSpriteView private constructor(
     private val sprite: Sprite,
     private val animation: SpriteAnimation,
@@ -37,6 +39,7 @@ internal class AnimatedSpriteView private constructor(
     val view: Sprite
         get() = sprite
 
+    /** Starts or stops the looped animation when [shouldAnimate] changes; calling it every frame is cheap. */
     fun update(shouldAnimate: Boolean) {
         if (shouldAnimate && isAnimationStopped) {
             sprite.playAnimationLooped(

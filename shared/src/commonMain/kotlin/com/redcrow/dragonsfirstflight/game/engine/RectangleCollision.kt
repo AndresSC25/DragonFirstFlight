@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** True when the two rectangles overlap with positive area; touching edges do not count. */
 internal fun collisionBoundsOverlap(
     first: CollisionBounds,
     second: CollisionBounds,
@@ -15,6 +16,7 @@ internal fun collisionBoundsOverlap(
         secondHeight = second.height,
     )
 
+/** Axis-aligned overlap test; touching edges do not count, and negative sizes throw. */
 internal fun rectanglesOverlap(
     firstX: Double,
     firstY: Double,

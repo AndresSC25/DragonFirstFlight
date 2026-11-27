@@ -1,11 +1,13 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Chooses which patterns a zone and difficulty allow and expands a pattern into obstacle lanes. */
 internal object ObstaclePatternPlanner {
     private val top = GameEngineConfig.OBSTACLE_TOP_Y
     private val middle = GameEngineConfig.OBSTACLE_Y
     private val lowerMiddle = GameEngineConfig.OBSTACLE_LOWER_MIDDLE_Y
     private val bottom = GameEngineConfig.OBSTACLE_BOTTOM_Y
 
+    /** Returns the patterns allowed for the zone and difficulty; the boss zone has none. */
     fun availablePatterns(
         zone: GameZone,
         difficulty: GameDifficulty,
@@ -88,6 +90,7 @@ internal object ObstaclePatternPlanner {
         return easyPatterns + mediumAdditions + hardAdditions
     }
 
+    /** Returns the obstacle lane y values in spawn order; [reverseVariant] picks the mirrored form where one exists. */
     fun lanesFor(
         pattern: ObstaclePattern,
         singleLane: Double,
@@ -134,5 +137,6 @@ internal object ObstaclePatternPlanner {
         }
     }
 
+    /** Returns the four obstacle lane y values. */
     fun allLanes(): List<Double> = listOf(top, middle, lowerMiddle, bottom)
 }

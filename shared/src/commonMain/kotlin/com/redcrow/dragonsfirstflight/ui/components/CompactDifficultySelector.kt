@@ -18,6 +18,10 @@ private const val SELECTOR_ARROW_AREA_WIDTH = 48.0
 private const val SELECTOR_TITLE_GAP = 24.0
 private const val SELECTOR_DESCRIPTION_GAP = 6.0
 
+/**
+ * Adds a left/right arrow selector that cycles through [GameDifficulty] with wraparound.
+ * [onSelectionChanged] also fires once with [initialDifficulty] when the selector is created.
+ */
 internal fun Container.createCompactDifficultySelector(
     x: Double,
     y: Double,

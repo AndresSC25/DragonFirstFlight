@@ -15,12 +15,17 @@ internal class GameAudioDirector(
     private var bossAnnounced = false
     private var flapIndex = 0
 
+    /** Plays the next of the three flap sounds in rotation. */
     fun flap() {
         val sounds = listOf(GameSound.FLAP_ONE, GameSound.FLAP_TWO, GameSound.FLAP_THREE)
         output.play(sounds[flapIndex])
         flapIndex = (flapIndex + 1) % sounds.size
     }
 
+    /**
+     * Call once per frame with the current [snapshot]; compares it with the previous one to trigger cues.
+     * A new [runNumber] or a hidden screen resets tracking; a hidden screen also silences music and charge.
+     */
     fun update(
         snapshot: GameSnapshot,
         runNumber: Int,

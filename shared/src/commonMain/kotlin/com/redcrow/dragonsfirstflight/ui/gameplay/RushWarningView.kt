@@ -18,6 +18,10 @@ private const val WARNING_LINE_WIDTH = 48.0
 private const val WARNING_LINE_HEIGHT = 5.0
 private const val WARNING_SYMBOL_SIZE = 46.0
 
+/**
+ * Shows a warning at the right viewport edge, level with the rush obstacle that has the lowest id,
+ * and grows more opaque as the rush nears.
+ */
 internal class RushWarningView private constructor(
     private val container: Container,
     private val plate: SolidRect,

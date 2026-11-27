@@ -1,9 +1,11 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Tracks catapult stones until a collision, ground impact, or exit from the play area. */
 internal class ProjectileField {
     private val active = mutableListOf<Projectile>()
     private var nextId = 0
 
+    /** Adds a stone at its screen-space launch position with a new ID and zero age. */
     fun launch(
         x: Double,
         y: Double,
@@ -30,6 +32,7 @@ internal class ProjectileField {
             )
     }
 
+    /** Advances stones by [delta] seconds, culls off-screen stones, and removes and returns visible ground hits. */
     fun update(
         delta: Double,
         leftBoundary: Double,
@@ -68,8 +71,10 @@ internal class ProjectileField {
         return groundHits
     }
 
+    /** Copies the active stones for a snapshot that stays stable as the field advances. */
     fun snapshot(): List<Projectile> = active.toList()
 
+    /** Removes and returns all stones whose trimmed hitboxes overlap the supplied screen-space bounds. */
     fun removeColliding(bounds: CollisionBounds): List<Projectile> {
         val hits = mutableListOf<Projectile>()
         for (index in active.lastIndex downTo 0) {

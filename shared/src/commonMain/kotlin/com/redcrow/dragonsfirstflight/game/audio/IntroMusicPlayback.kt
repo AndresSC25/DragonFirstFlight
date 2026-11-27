@@ -23,6 +23,10 @@ class IntroMusicPlayback internal constructor(
     private var resumeAfterPause = false
     private var closed = false
 
+    /**
+     * Syncs playback to the video clock; call every frame. Starts at [positionSeconds], pauses when [paused] or the
+     * position is null or invalid, and seeks only when resuming. A playback error closes it.
+     */
     fun update(
         positionSeconds: Double?,
         paused: Boolean,
@@ -59,6 +63,7 @@ class IntroMusicPlayback internal constructor(
         }
     }
 
+    /** Pauses music and effects until the next valid [update]. */
     fun pause() {
         effectsPlayback?.pause()
         val current = channel ?: return
@@ -67,6 +72,7 @@ class IntroMusicPlayback internal constructor(
         resumeAfterPause = true
     }
 
+    /** Stops playback for good; later calls do nothing. */
     fun close() {
         if (closed) return
         closed = true
@@ -76,6 +82,7 @@ class IntroMusicPlayback internal constructor(
     }
 
     companion object {
+        /** Loads the intro music if [enabled] and the effects track if [effectsEnabled]; failed loads are skipped. */
         suspend fun load(
             context: CoroutineContext,
             enabled: Boolean,
