@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight
+package com.redcrow.dragonsfirstflight
 
 import com.redcrow.dragonsfirstflight.game.audio.launchAudioPreview
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig

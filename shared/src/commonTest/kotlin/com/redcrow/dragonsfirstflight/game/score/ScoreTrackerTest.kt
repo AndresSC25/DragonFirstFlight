@@ -30,6 +30,29 @@ class ScoreTrackerTest {
     }
 
     @Test
+    fun pointsMultiplierSpeedsUpScoringWithoutAdvancingActiveTime() {
+        val tracker = ScoreTracker(pointsPerSecond = 1)
+
+        tracker.update(elapsedSeconds = 2.0)
+        tracker.update(elapsedSeconds = 2.0, pointsMultiplier = 2.5)
+
+        assertEquals(7, tracker.score.points)
+        assertEquals(4.0, tracker.score.activeTimeSeconds)
+    }
+
+    @Test
+    fun scoringMultiplierCanChangeWithoutLosingFractionalProgress() {
+        val tracker = ScoreTracker(pointsPerSecond = 1)
+
+        tracker.update(elapsedSeconds = 0.4)
+        tracker.update(elapsedSeconds = 0.2, pointsMultiplier = 2.5)
+        tracker.update(elapsedSeconds = 0.1)
+
+        assertEquals(1, tracker.score.points)
+        assertEquals(0.7, tracker.score.activeTimeSeconds, 1e-9)
+    }
+
+    @Test
     fun invalidElapsedTimeDoesNotChangeTheScore() {
         val tracker = ScoreTracker(pointsPerSecond = 1)
         tracker.update(1.5)
