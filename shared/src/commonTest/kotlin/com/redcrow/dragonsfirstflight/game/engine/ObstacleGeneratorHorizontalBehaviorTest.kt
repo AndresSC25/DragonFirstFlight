@@ -103,19 +103,18 @@ class ObstacleGeneratorHorizontalBehaviorTest {
         val generated =
             collectGeneratedObstacles(
                 difficulty = GameDifficulty.HARD,
-                seed = 7,
+                seed = 19,
             )
 
-        generated
-            .filter { obstacle ->
-                obstacle.spritePath.endsWith("forest_mage.png") ||
-                    obstacle.spritePath.endsWith("knight_sword.png")
-            }.forEach { obstacle ->
-                assertEquals(
-                    ObstacleHorizontalBehavior.NORMAL,
-                    obstacle.horizontalBehavior,
-                )
-            }
+        val knights = generated.filter { obstacle -> obstacle.spritePath.endsWith("knight_sword.png") }
+
+        assertTrue(knights.isNotEmpty())
+        knights.forEach { obstacle ->
+            assertEquals(
+                ObstacleHorizontalBehavior.NORMAL,
+                obstacle.horizontalBehavior,
+            )
+        }
     }
 
     @Test

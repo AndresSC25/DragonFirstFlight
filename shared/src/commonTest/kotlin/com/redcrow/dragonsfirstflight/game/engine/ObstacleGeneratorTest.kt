@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ObstacleGeneratorTest {
@@ -37,7 +38,7 @@ class ObstacleGeneratorTest {
     }
 
     @Test
-    fun mageAndKnightRemainOnTheBottomLane() {
+    fun knightRemainsOnTheBottomLane() {
         val generator =
             ObstacleGenerator(
                 areaWidth = 1280.0,
@@ -51,15 +52,40 @@ class ObstacleGeneratorTest {
             )
             generator
                 .snapshot()
-                .filter {
-                    it.spritePath.endsWith("forest_mage.png") ||
-                        it.spritePath.endsWith("knight_sword.png")
-                }.forEach { obstacle ->
+                .filter { it.spritePath.endsWith("knight_sword.png") }
+                .forEach { obstacle ->
                     assertTrue(
                         obstacle.y == GameEngineConfig.OBSTACLE_BOTTOM_Y,
                     )
                 }
         }
+    }
+
+    @Test
+    fun zoneOneUsesItsConfiguredObstacles() {
+        val generator =
+            ObstacleGenerator(
+                areaWidth = 1280.0,
+                random = Random(7),
+            )
+        val zoneOnePaths =
+            setOf(
+                "sprites/obstacles/zone1/flying_crows.png",
+                "sprites/obstacles/zone1/flaming_arrow.png",
+                "sprites/obstacles/zone1/knight_sword.png",
+            )
+        val generatedPaths = mutableSetOf<String>()
+        val delta = 0.05
+
+        repeat((GameEngineConfig.ZONE_DURATION_SECONDS / delta).toInt()) { frame ->
+            generator.update(
+                delta = delta,
+                activeTimeSeconds = frame * delta,
+            )
+            generatedPaths += generator.snapshot().map { it.spritePath }
+        }
+
+        assertEquals(zoneOnePaths, generatedPaths)
     }
 
     @Test

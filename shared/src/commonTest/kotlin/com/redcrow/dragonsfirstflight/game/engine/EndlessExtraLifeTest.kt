@@ -102,7 +102,7 @@ class EndlessExtraLifeTest {
                     x = 1280.0,
                     y = GameEngineConfig.OBSTACLE_Y,
                     size = GameEngineConfig.OBSTACLE_SIZE,
-                    spritePath = "sprites/obstacles/zone1/flying_bat.png",
+                    spritePath = "sprites/obstacles/zone1/flying_crows.png",
                 ),
             ),
             rightBoundary = 1280.0,

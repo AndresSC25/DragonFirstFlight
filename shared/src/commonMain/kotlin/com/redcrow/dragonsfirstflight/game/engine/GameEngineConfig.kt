@@ -115,7 +115,6 @@ object GameEngineConfig {
     const val OBSTACLE_SIZE: Double = 72.0
     const val ZONE_TWO_FLYING_GARGOYLE_SIZE: Double = 96.0
     const val ZONE_TWO_GHOST_KNIGHT_SIZE: Double = 96.0
-    const val FOREST_MAGE_SIZE: Double = 120.0
     const val KNIGHT_SWORD_SIZE: Double = 120.0
     const val INITIAL_OBSTACLE_MARGIN: Double = 90.0
     const val RUSH_WARNING_DURATION_SECONDS: Double = 0.80
@@ -268,7 +267,7 @@ object GameEngineConfig {
         }
 
         require(
-            OBSTACLE_BOTTOM_Y + FOREST_MAGE_SIZE <= GAME_AREA_HEIGHT,
+            OBSTACLE_BOTTOM_Y + KNIGHT_SWORD_SIZE <= GAME_AREA_HEIGHT,
         ) {
             "OBSTACLE_BOTTOM_Y must be inside the game area."
         }
@@ -424,7 +423,6 @@ object GameEngineConfig {
             OBSTACLE_SIZE,
             ZONE_TWO_FLYING_GARGOYLE_SIZE,
             ZONE_TWO_GHOST_KNIGHT_SIZE,
-            FOREST_MAGE_SIZE,
             KNIGHT_SWORD_SIZE,
         )
 }

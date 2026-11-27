@@ -8,11 +8,8 @@ import kotlin.test.assertTrue
 class CollisionProfileCatalogTest {
     private val generatedObstaclePaths =
         setOf(
-            "sprites/obstacles/zone1/flying_bat.png",
             "sprites/obstacles/zone1/flying_crows.png",
-            "sprites/obstacles/zone1/flying_sword.png",
             "sprites/obstacles/zone1/flaming_arrow.png",
-            "sprites/obstacles/zone1/forest_mage.png",
             "sprites/obstacles/zone1/knight_sword.png",
             "sprites/obstacles/zone2/flying _skull_wisp.png",
             "sprites/obstacles/zone2/flying_cursed_book.png",
@@ -27,6 +24,7 @@ class CollisionProfileCatalogTest {
 
     @Test
     fun everyGeneratedObstacleHasACollisionProfile() {
+        assertEquals(generatedObstaclePaths, CollisionProfileCatalog.configuredObstaclePaths())
         generatedObstaclePaths.forEach { spritePath ->
             val margins =
                 CollisionProfileCatalog.obstacleMargins(spritePath)
