@@ -110,6 +110,9 @@ private val OBSTACLE_PATHS =
         ZONE_THREE_WIND_SPIRIT_SPRITE_PATH,
     )
 
+/**
+ * Builds the gameplay screen: loads its assets, renders [controller] state each frame and handles input and the HUD.
+ */
 internal suspend fun Container.createGameplayScreen(
     views: Views,
     audio: GameAudio,

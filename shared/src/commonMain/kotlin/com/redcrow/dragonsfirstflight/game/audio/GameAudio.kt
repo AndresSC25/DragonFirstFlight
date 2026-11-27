@@ -21,6 +21,10 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.TimeSource
 
+/**
+ * Plays sound effects and looping music, persisting the sound and music toggles in storage.
+ * Playback is silenced while the window is in the background or after [close].
+ */
 internal class GameAudio(
     private val context: CoroutineContext,
     private val storage: IStorage,
@@ -46,6 +50,10 @@ internal class GameAudio(
     private var closed = false
     private var lastFlap = Double.NEGATIVE_INFINITY
 
+    /**
+     * Stops effects and pauses music when the window loses focus or the app pauses.
+     * Also closes this audio when the coroutine context completes.
+     */
     fun bindWindow(window: GameWindow) {
         fun background() {
             foreground = false
@@ -60,6 +68,7 @@ internal class GameAudio(
         context[Job]?.invokeOnCompletion { close() }
     }
 
+    /** Flips the sound-effects setting and saves it; turning it off stops effects, turning it on plays a click. */
     fun toggleSound() {
         soundEnabled = !soundEnabled
         storage["audio.sound"] = soundEnabled.toString()
@@ -72,6 +81,7 @@ internal class GameAudio(
         }
     }
 
+    /** Flips the music setting and saves it; turning it off pauses music. Always plays a click. */
     fun toggleMusic() {
         musicEnabled = !musicEnabled
         storage["audio.music"] = musicEnabled.toString()
@@ -154,6 +164,7 @@ internal class GameAudio(
         effects.clear()
     }
 
+    /** Plays the intro music once, replacing any running effects; does nothing when music is off. */
     fun previewIntro() {
         stopEffects()
         if (musicEnabled && foreground && !closed) {
@@ -161,6 +172,7 @@ internal class GameAudio(
         }
     }
 
+    /** Plays the intro sound effects track once, replacing any running effects; does nothing when sound is off. */
     fun previewIntroEffects() {
         stopEffects()
         if (soundEnabled && foreground && !closed) {
@@ -185,6 +197,7 @@ internal class GameAudio(
             null
         }
 
+    /** Stops all playback and releases loaded sounds. Safe to call more than once. */
     fun close() {
         if (closed) return
         closed = true
@@ -195,6 +208,7 @@ internal class GameAudio(
     }
 
     companion object {
+        /** Loads every sound and music file; a file that fails to load is logged and left silent. */
         suspend fun load(
             context: CoroutineContext,
             storage: IStorage,

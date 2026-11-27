@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Hit rectangle in game-area pixels, already shrunk from the sprite frame by collision margins. */
 internal data class CollisionBounds(
     val x: Double,
     val y: Double,

@@ -1,7 +1,10 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Defines the linear speed increase and upper limit for Endless obstacle scrolling. */
 data class EndlessDifficultyConfig(
+    /** Increase in scrolling speed, in pixels per second, for each second of Endless play. */
     val speedIncreasePerSecond: Double,
+    /** Upper limit in pixels per second before the rage multiplier applies. */
     val maximumSpeed: Double,
 ) {
     init {
@@ -13,6 +16,7 @@ data class EndlessDifficultyConfig(
         }
     }
 
+    /** Returns the scrolling speed in pixels per second, capped at [maximumSpeed] after linear acceleration. */
     fun speedAt(
         elapsedSeconds: Double,
         initialSpeed: Double,

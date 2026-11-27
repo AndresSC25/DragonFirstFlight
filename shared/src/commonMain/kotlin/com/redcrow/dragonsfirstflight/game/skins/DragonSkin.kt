@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.skins
 
+/** Dragon skins with their sprite sheet, optional matching [NyanSkin] and shop price in coins (0 is free). */
 enum class DragonSkin(
     val displayName: String,
     val spritePath: String,
@@ -33,6 +34,7 @@ enum class DragonSkin(
     }
 
     companion object {
+        /** Skin that is always unlocked and equipped by default. */
         val DEFAULT: DragonSkin = BRASS
     }
 }

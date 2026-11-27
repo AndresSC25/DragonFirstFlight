@@ -14,12 +14,14 @@ class CoinWallet(
     var balance: Int = loadBalance()
         private set
 
+    /** Adds [amount] to the balance and saves it. Throws if [amount] is negative. */
     fun deposit(amount: Int) {
         require(amount >= 0) { "Deposit amount must not be negative: $amount" }
         balance += amount
         storage[BALANCE_KEY] = balance.toString()
     }
 
+    /** Subtracts [amount] and saves it, returning false without change when the balance is too low. */
     fun spend(amount: Int): Boolean {
         require(amount >= 0) { "Spend amount must not be negative: $amount" }
         if (amount > balance) return false

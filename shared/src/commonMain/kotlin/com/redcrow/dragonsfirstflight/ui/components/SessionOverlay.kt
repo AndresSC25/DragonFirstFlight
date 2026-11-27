@@ -20,6 +20,7 @@ private const val PANEL_HEIGHT: Double = 520.0
 private const val CONTENT_WIDTH: Double = 430.0
 private const val CONTENT_HEIGHT: Double = 435.0
 
+/** Pause and end-of-run overlay with resume, restart, continue to endless and back to menu buttons. */
 internal class SessionOverlay private constructor(
     private val root: Container,
     private val title: Text,
@@ -33,6 +34,7 @@ internal class SessionOverlay private constructor(
     private var displayedRunCoins: Int? = null
     private var displayedCoinBalance: Int? = null
 
+    /** Shows or hides the overlay and sets its title, score text and buttons from [snapshot]; call once per frame. */
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,

@@ -2,10 +2,12 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/** Randomly decides whether a new obstacle is a rush obstacle. */
 internal object ObstacleHorizontalBehaviorSelector {
     private const val MEDIUM_RUSH_PROBABILITY = 0.15
     private const val HARD_RUSH_PROBABILITY = 0.30
 
+    /** Never picks a rush on easy, in the boss zone, for bottom-only obstacles or right after another rush. */
     fun select(
         difficulty: GameDifficulty,
         zone: GameZone,

@@ -3,11 +3,13 @@ package com.redcrow.dragonsfirstflight.game.engine
 import kotlin.math.abs
 import kotlin.random.Random
 
+/** Uses the previous volley to avoid immediate repeats and limit jumps between safe lanes. */
 internal class BossPatternPlanner(
     private val random: Random = Random.Default,
 ) {
     private var previousPattern: BossAttackPattern? = null
 
+    /** Selects and remembers a volley, optionally using the dragon's center height in gameplay pixels to aim. */
     fun next(
         bossElapsedSeconds: Double,
         dragonCenterY: Double? = null,
@@ -75,6 +77,7 @@ internal class BossPatternPlanner(
         return selected
     }
 
+    /** Forgets the previous volley so it cannot constrain the next selection. */
     fun reset() {
         previousPattern = null
     }
@@ -100,6 +103,7 @@ internal class BossPatternPlanner(
     }
 
     companion object {
+        /** Uses boss-zone elapsed seconds to select single, double, then corridor volleys. */
         fun stageAt(bossElapsedSeconds: Double): BossAttackStage =
             when {
                 bossElapsedSeconds < GameEngineConfig.BOSS_STAGE_DURATION_SECONDS -> BossAttackStage.SINGLE

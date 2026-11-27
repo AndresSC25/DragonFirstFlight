@@ -41,6 +41,9 @@ private const val MENU_BUTTON_GAP = 20.0
 private const val MENU_BUTTON_HEIGHT = 64.0
 private const val MENU_DRAGON_DISPLAY_SIZE = 112.0
 
+/**
+ * Builds the main menu with a difficulty selector and buttons for play, endless, shop and inventory.
+ */
 internal suspend fun Container.createMainMenuScreen(
     views: Views,
     audio: GameAudio,

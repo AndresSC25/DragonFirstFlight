@@ -31,6 +31,7 @@ private const val PANEL_PADDING = 24.0
 private const val CARD_HEIGHT = 220.0
 private const val CARD_GAP = 14.0
 
+/** Builds the hidden inventory screen where the player equips unlocked skins from [skinInventory]. */
 internal suspend fun Container.createInventoryScreen(
     views: Views,
     audio: GameAudio,

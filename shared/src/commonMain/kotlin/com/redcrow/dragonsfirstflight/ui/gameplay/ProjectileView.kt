@@ -13,6 +13,7 @@ private const val FRAME_SIZE = 128
 private const val FRAME_COUNT = 8
 private const val FRAME_SECONDS = 0.08
 
+/** Draws catapult projectiles from a reusable image pool, framed by projectile age; hidden in zone transitions. */
 internal class ProjectileView private constructor(
     private val container: Container,
     private val frames: List<BmpSlice>,

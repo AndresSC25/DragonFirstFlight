@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Holds the tuned collision margins for the dragon, boss projectiles and each obstacle sprite. */
 internal object CollisionProfileCatalog {
     // Visible envelope shared by the eight 128x128 rock frames (pixels 27 through 100).
     val bossProjectileMargins =
@@ -31,10 +32,12 @@ internal object CollisionProfileCatalog {
             "sprites/obstacles/zone3/wind_spirit.png" to margins(72, 24, 72, 24),
         )
 
+    /** Throws if [spritePath] has no configured profile, so every new obstacle sprite needs an entry. */
     fun obstacleMargins(spritePath: String): CollisionMargins =
         obstacleMarginsBySpritePath[spritePath]
             ?: error("Missing collision profile for obstacle: $spritePath")
 
+    /** Sprite paths that have a collision profile. */
     internal fun configuredObstaclePaths(): Set<String> = obstacleMarginsBySpritePath.keys
 
     private fun margins(

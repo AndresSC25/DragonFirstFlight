@@ -2,6 +2,7 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/** Places shield pickups behind obstacles and limits them to one per endless spawn window. */
 internal class ShieldPowerUpField(
     private val random: Random = Random.Default,
 ) {
@@ -20,6 +21,7 @@ internal class ShieldPowerUpField(
     val currentScrollX: Double
         get() = scrollX
 
+    /** Clears pickups and restores the starting scroll, spawn eligibility, timing, and ID counters. */
     fun reset() {
         activePowerUps.clear()
         nextId = 0
@@ -31,10 +33,12 @@ internal class ShieldPowerUpField(
         scrollX = 0.0
     }
 
+    /** Removes current pickups and preserves scroll, spawn timing, and eligibility. */
     fun clear() {
         activePowerUps.clear()
     }
 
+    /** Advances spawn timers and scroll, culls pickups past the left edge, and refreshes the endless spawn window. */
     fun advance(
         elapsedSeconds: Double,
         distance: Double,
@@ -55,6 +59,7 @@ internal class ShieldPowerUpField(
         }
     }
 
+    /** Caps spawns at one in normal-mode zone two or one per Endless window while fire and rage are absent. */
     fun spawnForNewObstacles(
         obstacles: List<Obstacle>,
         rightBoundary: Double,
@@ -103,6 +108,7 @@ internal class ShieldPowerUpField(
         }
     }
 
+    /** Removes the first overlapping pickup found and reports collection so the caller can enable the shield. */
     fun collect(dragonY: Double): Boolean {
         for (index in activePowerUps.lastIndex downTo 0) {
             val powerUp = activePowerUps[index]

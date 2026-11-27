@@ -3,6 +3,7 @@ package com.redcrow.dragonsfirstflight.ui.gameplay
 import korlibs.image.format.readBitmap
 import korlibs.io.file.std.resourcesVfs
 
+/** Parallax layer sets for each zone, ordered from the farthest layer to the nearest. */
 internal enum class ZoneBackground(
     private val layers: List<LayerAsset>,
 ) {
@@ -51,6 +52,7 @@ internal enum class ZoneBackground(
     ),
     ;
 
+    /** Reads this zone's layer images from resources; suspends on I/O, so call it outside the frame loop. */
     suspend fun loadLayers(): List<ScrollingBackground.Layer> =
         layers.map { asset ->
             ScrollingBackground.Layer(

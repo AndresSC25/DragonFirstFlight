@@ -12,6 +12,7 @@ private const val EXTRA_LIFE_FRAME_SIZE: Int = 384
 private const val EXTRA_LIFE_FRAME_COUNT: Int = 8
 private const val EXTRA_LIFE_FRAME_DURATION_MS: Int = 120
 
+/** Draws extra-life pickups from a pool of animated sprites, scrolled by the snapshot's extra life scroll offset. */
 internal class ExtraLifeView private constructor(
     private val container: Container,
     private val spriteMap: Bitmap,

@@ -1,5 +1,9 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/**
+ * Fractions of a sprite frame's width (left, right) or height (top, bottom) that do not count for collisions.
+ * Each ratio is in [0, 1) and opposite sides must sum to less than 1.
+ */
 internal data class CollisionMargins(
     val leftRatio: Double,
     val topRatio: Double,
@@ -20,6 +24,7 @@ internal data class CollisionMargins(
     }
 
     companion object {
+        /** Full-frame collision, no margin cut on any side. */
         val NONE =
             CollisionMargins(
                 leftRatio = 0.0,

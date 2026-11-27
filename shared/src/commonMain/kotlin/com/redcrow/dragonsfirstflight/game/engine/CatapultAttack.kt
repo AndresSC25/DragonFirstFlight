@@ -14,6 +14,7 @@ internal class CatapultAttack {
     private var elapsed = 0.0
     private var furious = false
 
+    /** Selects the catapult sprite frame for the current attack phase and elapsed time. */
     val frameIndex: Int
         get() =
             when (phase) {
@@ -28,6 +29,7 @@ internal class CatapultAttack {
                         (elapsed / GameEngineConfig.CATAPULT_RECOVERY_FRAME_SECONDS).toInt().coerceAtMost(1)
             }
 
+    /** Loops the warning sprite during loading and warning phases and returns null otherwise. */
     val warningFrameIndex: Int?
         get() =
             if (phase == Phase.LOADING || phase == Phase.WARNING) {
@@ -36,6 +38,7 @@ internal class CatapultAttack {
                 null
             }
 
+    /** Advances attack time in seconds, calling [onPrepare] on entry to loading and [onFire] on entry to firing. */
     fun update(
         delta: Double,
         isFurious: Boolean = false,
@@ -64,6 +67,7 @@ internal class CatapultAttack {
         }
     }
 
+    /** Returns to the idle pose and restores normal attack timing. */
     fun reset() {
         phase = Phase.IDLE
         elapsed = 0.0

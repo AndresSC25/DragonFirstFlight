@@ -12,8 +12,10 @@ class SkinInventory(
     var equipped: DragonSkin = loadEquipped()
         private set
 
+    /** Returns whether [skin] is owned. */
     fun isUnlocked(skin: DragonSkin): Boolean = skin in unlocked
 
+    /** Marks [skin] as owned and saves it; does not charge coins (see [SkinShop.buy]). */
     fun unlock(skin: DragonSkin) {
         if (isUnlocked(skin)) return
 
@@ -21,6 +23,7 @@ class SkinInventory(
         storage[UNLOCKED_KEY] = unlocked.joinToString(separator = ",") { it.name }
     }
 
+    /** Equips [skin] and saves it; ignored when the skin is locked. */
     fun equip(skin: DragonSkin) {
         if (!isUnlocked(skin)) return
         if (equipped != skin) {

@@ -21,6 +21,7 @@ private const val PANEL_HEIGHT = 190.0
 private const val CONTENT_WIDTH = 340.0
 private const val CONTENT_HEIGHT = 136.0
 
+/** Draws the black shade and zone title banner during zone transitions; hidden when not transitioning or paused. */
 internal class ZoneTransitionOverlay private constructor(
     private val shade: SolidRect,
     private val announcement: Container,
@@ -130,6 +131,7 @@ internal class ZoneTransitionOverlay private constructor(
         private const val FADE_OUT_START = 0.74
         private const val ENTRANCE_OFFSET_Y = 18.0
 
+        /** Returns a smoothed 0.0 to 1.0 blend factor for swapping backgrounds around the middle of the transition. */
         fun backgroundBlend(progress: Double): Double =
             smoothStep((progress - BACKGROUND_BLEND_START) / (BACKGROUND_BLEND_END - BACKGROUND_BLEND_START))
 

@@ -8,6 +8,9 @@ import korlibs.korge.view.Image
 import korlibs.korge.view.image
 import korlibs.korge.view.text
 
+/**
+ * Adds a [texture] button scaled to [width] by [height] with a centered [label]; clicking it calls [onClick].
+ */
 internal fun Container.createMedievalImageButton(
     x: Double,
     y: Double,

@@ -2,7 +2,9 @@ package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.random.Random
 
+/** Randomly picks a vertical movement style, with more movement in later zones. */
 internal object ObstacleMovementSelector {
+    /** Bottom-only obstacles and the boss zone always get [ObstacleMovement.STATIC]. */
     fun select(
         zone: GameZone,
         isBottomOnly: Boolean,

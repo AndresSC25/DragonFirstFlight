@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.engine
 
+/** Named lane sequences the generator spawns obstacles in; [isIntense] ones trigger a longer gap afterwards. */
 internal enum class ObstaclePattern(
     val isIntense: Boolean = false,
 ) {

@@ -101,6 +101,11 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - Desktop tests: `./gradlew :shared:jvmTest`
 - iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
+### Documentation
+
+- Generate the API docs (KDoc) as HTML: `./gradlew :shared:dokkaGenerate`
+- Open `shared/build/dokka/html/index.html` to browse them.
+
 ### Game introduction
 
 Android and Desktop play `shared/src/commonMain/resources/video/intro.mp4` before
