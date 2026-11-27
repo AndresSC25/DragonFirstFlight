@@ -1,8 +1,10 @@
+import org.jetbrains.dokka.gradle.engine.parameters.VisibilityModifier
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
+    alias(libs.plugins.dokka)
     alias(libs.plugins.ktlint)
 }
 
@@ -59,6 +61,16 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+    }
+}
+
+dokka {
+    dokkaPublications.html {
+        moduleName.set("DragonsFirstFlight")
+    }
+
+    dokkaSourceSets.configureEach {
+        documentedVisibilities.set(setOf(VisibilityModifier.Public, VisibilityModifier.Internal))
     }
 }
 
