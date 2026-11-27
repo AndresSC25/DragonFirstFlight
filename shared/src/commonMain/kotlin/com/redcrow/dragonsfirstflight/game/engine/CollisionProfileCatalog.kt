@@ -1,5 +1,6 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
+/** Holds the tuned collision margins for the dragon, boss projectiles and each obstacle sprite. */
 internal object CollisionProfileCatalog {
     // Visible envelope shared by the eight 128x128 rock frames (pixels 27 through 100).
     val bossProjectileMargins =
@@ -20,27 +21,23 @@ internal object CollisionProfileCatalog {
 
     private val obstacleMarginsBySpritePath =
         mapOf(
-            "sprites/obstacles/zone1/flaming_arrow.png" to margins(39, 22, 26, 37),
-            "sprites/obstacles/zone1/flying_bat.png" to margins(33, 20, 9, 10),
-            "sprites/obstacles/zone1/flying_crows.png" to margins(42, 44, 12, 56),
-            "sprites/obstacles/zone1/flying_sword.png" to margins(26, 34, 21, 44),
-            "sprites/obstacles/zone1/forest_mage.png" to margins(76, 42, 75, 21),
+            "sprites/obstacles/zone1/flaming_arrow.png" to margins(12, 68, 12, 68),
+            "sprites/obstacles/zone1/flying_crows.png" to margins(64, 32, 48, 32),
             "sprites/obstacles/zone1/knight_sword.png" to margins(8, 41, 15, 23),
-            "sprites/obstacles/zone2/flying _skull_wisp.png" to margins(38, 3, 28, 31),
-            "sprites/obstacles/zone2/flying_cursed_book.png" to margins(28, 24, 33, 29),
-            "sprites/obstacles/zone2/flying_gargoyle.png" to margins(32, 25, 38, 39),
-            "sprites/obstacles/zone2/ghost_knight.png" to margins(59, 13, 105, 17),
-            "sprites/obstacles/zone2/winged_imp.png" to margins(26, 21, 33, 41),
-            "sprites/obstacles/zone3/fairy_sprite.png" to margins(39, 13, 43, 26),
-            "sprites/obstacles/zone3/flying_forest_monster.png" to margins(37, 1, 18, 17),
-            "sprites/obstacles/zone3/giant_hornet.png" to margins(60, 15, 41, 43),
-            "sprites/obstacles/zone3/wind_spirit.png" to margins(95, 12, 95, 27),
+            "sprites/obstacles/zone2/flying_cursed_book.png" to margins(48, 36, 48, 60),
+            "sprites/obstacles/zone2/flying_gargoyle.png" to margins(48, 36, 48, 12),
+            "sprites/obstacles/zone2/ghost_knight.png" to margins(48, 12, 72, 12),
+            "sprites/obstacles/zone3/fairy_sprite.png" to margins(72, 72, 12, 36),
+            "sprites/obstacles/zone3/giant_hornet.png" to margins(36, 12, 36, 24),
+            "sprites/obstacles/zone3/wind_spirit.png" to margins(72, 24, 72, 24),
         )
 
+    /** Throws if [spritePath] has no configured profile, so every new obstacle sprite needs an entry. */
     fun obstacleMargins(spritePath: String): CollisionMargins =
         obstacleMarginsBySpritePath[spritePath]
             ?: error("Missing collision profile for obstacle: $spritePath")
 
+    /** Sprite paths that have a collision profile. */
     internal fun configuredObstaclePaths(): Set<String> = obstacleMarginsBySpritePath.keys
 
     private fun margins(

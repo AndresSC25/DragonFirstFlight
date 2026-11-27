@@ -5,11 +5,21 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.random.Random
 
+/** Advances one run from flap input and elapsed time and exposes its state through [snapshot]. */
 class GameEngine(
     gameAreaWidth: Double,
     random: Random = Random.Default,
+    initialDifficulty: GameDifficulty = GameDifficulty.EASY,
+    initialMode: GameMode = GameMode.NORMAL,
+    initialEndlessZone: GameZone = GameZone.ZONE_ONE,
     private val onDamageEvent: (DamageEvent) -> Unit = {},
 ) {
+    private var difficulty: GameDifficulty = initialDifficulty
+    var mode: GameMode = initialMode
+        private set
+    private var endlessZone: GameZone = initialEndlessZone
+    private var endlessElapsedSeconds = 0.0
+    private var endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone)
     private var dragonY: Double =
         GameEngineConfig.DRAGON_INITIAL_Y
 
@@ -19,10 +29,15 @@ class GameEngine(
         ObstacleGenerator(
             areaWidth = gameAreaWidth,
             random = random,
+            difficulty = initialDifficulty,
+            initialZone = GameEngineConfig.zoneAt(obstacleProfileTimeAt(0.0)),
         )
 
     private var lives: Int =
         GameEngineConfig.INITIAL_LIVES
+
+    private var damageCount = 0
+    private var extraLivesCollected = 0
 
     private val scoreTracker =
         ScoreTracker(
@@ -44,13 +59,24 @@ class GameEngine(
     private val bossVolley = BossVolley()
     private var pendingBossPattern: BossAttackPattern? = null
 
+    /** Total value of coins collected this run, in colones. */
     var runCoins: Int = 0
         private set
 
     private val coinField = CoinField(random)
+    private val extraLifeField = ExtraLifeField(random)
+    private val firePowerUpField = FirePowerUpField(random)
+    private val fireBallField = FireBallField()
+    private val shieldPowerUpField = ShieldPowerUpField(random)
+    private val ragePowerUpField = RagePowerUpField(random)
+    private var firePowerRemainingSeconds = 0.0
+    private var shieldRemainingSeconds = 0.0
+    private var rageRemainingSeconds = 0.0
+    private var fireBallLaunchRemainingSeconds = 0.0
     private var leftBoundary: Double = 0.0
     private var rightBoundary: Double = gameAreaWidth
 
+    /** Reports a loss at zero lives or a win after surviving the full Normal run. */
     val status: GameStatus
         get() =
             when {
@@ -58,7 +84,8 @@ class GameEngine(
                     GameStatus.LOST
                 }
 
-                scoreTracker.score.activeTimeSeconds >=
+                mode == GameMode.NORMAL &&
+                    scoreTracker.score.activeTimeSeconds >=
                     GameEngineConfig.TIME_TO_WIN_SECONDS -> {
                     GameStatus.WON
                 }
@@ -71,6 +98,7 @@ class GameEngine(
     val isRunning: Boolean
         get() = status == GameStatus.RUNNING
 
+    /** Updates the visible bounds in game pixels and removes obstacles that have passed the new left edge. */
     fun resizeGameArea(
         leftBoundary: Double,
         rightBoundary: Double,
@@ -80,10 +108,11 @@ class GameEngine(
         obstacleGenerator.resize(
             newLeftBoundary = leftBoundary,
             newRightBoundary = rightBoundary,
-            spawnIfEmpty = !isZoneTransitioning && currentZone != GameZone.BOSS,
+            spawnIfEmpty = !isZoneTransitioning && !isBossEncounter,
         )
     }
 
+    /** Sets upward velocity during active flight and ignores input during zone transitions or after the run ends. */
     fun flap() {
         if (!isRunning || isZoneTransitioning) {
             return
@@ -93,6 +122,10 @@ class GameEngine(
             GameEngineConfig.FLAP_VELOCITY
     }
 
+    /**
+     * Advances the run by [elapsedSeconds]. Movement and timers step at most [GameEngineConfig.MAX_DELTA_SECONDS],
+     * while scoring receives the full elapsed time.
+     */
     fun update(elapsedSeconds: Double) {
         if (
             !elapsedSeconds.isFinite() ||
@@ -120,6 +153,12 @@ class GameEngine(
         }
         invulnerabilityRemainingSeconds =
             (invulnerabilityRemainingSeconds - delta).coerceAtLeast(0.0)
+        firePowerRemainingSeconds =
+            (firePowerRemainingSeconds - delta).coerceAtLeast(0.0)
+        shieldRemainingSeconds =
+            (shieldRemainingSeconds - delta).coerceAtLeast(0.0)
+        rageRemainingSeconds =
+            (rageRemainingSeconds - delta).coerceAtLeast(0.0)
 
         if (!isRunning) {
             return
@@ -134,17 +173,95 @@ class GameEngine(
         }
 
         updateDragon(delta)
+        if (firePowerRemainingSeconds > 0.0) {
+            fireBallLaunchRemainingSeconds -= delta
+            val shouldLaunch = fireBallLaunchRemainingSeconds <= 0.0
+            if (shouldLaunch) {
+                fireBallLaunchRemainingSeconds =
+                    GameEngineConfig.FIRE_BALL_INTERVAL_SECONDS
+            }
+            fireBallField.update(
+                delta = delta,
+                dragonY = dragonY,
+                leftBoundary = leftBoundary,
+                rightBoundary = rightBoundary,
+                shouldLaunch = shouldLaunch,
+            )
+            val destroyedIds =
+                fireBallField.removeColliding(obstacleGenerator.snapshot())
+            if (destroyedIds.isNotEmpty()) {
+                val destroyedObstacles =
+                    obstacleGenerator.snapshot().filter { it.id in destroyedIds }
+                destroyedObstacles.forEach { obstacle ->
+                    registerPowerUpDestruction(obstacle)
+                }
+                obstacleGenerator.destroy(destroyedIds)
+                collisionRegistered += destroyedIds
+                pointRegistered += destroyedIds
+            }
+        } else {
+            fireBallField.update(
+                delta = delta,
+                dragonY = dragonY,
+                leftBoundary = leftBoundary,
+                rightBoundary = rightBoundary,
+                shouldLaunch = false,
+            )
+        }
         evaluateCollisionAndScore()
         if (isRunning) {
             runCoins += coinField.collect(dragonY)
+            if (
+                extraLifeField.collect(
+                    dragonY = dragonY,
+                    canIncreaseLives = lives < GameEngineConfig.MAX_LIVES,
+                )
+            ) {
+                lives = (lives + 1).coerceAtMost(GameEngineConfig.MAX_LIVES)
+                extraLivesCollected++
+            }
+            if (
+                shieldRemainingSeconds <= 0.0 &&
+                rageRemainingSeconds <= 0.0 &&
+                firePowerUpField.collect(dragonY)
+            ) {
+                firePowerRemainingSeconds =
+                    GameEngineConfig.FIRE_POWER_UP_DURATION_SECONDS
+                fireBallLaunchRemainingSeconds = 0.0
+            }
+            if (firePowerRemainingSeconds <= 0.0 && rageRemainingSeconds <= 0.0) {
+                if (shieldPowerUpField.collect(dragonY)) {
+                    shieldRemainingSeconds =
+                        GameEngineConfig.SHIELD_POWER_UP_DURATION_SECONDS
+                }
+            }
+            if (
+                rageRemainingSeconds <= 0.0 &&
+                firePowerRemainingSeconds <= 0.0 &&
+                shieldRemainingSeconds <= 0.0 &&
+                ragePowerUpField.collect(dragonY)
+            ) {
+                rageRemainingSeconds =
+                    GameEngineConfig.RAGE_POWER_UP_DURATION_SECONDS
+            }
         }
-        scoreTracker.update(elapsedSeconds)
+        evaluateCollisionAndScore()
+        if (mode == GameMode.ENDLESS && isRunning) endlessElapsedSeconds += delta
+        scoreTracker.update(
+            elapsedSeconds = elapsedSeconds,
+            pointsMultiplier =
+                1.0 +
+                    (
+                        if (rageRemainingSeconds > 0.0) delta / elapsedSeconds else 0.0
+                    ) *
+                    (GameEngineConfig.RAGE_SPEED_MULTIPLIER - 1.0),
+        )
         val currentZone =
-            GameEngineConfig.zoneAt(
+            zoneAt(
                 scoreTracker.score.activeTimeSeconds,
             )
         val previousZone =
-            GameEngineConfig.zoneAt(
+            zoneAt(
                 (
                     scoreTracker.score.activeTimeSeconds -
                         elapsedSeconds
@@ -159,10 +276,18 @@ class GameEngine(
                 GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
             obstacleGenerator.beginZoneTransition(currentZone)
             coinField.clear()
+            extraLifeField.clear()
+            clearPowerUps()
+            clearHitEffects()
             return
         }
         val activeTimeSeconds = scoreTracker.score.activeTimeSeconds
-        if (currentZone == GameZone.BOSS) {
+        val profileTimeSeconds = obstacleProfileTimeAt(activeTimeSeconds)
+        val obstacleSpeed = currentObstacleSpeed
+        val obstacleSeparation =
+            difficulty.obstacleSeparationAt(profileTimeSeconds) *
+                if (mode == GameMode.ENDLESS) obstacleSpeed / endlessInitialSpeed else 1.0
+        if (isBossEncounter) {
             if (!isRunning) {
                 projectileField.reset()
                 bossVolley.reset()
@@ -201,50 +326,184 @@ class GameEngine(
         obstacleGenerator.update(
             delta = delta,
             activeTimeSeconds = activeTimeSeconds,
+            profileTimeSeconds = profileTimeSeconds,
+            obstacleSpeed = obstacleSpeed,
+            obstacleSeparation = obstacleSeparation,
         )
         coinField.advance(
             elapsedSeconds = delta,
-            distance = GameEngineConfig.obstacleSpeedAt(activeTimeSeconds) * delta,
+            distance = obstacleSpeed * delta,
             leftBoundary = leftBoundary,
         )
-        val zone = GameEngineConfig.zoneAt(activeTimeSeconds)
+        extraLifeField.advance(
+            elapsedSeconds = delta,
+            distance = obstacleSpeed * delta,
+            leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
+        )
+        firePowerUpField.advance(
+            elapsedSeconds = delta,
+            distance = obstacleSpeed * delta,
+            leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
+        )
+        shieldPowerUpField.advance(
+            elapsedSeconds = delta,
+            distance = obstacleSpeed * delta,
+            leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
+        )
+        ragePowerUpField.advance(
+            elapsedSeconds = delta,
+            distance = obstacleSpeed * delta,
+            leftBoundary = leftBoundary,
+            isEndless = mode == GameMode.ENDLESS,
+        )
+        val zone = GameEngineConfig.zoneAt(profileTimeSeconds)
         coinField.spawnForNewObstacles(
             obstacles = obstacleGenerator.activeObstacles,
             rightBoundary = rightBoundary,
             rowIntervalSeconds = GameEngineConfig.coinRowIntervalAt(zone),
             fiveHundredChance = GameEngineConfig.coinFiveHundredChanceAt(zone),
         )
+        extraLifeField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
+        )
+        firePowerUpField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
+            isEndless = mode == GameMode.ENDLESS,
+            shieldPowerUpActive = shieldRemainingSeconds > 0.0,
+            shieldPowerUpsPresent = shieldPowerUpField.powerUps.isNotEmpty(),
+            ragePowerUpActive = rageRemainingSeconds > 0.0,
+            ragePowerUpsPresent = ragePowerUpField.powerUps.isNotEmpty(),
+        )
+        shieldPowerUpField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
+            isEndless = mode == GameMode.ENDLESS,
+            firePowerUpActive = firePowerRemainingSeconds > 0.0,
+            firePowerUpsPresent = firePowerUpField.powerUps.isNotEmpty(),
+            ragePowerUpActive = rageRemainingSeconds > 0.0,
+            ragePowerUpsPresent = ragePowerUpField.powerUps.isNotEmpty(),
+        )
+        ragePowerUpField.spawnForNewObstacles(
+            obstacles = obstacleGenerator.activeObstacles,
+            rightBoundary = rightBoundary,
+            zone = zone,
+            isEndless = mode == GameMode.ENDLESS,
+            rageActive = rageRemainingSeconds > 0.0,
+            firePowerUpActive = firePowerRemainingSeconds > 0.0,
+            shieldPowerUpActive = shieldRemainingSeconds > 0.0,
+            otherPowerUpsPresent =
+                firePowerUpField.powerUps.isNotEmpty() ||
+                    shieldPowerUpField.powerUps.isNotEmpty(),
+        )
+        // Endless sessions must not retain collision history for enemies that have left the field.
+        if (mode == GameMode.ENDLESS) {
+            val activeIds = obstacleGenerator.activeObstacles.mapTo(mutableSetOf()) { it.id }
+            collisionRegistered.retainAll(activeIds)
+            pointRegistered.retainAll(activeIds)
+        }
     }
 
-    fun restart() {
+    /** Continues a Normal victory in Endless with the same lives, points and coins and zone three enemies. */
+    fun continueEndless() {
+        if (mode != GameMode.NORMAL || status != GameStatus.WON) return
+        mode = GameMode.ENDLESS
+        endlessZone = GameZone.BOSS
+        endlessElapsedSeconds = 0.0
+        endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone, afterVictory = true)
+        dragonY = GameEngineConfig.DRAGON_INITIAL_Y
+        verticalVelocity = 0.0
+        clearHitEffects()
+        rockImpacts.clear()
+        zoneTransitionRemainingSeconds = GameEngineConfig.ZONE_TRANSITION_DURATION_SECONDS
+        resetBossEncounter()
+        // Keep obstacle ids and reward limits: this continues the same run.
+        obstacleGenerator.beginZoneTransition(GameZone.ZONE_THREE)
+        coinField.clear()
+        extraLifeField.clear()
+        clearPowerUps()
+        collisionRegistered.clear()
+        pointRegistered.clear()
+    }
+
+    /** Starts a fresh run and reuses the current difficulty, mode and Endless zone unless replacements are supplied. */
+    fun restart(
+        difficulty: GameDifficulty = this.difficulty,
+        mode: GameMode = this.mode,
+        endlessZone: GameZone = this.endlessZone,
+    ) {
+        this.difficulty = difficulty
+        this.mode = mode
+        this.endlessZone = endlessZone
+        endlessElapsedSeconds = 0.0
+        endlessInitialSpeed = difficulty.endlessStartingSpeed(endlessZone)
         dragonY = GameEngineConfig.DRAGON_INITIAL_Y
         verticalVelocity = 0.0
         lives = GameEngineConfig.INITIAL_LIVES
+        damageCount = 0
+        extraLivesCollected = 0
         scoreTracker.reset()
         rockImpacts.clear()
+        clearHitEffects()
+        zoneTransitionRemainingSeconds = 0.0
+        resetBossEncounter()
+
+        obstacleGenerator.reset(difficulty, GameEngineConfig.zoneAt(obstacleProfileTimeAt(0.0)))
+        coinField.reset()
+        extraLifeField.reset()
+        firePowerUpField.reset()
+        shieldPowerUpField.reset()
+        ragePowerUpField.reset()
+        firePowerRemainingSeconds = 0.0
+        shieldRemainingSeconds = 0.0
+        rageRemainingSeconds = 0.0
+        fireBallLaunchRemainingSeconds = 0.0
+        fireBallField.reset()
+        runCoins = 0
+        collisionRegistered.clear()
+        pointRegistered.clear()
+    }
+
+    private fun clearHitEffects() {
         impactFeedbackRemainingSeconds = 0.0
         impactObstacleId = null
         impactPosition = null
         invulnerabilityRemainingSeconds = 0.0
-        zoneTransitionRemainingSeconds = 0.0
+    }
+
+    private fun clearPowerUps() {
+        firePowerUpField.clear()
+        shieldPowerUpField.clear()
+        ragePowerUpField.clear()
+        fireBallField.reset()
+        firePowerRemainingSeconds = 0.0
+        shieldRemainingSeconds = 0.0
+        rageRemainingSeconds = 0.0
+    }
+
+    private fun resetBossEncounter() {
         catapultEntrySeconds = 0.0
         catapultAttack.reset()
         projectileField.reset()
         bossPatternPlanner.reset()
         bossVolley.reset()
         pendingBossPattern = null
-
-        obstacleGenerator.reset()
-        coinField.reset()
-        runCoins = 0
-        collisionRegistered.clear()
-        pointRegistered.clear()
     }
 
+    /** Collects the current run state for rendering and feedback without advancing the simulation. */
     fun snapshot(): GameSnapshot {
-        val isInvulnerable = invulnerabilityRemainingSeconds > 0.0
+        val isInvulnerable =
+            invulnerabilityRemainingSeconds > 0.0 ||
+                rageRemainingSeconds > 0.0
         val isInvulnerabilityBlinkDim =
-            isInvulnerable &&
+            invulnerabilityRemainingSeconds > 0.0 &&
                 (
                     (
                         GameEngineConfig.INVULNERABILITY_DURATION_SECONDS -
@@ -268,7 +527,7 @@ class GameEngine(
             isInvulnerable = isInvulnerable,
             isInvulnerabilityBlinkDim = isInvulnerabilityBlinkDim,
             zone =
-                GameEngineConfig.zoneAt(
+                zoneAt(
                     scoreTracker.score.activeTimeSeconds,
                 ),
             isZoneTransitioning = isZoneTransitioning,
@@ -282,19 +541,62 @@ class GameEngine(
             coins = coinField.coins.toList(),
             coinScrollX = coinField.scrollX,
             runCoins = runCoins,
+            extraLives = extraLifeField.extraLives.toList(),
+            extraLifeScrollX = extraLifeField.currentScrollX,
+            firePowerUps = firePowerUpField.powerUps,
+            firePowerUpScrollX = firePowerUpField.currentScrollX,
+            isFirePowerActive = firePowerRemainingSeconds > 0.0,
+            firePowerRemainingSeconds = firePowerRemainingSeconds,
+            fireBalls = fireBallField.fireBalls,
+            shieldPowerUps = shieldPowerUpField.powerUps,
+            shieldPowerUpScrollX = shieldPowerUpField.currentScrollX,
+            isShieldActive = shieldRemainingSeconds > 0.0,
+            shieldRemainingSeconds = shieldRemainingSeconds,
             catapult = catapultSnapshot(),
             projectiles = projectileField.snapshot(),
             impactPosition = impactPosition,
             rockImpacts = rockImpacts.toList(),
+            mode = mode,
+            endlessElapsedSeconds = endlessElapsedSeconds,
+            obstacleSpeed = currentObstacleSpeed,
+            ragePowerUps = ragePowerUpField.powerUps,
+            ragePowerUpScrollX = ragePowerUpField.currentScrollX,
+            isRageActive = rageRemainingSeconds > 0.0,
+            rageRemainingSeconds = rageRemainingSeconds,
+            damageCount = damageCount,
+            extraLivesCollected = extraLivesCollected,
         )
     }
 
     private val currentZone: GameZone
-        get() = GameEngineConfig.zoneAt(scoreTracker.score.activeTimeSeconds)
+        get() = zoneAt(scoreTracker.score.activeTimeSeconds)
+
+    private val currentObstacleSpeed: Double
+        get() =
+            if (mode == GameMode.ENDLESS) {
+                difficulty.endless.speedAt(endlessElapsedSeconds, endlessInitialSpeed) *
+                    if (rageRemainingSeconds > 0.0) GameEngineConfig.RAGE_SPEED_MULTIPLIER else 1.0
+            } else {
+                difficulty.obstacleSpeedAt(scoreTracker.score.activeTimeSeconds) *
+                    if (rageRemainingSeconds > 0.0) GameEngineConfig.RAGE_SPEED_MULTIPLIER else 1.0
+            }
+
+    private fun zoneAt(activeTimeSeconds: Double): GameZone =
+        if (mode == GameMode.ENDLESS) endlessZone else GameEngineConfig.zoneAt(activeTimeSeconds)
+
+    private val isBossEncounter: Boolean
+        get() = mode == GameMode.NORMAL && currentZone == GameZone.BOSS
+
+    private fun obstacleProfileTimeAt(activeTimeSeconds: Double): Double {
+        if (mode == GameMode.NORMAL) return activeTimeSeconds
+        // The battlefield is a visual choice in Endless; use regular forest enemies there.
+        val enemyZone = if (endlessZone == GameZone.BOSS) GameZone.ZONE_THREE else endlessZone
+        return enemyZone.ordinal * GameEngineConfig.ZONE_DURATION_SECONDS
+    }
 
     private val isBossFurious: Boolean
         get() =
-            currentZone == GameZone.BOSS &&
+            isBossEncounter &&
                 isRunning &&
                 bossElapsedSeconds >= GameEngineConfig.BOSS_FURY_START_SECONDS
 
@@ -302,7 +604,7 @@ class GameEngine(
         get() = GameEngineConfig.zoneElapsedAt(scoreTracker.score.activeTimeSeconds)
 
     private fun catapultSnapshot(): CatapultSnapshot? {
-        if (currentZone != GameZone.BOSS) return null
+        if (!isBossEncounter) return null
 
         val progress = catapultEntrySeconds / GameEngineConfig.CATAPULT_ENTRY_DURATION_SECONDS
         val easedProgress = progress * progress * (3.0 - 2.0 * progress)
@@ -442,6 +744,14 @@ class GameEngine(
             if (collisionBoundsOverlap(dragonBounds, obstacleBounds)) {
                 collisionRegistered += obstacle.id
                 pointRegistered += obstacle.id
+                if (
+                    shieldRemainingSeconds > 0.0 ||
+                    rageRemainingSeconds > 0.0
+                ) {
+                    registerPowerUpDestruction(obstacle)
+                    obstacleGenerator.destroy(setOf(obstacle.id))
+                    continue
+                }
                 impactObstacleId = obstacle.id
                 impactPosition = null
                 return DamageEvent
@@ -468,8 +778,26 @@ class GameEngine(
         return DamageEvent
     }
 
+    private fun registerPowerUpDestruction(obstacle: Obstacle) {
+        impactObstacleId = null
+        impactPosition =
+            ImpactPosition(
+                x = obstacle.x + obstacle.width / 2.0,
+                y = obstacle.y + obstacle.height / 2.0,
+            )
+        impactFeedbackRemainingSeconds =
+            GameEngineConfig.IMPACT_FEEDBACK_DURATION_SECONDS
+    }
+
+    /** Reports hits during play unless shield or rage is active. Hit invulnerability prevents repeated life loss. */
     internal fun handleDamageEvent(event: DamageEvent) {
         if (!isRunning) {
+            return
+        }
+        if (
+            shieldRemainingSeconds > 0.0 ||
+            rageRemainingSeconds > 0.0
+        ) {
             return
         }
 
@@ -481,6 +809,7 @@ class GameEngine(
         }
 
         lives = (lives - 1).coerceAtLeast(0)
+        damageCount++
         if (lives > 0) {
             invulnerabilityRemainingSeconds =
                 GameEngineConfig.INVULNERABILITY_DURATION_SECONDS
@@ -488,4 +817,5 @@ class GameEngine(
     }
 }
 
+/** Signals a hit to the damage callback even when hit invulnerability prevents life loss. */
 object DamageEvent

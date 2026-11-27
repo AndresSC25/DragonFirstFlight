@@ -8,6 +8,7 @@ internal const val RAINBOW_NYAN_CHANCE = 0.01
 /** Team nyans appear about 9.9% overall because rainbow is rolled first. */
 internal const val TEAM_NYAN_CHANCE = 0.10
 
+/** Picks the sprite for one flight: rainbow first, then the skin's team nyan if it has one, else the skin itself. */
 internal fun rollFlightSpritePath(
     equipped: DragonSkin,
     random: Random,

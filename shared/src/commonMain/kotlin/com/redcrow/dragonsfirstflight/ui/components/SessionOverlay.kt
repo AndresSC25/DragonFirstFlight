@@ -1,6 +1,7 @@
-﻿package com.redcrow.dragonsfirstflight.ui.components
+package com.redcrow.dragonsfirstflight.ui.components
 
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
+import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
@@ -15,10 +16,11 @@ import korlibs.korge.view.solidRect
 import korlibs.korge.view.text
 
 private const val PANEL_WIDTH: Double = 560.0
-private const val PANEL_HEIGHT: Double = 430.0
+private const val PANEL_HEIGHT: Double = 520.0
 private const val CONTENT_WIDTH: Double = 430.0
-private const val CONTENT_HEIGHT: Double = 345.0
+private const val CONTENT_HEIGHT: Double = 435.0
 
+/** Pause and end-of-run overlay with resume, restart, continue to endless and back to menu buttons. */
 internal class SessionOverlay private constructor(
     private val root: Container,
     private val title: Text,
@@ -26,10 +28,13 @@ internal class SessionOverlay private constructor(
     private val coinsLine: Text,
     private val resumeButton: Container,
     private val restartButton: Container,
+    private val continueButton: Container,
+    private val backToMenuButton: Container,
 ) {
     private var displayedRunCoins: Int? = null
     private var displayedCoinBalance: Int? = null
 
+    /** Shows or hides the overlay and sets its title, score text and buttons from [snapshot]; call once per frame. */
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,
@@ -101,6 +106,10 @@ internal class SessionOverlay private constructor(
 
         restartButton.visible =
             hasFinished
+        val canContinue = snapshot.status == GameStatus.WON && snapshot.mode == GameMode.NORMAL
+        continueButton.visible = canContinue
+        restartButton.y = if (canContinue) 85.0 else 0.0
+        backToMenuButton.y = if (canContinue) 85.0 else 0.0
     }
 
     companion object {
@@ -111,6 +120,7 @@ internal class SessionOverlay private constructor(
             buttonBitmap: Bitmap,
             onResume: () -> Unit,
             onRestart: () -> Unit,
+            onContinueEndless: () -> Unit,
             onBackToMenu: () -> Unit,
         ): SessionOverlay {
             require(panelBitmap.width > 0) {
@@ -134,6 +144,8 @@ internal class SessionOverlay private constructor(
             lateinit var coinsLine: Text
             lateinit var resumeButton: Container
             lateinit var restartButton: Container
+            lateinit var continueButton: Container
+            lateinit var backToMenuButton: Container
 
             val root =
                 container.container {
@@ -164,7 +176,7 @@ internal class SessionOverlay private constructor(
                                     CONTENT_WIDTH
                             ) / 2.0
 
-                        y = 170.0
+                        y = 145.0
                         alpha = 0.70
                     }
 
@@ -205,7 +217,7 @@ internal class SessionOverlay private constructor(
                                 title.width
                         ) / 2.0
 
-                    title.y = 230.0
+                    title.y = 185.0
 
                     subtitle =
                         text(
@@ -220,7 +232,7 @@ internal class SessionOverlay private constructor(
                                 subtitle.width
                         ) / 2.0
 
-                    subtitle.y = 295.0
+                    subtitle.y = 247.0
 
                     coinsLine =
                         text(
@@ -229,14 +241,14 @@ internal class SessionOverlay private constructor(
                             color = Colors["#F8D66D"],
                         )
 
-                    coinsLine.y = 319.0
+                    coinsLine.y = 271.0
                     coinsLine.visible = false
 
                     resumeButton =
                         container {
                             createMedievalImageButton(
                                 x = 500.0,
-                                y = 345.0,
+                                y = 315.0,
                                 width = 280.0,
                                 height = 64.0,
                                 texture = buttonBitmap,
@@ -251,7 +263,7 @@ internal class SessionOverlay private constructor(
 
                             createMedievalImageButton(
                                 x = 500.0,
-                                y = 345.0,
+                                y = 315.0,
                                 width = 280.0,
                                 height = 64.0,
                                 texture = buttonBitmap,
@@ -260,15 +272,31 @@ internal class SessionOverlay private constructor(
                             )
                         }
 
-                    createMedievalImageButton(
-                        x = 500.0,
-                        y = 435.0,
-                        width = 280.0,
-                        height = 64.0,
-                        texture = buttonBitmap,
-                        label = "Back to menu",
-                        onClick = onBackToMenu,
-                    )
+                    continueButton =
+                        container {
+                            visible = false
+                            createMedievalImageButton(
+                                x = 500.0,
+                                y = 315.0,
+                                width = 280.0,
+                                height = 64.0,
+                                texture = buttonBitmap,
+                                label = "Continue Endless",
+                                onClick = onContinueEndless,
+                            )
+                        }
+                    backToMenuButton =
+                        container {
+                            createMedievalImageButton(
+                                x = 500.0,
+                                y = 400.0,
+                                width = 280.0,
+                                height = 64.0,
+                                texture = buttonBitmap,
+                                label = "Back to menu",
+                                onClick = onBackToMenu,
+                            )
+                        }
                 }
 
             return SessionOverlay(
@@ -278,6 +306,8 @@ internal class SessionOverlay private constructor(
                 coinsLine = coinsLine,
                 resumeButton = resumeButton,
                 restartButton = restartButton,
+                continueButton = continueButton,
+                backToMenuButton = backToMenuButton,
             )
         }
     }

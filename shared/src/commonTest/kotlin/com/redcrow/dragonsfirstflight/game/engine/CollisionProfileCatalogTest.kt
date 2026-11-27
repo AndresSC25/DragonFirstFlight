@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -8,25 +8,20 @@ import kotlin.test.assertTrue
 class CollisionProfileCatalogTest {
     private val generatedObstaclePaths =
         setOf(
-            "sprites/obstacles/zone1/flying_bat.png",
             "sprites/obstacles/zone1/flying_crows.png",
-            "sprites/obstacles/zone1/flying_sword.png",
             "sprites/obstacles/zone1/flaming_arrow.png",
-            "sprites/obstacles/zone1/forest_mage.png",
             "sprites/obstacles/zone1/knight_sword.png",
-            "sprites/obstacles/zone2/flying _skull_wisp.png",
             "sprites/obstacles/zone2/flying_cursed_book.png",
             "sprites/obstacles/zone2/flying_gargoyle.png",
             "sprites/obstacles/zone2/ghost_knight.png",
-            "sprites/obstacles/zone2/winged_imp.png",
             "sprites/obstacles/zone3/fairy_sprite.png",
-            "sprites/obstacles/zone3/flying_forest_monster.png",
             "sprites/obstacles/zone3/giant_hornet.png",
             "sprites/obstacles/zone3/wind_spirit.png",
         )
 
     @Test
     fun everyGeneratedObstacleHasACollisionProfile() {
+        assertEquals(generatedObstaclePaths, CollisionProfileCatalog.configuredObstaclePaths())
         generatedObstaclePaths.forEach { spritePath ->
             val margins =
                 CollisionProfileCatalog.obstacleMargins(spritePath)
@@ -55,8 +50,8 @@ class CollisionProfileCatalogTest {
                 "sprites/obstacles/zone3/wind_spirit.png",
             )
 
-        assertEquals(95.0 / 384.0, margins.leftRatio)
-        assertEquals(95.0 / 384.0, margins.rightRatio)
+        assertEquals(72.0 / 384.0, margins.leftRatio)
+        assertEquals(72.0 / 384.0, margins.rightRatio)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.redcrow.dragonsfirstflight.game.skins
 
+/** Rare flight sprite variants: one per team skin plus a rainbow one shared by all skins. */
 enum class NyanSkin(
     val spritePath: String,
 ) {

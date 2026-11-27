@@ -7,8 +7,13 @@ import korlibs.korge.view.container
 import korlibs.korge.view.image
 
 private const val PANEL_INSET = 21
+
+/** Rendered thickness of the panel frame in pixels; screens inset their content by this amount. */
 internal const val MEDIEVAL_PANEL_BORDER = PANEL_INSET * 3.0
 
+/**
+ * Adds a nine-slice panel of [width] by [height] at ([x], [y]); the frame keeps a fixed thickness.
+ */
 internal fun Container.medievalPanel(
     bitmap: Bitmap,
     x: Double,

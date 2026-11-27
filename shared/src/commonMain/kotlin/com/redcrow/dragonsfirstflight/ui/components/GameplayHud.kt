@@ -1,5 +1,7 @@
-﻿package com.redcrow.dragonsfirstflight.ui.components
+package com.redcrow.dragonsfirstflight.ui.components
 
+import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
+import com.redcrow.dragonsfirstflight.game.engine.GameMode
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
 import com.redcrow.dragonsfirstflight.game.engine.GameStatus
 import korlibs.image.bitmap.Bitmap
@@ -13,7 +15,7 @@ import korlibs.korge.view.container
 import korlibs.korge.view.image
 import korlibs.korge.view.text
 
-private const val MAX_LIVES: Int = 3
+private const val INITIAL_LIVES: Int = GameEngineConfig.INITIAL_LIVES
 private const val HUD_MARGIN: Double = 20.0
 private const val HUD_ITEM_HEIGHT: Double = 48.0
 private const val LIFE_ICON_GAP: Double = 6.0
@@ -27,33 +29,48 @@ private const val COIN_ICON_SIZE: Double = 28.0
 private const val COIN_ICON_PADDING: Double = 14.0
 private const val COIN_TEXT_GAP: Double = 8.0
 
-private const val SCORE_PLATE_X: Double =
-    MAX_LIVES * HUD_ITEM_HEIGHT +
-        (MAX_LIVES - 1) * LIFE_ICON_GAP +
-        SCORE_PLATE_GAP
+private const val SCORE_PLATE_X: Double = 0.0
 
 private const val COIN_PLATE_X: Double =
     SCORE_PLATE_X + SCORE_PLATE_WIDTH + SCORE_PLATE_GAP
 
+private const val LIFE_STATUS_X: Double =
+    COIN_PLATE_X + COIN_PLATE_WIDTH + SCORE_PLATE_GAP
+
+private const val EXTRA_LIFE_STATUS_X: Double =
+    LIFE_STATUS_X +
+        INITIAL_LIVES * HUD_ITEM_HEIGHT +
+        INITIAL_LIVES * LIFE_ICON_GAP
+
+/** In-game overlay with lives, points, run coins, endless mode label and the pause button. */
 internal class GameplayHud private constructor(
     private val views: Views,
     private val statusGroup: Container,
     private val fullLifeIcons: List<Image>,
+    private val extraLifeIcons: List<Image>,
     private val pointsText: Text,
     private val coinsText: Text,
     private val pauseButton: Image,
+    private val modeLabel: Container,
 ) {
     private var displayedPoints: Int? = null
     private var displayedCoins: Int? = null
 
+    /** Refreshes the HUD from [snapshot] and re-anchors it to the viewport corners; call once per frame. */
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,
     ) {
         anchorToViewportCorners()
+        modeLabel.visible = snapshot.mode == GameMode.ENDLESS
 
         fullLifeIcons.forEachIndexed { index, icon ->
-            icon.visible = index < snapshot.lives
+            icon.visible = index < snapshot.lives.coerceAtMost(INITIAL_LIVES)
+        }
+
+        val extraLives = (snapshot.lives - GameEngineConfig.INITIAL_LIVES).coerceAtLeast(0)
+        extraLifeIcons.forEachIndexed { index, icon ->
+            icon.visible = index < extraLives
         }
 
         if (displayedPoints != snapshot.points) {
@@ -103,29 +120,23 @@ internal class GameplayHud private constructor(
             onPause: () -> Unit,
         ): GameplayHud {
             val fullLifeIcons = mutableListOf<Image>()
+            val extraLifeIcons = mutableListOf<Image>()
             lateinit var pointsText: Text
             lateinit var coinsText: Text
+            lateinit var modeLabel: Container
 
             val statusGroup =
                 container.container {
-                    repeat(MAX_LIVES) { index ->
-                        val iconX =
-                            index * (HUD_ITEM_HEIGHT + LIFE_ICON_GAP)
-
-                        hudImage(
-                            bitmap = lifeEmptyBitmap,
-                            x = iconX,
-                            width = HUD_ITEM_HEIGHT,
-                        )
-
-                        fullLifeIcons +=
-                            hudImage(
-                                bitmap = lifeFullBitmap,
-                                x = iconX,
-                                width = HUD_ITEM_HEIGHT,
-                            )
-                    }
-
+                    modeLabel =
+                        container {
+                            y = HUD_ITEM_HEIGHT + 8.0
+                            visible = false
+                            hudImage(bitmap = scorePlateBitmap, x = 0.0, width = SCORE_PLATE_WIDTH)
+                            text("ENDLESS", textSize = 22.0, color = Colors["#F8D66D"]) {
+                                x = (SCORE_PLATE_WIDTH - width) / 2.0
+                                y = (HUD_ITEM_HEIGHT - height) / 2.0 + SCORE_TEXT_OFFSET_Y
+                            }
+                        }
                     hudImage(
                         bitmap = scorePlateBitmap,
                         x = SCORE_PLATE_X,
@@ -168,6 +179,35 @@ internal class GameplayHud private constructor(
 
                     coinsText.y =
                         (HUD_ITEM_HEIGHT - coinsText.height) / 2.0 + SCORE_TEXT_OFFSET_Y
+
+                    repeat(INITIAL_LIVES) { index ->
+                        val iconX =
+                            LIFE_STATUS_X + index * (HUD_ITEM_HEIGHT + LIFE_ICON_GAP)
+
+                        hudImage(
+                            bitmap = lifeEmptyBitmap,
+                            x = iconX,
+                            width = HUD_ITEM_HEIGHT,
+                        )
+
+                        fullLifeIcons +=
+                            hudImage(
+                                bitmap = lifeFullBitmap,
+                                x = iconX,
+                                width = HUD_ITEM_HEIGHT,
+                            )
+                    }
+
+                    repeat(GameEngineConfig.MAX_LIVES - INITIAL_LIVES) { index ->
+                        extraLifeIcons +=
+                            hudImage(
+                                bitmap = lifeFullBitmap,
+                                x = EXTRA_LIFE_STATUS_X + index * (HUD_ITEM_HEIGHT + LIFE_ICON_GAP),
+                                width = HUD_ITEM_HEIGHT,
+                            ).apply {
+                                visible = false
+                            }
+                    }
                 }
 
             val pauseButton =
@@ -185,9 +225,11 @@ internal class GameplayHud private constructor(
                 views = views,
                 statusGroup = statusGroup,
                 fullLifeIcons = fullLifeIcons,
+                extraLifeIcons = extraLifeIcons,
                 pointsText = pointsText,
                 coinsText = coinsText,
                 pauseButton = pauseButton,
+                modeLabel = modeLabel,
             )
         }
 

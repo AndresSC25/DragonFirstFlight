@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.layout
+package com.redcrow.dragonsfirstflight.ui.layout
 
 import korlibs.image.bitmap.Bitmap
 import korlibs.korge.view.Container
@@ -8,6 +8,9 @@ import korlibs.korge.view.addUpdater
 import korlibs.korge.view.image
 import kotlin.math.max
 
+/**
+ * Adds [bitmap] scaled to cover the whole visible virtual viewport, centered and cropped, refitting on resize.
+ */
 internal fun Container.createResponsiveBackdrop(
     bitmap: Bitmap,
     views: Views,

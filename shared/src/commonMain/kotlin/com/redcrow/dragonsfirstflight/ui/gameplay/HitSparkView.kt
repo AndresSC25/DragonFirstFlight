@@ -13,6 +13,7 @@ private const val HIT_SPARK_FRAME_COLUMNS: Int = 4
 private const val HIT_SPARK_FRAME_ROWS: Int = 1
 private const val HIT_SPARK_FRAME_DURATION_MS: Int = 80
 
+/** Shows a spark at the impact position (or the hit obstacle's center) while impact feedback is active. */
 internal class HitSparkView private constructor(
     private val sprite: Sprite,
     private val animation: SpriteAnimation,

@@ -12,6 +12,7 @@ import kotlin.math.min
 
 private const val HORIZONTAL_FADE_DISTANCE: Double = 96.0
 
+/** Returns 0.0 to 1.0 opacity for an object at [x] with [width], fading near the visible left and right edges. */
 internal fun horizontalEdgeAlpha(
     views: Views,
     x: Double,
@@ -40,6 +41,7 @@ private data class RenderedObstacle(
     val animatedSprite: AnimatedSpriteView?,
 )
 
+/** Draws snapshot obstacles keyed by id, creating views on demand and removing them when they leave the snapshot. */
 internal class ObstacleView private constructor(
     private val container: Container,
     private val obstacleBitmaps: Map<String, Bitmap>,
@@ -47,6 +49,12 @@ internal class ObstacleView private constructor(
     private val animatedObstacleConfigs: Map<String, AnimatedSpriteConfig>,
 ) {
     private val viewsById = mutableMapOf<Int, RenderedObstacle>()
+
+    /** Removes all obstacle views from the scene so the next [update] starts from scratch. */
+    fun reset() {
+        viewsById.values.forEach { it.view.removeFromParent() }
+        viewsById.clear()
+    }
 
     fun update(
         snapshot: GameSnapshot,

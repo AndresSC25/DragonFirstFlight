@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DragonsFirstFlight</string>
+    <string name="skip_intro">Skip</string>
+    <string name="skip_intro_description">Skip introduction</string>
 </resources>

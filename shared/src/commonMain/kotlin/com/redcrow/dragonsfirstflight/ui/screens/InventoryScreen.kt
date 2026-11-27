@@ -1,5 +1,7 @@
 package com.redcrow.dragonsfirstflight.ui.screens
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameSound
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.skins.DragonSkin
 import com.redcrow.dragonsfirstflight.game.skins.SkinInventory
@@ -29,8 +31,10 @@ private const val PANEL_PADDING = 24.0
 private const val CARD_HEIGHT = 220.0
 private const val CARD_GAP = 14.0
 
+/** Builds the hidden inventory screen where the player equips unlocked skins from [skinInventory]. */
 internal suspend fun Container.createInventoryScreen(
     views: Views,
+    audio: GameAudio,
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
     onBack: () -> Unit,
@@ -123,7 +127,10 @@ internal suspend fun Container.createInventoryScreen(
                             texture = buttonBitmap,
                             label = "Equip",
                             textVerticalOffset = 0.0,
-                            onClick = { skinInventory.equip(skin) },
+                            onClick = {
+                                skinInventory.equip(skin)
+                                audio.play(GameSound.EQUIP)
+                            },
                         )
                     }
                 val locked =

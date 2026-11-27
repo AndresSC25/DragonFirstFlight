@@ -1,6 +1,8 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
+/** Turns a sprite's frame rectangle into its hit rectangle by cutting off per-side margin ratios. */
 internal object CollisionBoundsCalculator {
+    /** Margin ratios apply to the frame [width] and [height]; throws on non-finite input or a non-positive size. */
     fun calculate(
         x: Double,
         y: Double,

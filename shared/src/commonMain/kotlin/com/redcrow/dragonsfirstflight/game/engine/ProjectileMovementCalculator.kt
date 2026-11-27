@@ -4,7 +4,9 @@ import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
 
+/** Uses projectile age to place stones and keep the bobbing phase shared by stones launched together. */
 internal object ProjectileMovementCalculator {
+    /** Returns the top edge in game pixels using gravity or formation easing, bobbing, and vertical drift. */
     fun yAt(
         projectile: Projectile,
         ageSeconds: Double,

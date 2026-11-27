@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.gameplay
+package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import korlibs.image.bitmap.Bitmap
@@ -9,6 +9,10 @@ import korlibs.korge.view.container
 import korlibs.korge.view.image
 import kotlin.math.ceil
 
+/**
+ * Parallax background of tiled layers scrolling left at [GameEngineConfig.OBSTACLE_SPEED]
+ * times each layer's speed factor.
+ */
 internal class ScrollingBackground private constructor(
     private val layers: List<ScrollingLayer>,
 ) {
@@ -18,6 +22,13 @@ internal class ScrollingBackground private constructor(
             layers.forEach { it.visible = value }
         }
 
+    var alpha: Double = 1.0
+        set(value) {
+            field = value
+            layers.forEach { it.alpha = value }
+        }
+
+    /** Scrolls every layer by [elapsedSeconds] and relays tiles if the viewport changed; negative values throw. */
     fun update(elapsedSeconds: Double) {
         require(elapsedSeconds >= 0.0) {
             "Elapsed time must not be negative."
@@ -28,6 +39,10 @@ internal class ScrollingBackground private constructor(
         }
     }
 
+    /**
+     * One parallax layer. [speedFactor] scales the obstacle speed, [mirrorTiles] flips alternate tiles for
+     * seamless looping, and [heightFraction] and [offsetYFraction] are fractions of the viewport height.
+     */
     class Layer(
         val bitmap: Bitmap,
         val speedFactor: Double,
@@ -83,6 +98,7 @@ internal class ScrollingBackground private constructor(
     }
 }
 
+/** Returns how many tiles fill [viewportWidth], plus [tilesPerPeriod] spare tiles so scrolling never shows a gap. */
 internal fun tilesToCover(
     viewportWidth: Double,
     tileWidth: Double,
@@ -99,6 +115,12 @@ private class ScrollingLayer(
         set(value) {
             field = value
             layerContainer.visible = value
+        }
+
+    var alpha: Double = 1.0
+        set(value) {
+            field = value
+            layerContainer.alpha = value
         }
 
     private val tiles =

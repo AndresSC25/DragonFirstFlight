@@ -1,4 +1,4 @@
-﻿package com.redcrow.dragonsfirstflight.ui.gameplay
+package com.redcrow.dragonsfirstflight.ui.gameplay
 
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
 import com.redcrow.dragonsfirstflight.game.engine.GameSnapshot
@@ -16,6 +16,7 @@ private const val DRAGON_FRAME_COLUMNS: Int = 6
 private const val DRAGON_FRAME_ROWS: Int = 1
 private const val DRAGON_FRAME_DURATION_MS: Int = 120
 
+/** Slices the 6-frame, 32x32 dragon flight sheet into a looping animation; fails if the sheet size is wrong. */
 internal fun createDragonFlightAnimation(spriteMap: Bitmap): SpriteAnimation {
     require(
         spriteMap.width ==
@@ -44,12 +45,14 @@ internal fun createDragonFlightAnimation(spriteMap: Bitmap): SpriteAnimation {
     )
 }
 
+/** Draws the dragon at the snapshot position, dimmed on impact and invulnerability blinks; flies only while running. */
 internal class DragonView private constructor(
     private val sprite: Sprite,
     private var flightAnimation: SpriteAnimation,
 ) {
     private var isAnimationStopped: Boolean = false
 
+    /** Swaps the flight animation and restarts it at frame 0, staying stopped if the dragon is currently stopped. */
     fun setAnimation(animation: SpriteAnimation) {
         flightAnimation = animation
         sprite.playAnimationLooped(

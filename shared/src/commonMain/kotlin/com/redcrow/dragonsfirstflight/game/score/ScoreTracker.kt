@@ -4,10 +4,12 @@ import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.DurationUnit
 
+/** Accumulates a [Score] from active time at [pointsPerSecond], optionally scaled by a multiplier. */
 class ScoreTracker(
     private val pointsPerSecond: Int,
 ) {
     private var activeTime: Duration = Duration.ZERO
+    private var scoringTime: Duration = Duration.ZERO
 
     var score: Score = Score()
         private set
@@ -18,27 +20,46 @@ class ScoreTracker(
         }
     }
 
-    fun update(elapsedSeconds: Double) {
-        if (!elapsedSeconds.isFinite() || elapsedSeconds <= 0.0) {
+    /**
+     * Adds [elapsedSeconds] of active time and scores it scaled by [pointsMultiplier].
+     * Invalid or non-positive values are ignored.
+     */
+    fun update(
+        elapsedSeconds: Double,
+        pointsMultiplier: Double = 1.0,
+    ) {
+        if (
+            !elapsedSeconds.isFinite() ||
+            elapsedSeconds <= 0.0 ||
+            !pointsMultiplier.isFinite() ||
+            pointsMultiplier <= 0.0
+        ) {
             return
         }
 
         val nextActiveTime = activeTime + elapsedSeconds.seconds
-        if (!nextActiveTime.isFinite()) {
+        val scaledScoringSeconds = elapsedSeconds * pointsMultiplier
+        if (!scaledScoringSeconds.isFinite()) {
             return
         }
+        val nextScoringTime = scoringTime + scaledScoringSeconds.seconds
+        if (!nextActiveTime.isFinite() || !nextScoringTime.isFinite()) return
 
         activeTime = nextActiveTime
+        scoringTime = nextScoringTime
         val activeTimeSeconds = activeTime.toDouble(DurationUnit.SECONDS)
+        val scoringTimeSeconds = scoringTime.toDouble(DurationUnit.SECONDS)
         score =
             Score(
-                points = (activeTimeSeconds * pointsPerSecond).toInt(),
+                points = (scoringTimeSeconds * pointsPerSecond).toInt(),
                 activeTimeSeconds = activeTimeSeconds,
             )
     }
 
+    /** Clears time and score back to zero. */
     fun reset() {
         activeTime = Duration.ZERO
+        scoringTime = Duration.ZERO
         score = Score()
     }
 }

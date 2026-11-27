@@ -1,5 +1,7 @@
-﻿package com.redcrow.dragonsfirstflight.ui.screens
+package com.redcrow.dragonsfirstflight.ui.screens
 
+import com.redcrow.dragonsfirstflight.game.audio.GameAudio
+import com.redcrow.dragonsfirstflight.game.audio.GameAudioDirector
 import com.redcrow.dragonsfirstflight.game.config.DragonGameConfig
 import com.redcrow.dragonsfirstflight.game.controller.GameController
 import com.redcrow.dragonsfirstflight.game.engine.GameEngineConfig
@@ -17,27 +19,28 @@ import com.redcrow.dragonsfirstflight.ui.gameplay.CATAPULT_WARNING_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.CatapultView
 import com.redcrow.dragonsfirstflight.ui.gameplay.CoinView
 import com.redcrow.dragonsfirstflight.ui.gameplay.DragonView
+import com.redcrow.dragonsfirstflight.ui.gameplay.ExtraLifeView
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLAMING_ARROW_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_BAT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_CROWS_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.FLYING_SWORD_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.FOREST_MAGE_SPRITE_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.FireBallView
+import com.redcrow.dragonsfirstflight.ui.gameplay.FirePowerUpView
+import com.redcrow.dragonsfirstflight.ui.gameplay.GreenShieldView
 import com.redcrow.dragonsfirstflight.ui.gameplay.HitSparkView
 import com.redcrow.dragonsfirstflight.ui.gameplay.KNIGHT_SWORD_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ObstacleView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ProjectileView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ROCK_IMPACT_PATH
+import com.redcrow.dragonsfirstflight.ui.gameplay.RagePowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.RockImpactView
+import com.redcrow.dragonsfirstflight.ui.gameplay.RushWarningView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ScrollingBackground
+import com.redcrow.dragonsfirstflight.ui.gameplay.ShieldPowerUpView
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FAIRY_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_GIANT_HORNET_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_THREE_WIND_SPIRIT_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH
-import com.redcrow.dragonsfirstflight.ui.gameplay.ZONE_TWO_WINGED_IMP_SPRITE_PATH
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneBackground
 import com.redcrow.dragonsfirstflight.ui.gameplay.ZoneTransitionOverlay
 import com.redcrow.dragonsfirstflight.ui.layout.createResponsiveShade
@@ -81,33 +84,44 @@ private const val COIN_ATLAS_PATH: String =
 
 private const val COIN_ICON_PATH: String =
     "sprites/coins/coin_icon.png"
+private const val EXTRA_LIFE_PATH: String =
+    "sprites/power-ups/extra_life.png"
+private const val FIRE_POWER_UP_PATH: String =
+    "sprites/power-ups/fire_power_up.png"
+private const val FIRE_BALL_PATH: String =
+    "sprites/power-ups/fire_ball.png"
+private const val SHIELD_POWER_UP_PATH: String =
+    "sprites/power-ups/shield_power_up.png"
+private const val GREEN_SHIELD_PATH: String =
+    "sprites/power-ups/green_shield.png"
+private const val RAGE_POWER_UP_PATH: String =
+    "sprites/power-ups/liquid_rage.png"
 
 private val OBSTACLE_PATHS =
     listOf(
-        FLYING_BAT_SPRITE_PATH,
         FLYING_CROWS_SPRITE_PATH,
-        FLYING_SWORD_SPRITE_PATH,
         FLAMING_ARROW_SPRITE_PATH,
-        FOREST_MAGE_SPRITE_PATH,
         KNIGHT_SWORD_SPRITE_PATH,
-        ZONE_TWO_FLYING_SKULL_WISP_SPRITE_PATH,
         ZONE_TWO_FLYING_CURSED_BOOK_SPRITE_PATH,
         ZONE_TWO_FLYING_GARGOYLE_SPRITE_PATH,
         ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH,
-        ZONE_TWO_WINGED_IMP_SPRITE_PATH,
         ZONE_THREE_FAIRY_SPRITE_PATH,
-        ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH,
         ZONE_THREE_GIANT_HORNET_SPRITE_PATH,
         ZONE_THREE_WIND_SPIRIT_SPRITE_PATH,
     )
 
+/**
+ * Builds the gameplay screen: loads its assets, renders [controller] state each frame and handles input and the HUD.
+ */
 internal suspend fun Container.createGameplayScreen(
     views: Views,
+    audio: GameAudio,
     controller: GameController,
     skinInventory: SkinInventory,
     skinAnimations: Map<String, SpriteAnimation>,
     onBackToMenu: () -> Unit,
 ): Container {
+    val audioDirector = GameAudioDirector(audio)
     val backgroundLayers =
         ZoneBackground.values().associateWith { it.loadLayers() }
 
@@ -138,6 +152,18 @@ internal suspend fun Container.createGameplayScreen(
 
     val coinIconBitmap =
         resourcesVfs[COIN_ICON_PATH].readBitmap()
+    val extraLifeBitmap =
+        resourcesVfs[EXTRA_LIFE_PATH].readBitmap()
+    val firePowerUpBitmap =
+        resourcesVfs[FIRE_POWER_UP_PATH].readBitmap()
+    val fireBallBitmap =
+        resourcesVfs[FIRE_BALL_PATH].readBitmap()
+    val shieldPowerUpBitmap =
+        resourcesVfs[SHIELD_POWER_UP_PATH].readBitmap()
+    val greenShieldBitmap =
+        resourcesVfs[GREEN_SHIELD_PATH].readBitmap()
+    val ragePowerUpBitmap =
+        resourcesVfs[RAGE_POWER_UP_PATH].readBitmap()
 
     val catapultBitmap =
         resourcesVfs[CATAPULT_SPRITE_PATH].readBitmap()
@@ -185,6 +211,35 @@ internal suspend fun Container.createGameplayScreen(
                 atlas = coinAtlasBitmap,
                 views = views,
             )
+        val extraLifeView =
+            ExtraLifeView.create(
+                container = container(),
+                bitmap = extraLifeBitmap,
+                views = views,
+            )
+        val firePowerUpView =
+            FirePowerUpView.create(
+                container = container(),
+                bitmap = firePowerUpBitmap,
+                views = views,
+            )
+        val fireBallView =
+            FireBallView.create(
+                container = container(),
+                bitmap = fireBallBitmap,
+            )
+        val shieldPowerUpView =
+            ShieldPowerUpView.create(
+                container = container(),
+                bitmap = shieldPowerUpBitmap,
+                views = views,
+            )
+        val ragePowerUpView =
+            RagePowerUpView.create(
+                container = container(),
+                bitmap = ragePowerUpBitmap,
+                views = views,
+            )
 
         var appliedRunNumber = controller.runNumber
         val catapultView =
@@ -197,7 +252,9 @@ internal suspend fun Container.createGameplayScreen(
         val rockImpactView =
             RockImpactView.create(container = container(), rockMap = rockImpactBitmap, sparkMap = hitSparkBitmap)
         lateinit var dragonView: DragonView
+        lateinit var greenShieldView: GreenShieldView
         lateinit var hitSparkView: HitSparkView
+        lateinit var rushWarningView: RushWarningView
 
         clipContainer(
             size =
@@ -214,11 +271,22 @@ internal suspend fun Container.createGameplayScreen(
                     container = this,
                     animation = skinAnimations.getValue(skinInventory.equipped.spritePath),
                 )
+            greenShieldView =
+                GreenShieldView.create(
+                    container = this,
+                    bitmap = greenShieldBitmap,
+                )
 
             hitSparkView =
                 HitSparkView.create(
                     container = this,
                     spriteMap = hitSparkBitmap,
+                )
+
+            rushWarningView =
+                RushWarningView.create(
+                    parent = this,
+                    views = views,
                 )
         }
 
@@ -231,6 +299,7 @@ internal suspend fun Container.createGameplayScreen(
 
         gameplayInputSurface.onClick {
             if (controller.isGameRunning) {
+                if (!controller.snapshot().isZoneTransitioning) audioDirector.flap()
                 controller.handleGameAreaInput()
             }
         }
@@ -254,7 +323,8 @@ internal suspend fun Container.createGameplayScreen(
                 panelBitmap = sessionPanelBitmap,
                 buttonBitmap = gameButtonBitmap,
                 onResume = controller::resumeGame,
-                onRestart = controller::startGame,
+                onRestart = controller::restartGame,
+                onContinueEndless = controller::continueEndless,
                 onBackToMenu = onBackToMenu,
             )
 
@@ -270,6 +340,7 @@ internal suspend fun Container.createGameplayScreen(
             elapsedSeconds: Double,
         ) {
             catapultView.update(snapshot)
+            rushWarningView.update(snapshot)
             projectileView.update(snapshot)
             rockImpactView.update(snapshot)
             obstacleView.update(
@@ -278,6 +349,31 @@ internal suspend fun Container.createGameplayScreen(
             )
 
             coinView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+                elapsedSeconds = elapsedSeconds,
+            )
+            extraLifeView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            firePowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            fireBallView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            shieldPowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            ragePowerUpView.update(
+                snapshot = snapshot,
+                isPaused = controller.isPaused,
+            )
+            greenShieldView.update(
                 snapshot = snapshot,
                 isPaused = controller.isPaused,
                 elapsedSeconds = elapsedSeconds,
@@ -293,12 +389,14 @@ internal suspend fun Container.createGameplayScreen(
                 isPaused = controller.isPaused,
                 coinBalance = controller.coinBalance,
             )
-            zoneTransitionOverlay.update(snapshot)
+            // Keep the pause controls above an interrupted transition announcement.
+            zoneTransitionOverlay.update(snapshot, isPaused = controller.isPaused)
         }
 
         addUpdater { delta ->
             if (controller.runNumber != appliedRunNumber) {
                 appliedRunNumber = controller.runNumber
+                obstacleView.reset()
                 val path = rollFlightSpritePath(skinInventory.equipped, Random.Default)
                 dragonView.setAnimation(skinAnimations.getValue(path))
             }
@@ -323,6 +421,8 @@ internal suspend fun Container.createGameplayScreen(
             val snapshot =
                 controller.snapshot()
 
+            audioDirector.update(snapshot, controller.runNumber, controller.isGameVisible, controller.isPaused)
+
             val targetBackground =
                 when (snapshot.zone) {
                     GameZone.ZONE_ONE -> ZoneBackground.FORTRESS_COURTYARD
@@ -331,16 +431,25 @@ internal suspend fun Container.createGameplayScreen(
                     GameZone.BOSS -> ZoneBackground.BOSS_BATTLEFIELD
                 }
 
-            if (
-                !snapshot.isZoneTransitioning ||
-                snapshot.zoneTransitionProgress >=
-                ZoneTransitionOverlay.TRANSITION_MIDPOINT
-            ) {
+            val backgroundBlend =
+                if (snapshot.isZoneTransitioning) {
+                    ZoneTransitionOverlay.backgroundBlend(snapshot.zoneTransitionProgress)
+                } else {
+                    1.0
+                }
+
+            if (backgroundBlend >= 1.0) {
                 displayedBackground = targetBackground
             }
 
+            val isCrossfading = displayedBackground != targetBackground && backgroundBlend > 0.0
+            val fadingBackground = maxOf(displayedBackground, targetBackground)
+            val fadingAlpha =
+                if (fadingBackground == targetBackground) backgroundBlend else 1.0 - backgroundBlend
+
             scrollingBackgrounds.forEach { (zone, background) ->
-                background.visible = zone == displayedBackground
+                background.visible = zone == displayedBackground || (isCrossfading && zone == targetBackground)
+                background.alpha = if (isCrossfading && zone == fadingBackground) fadingAlpha else 1.0
                 background.update(
                     if (
                         zone == displayedBackground &&
@@ -348,7 +457,12 @@ internal suspend fun Container.createGameplayScreen(
                         !snapshot.isZoneTransitioning &&
                         !controller.isPaused
                     ) {
-                        elapsedSeconds
+                        elapsedSeconds *
+                            if (snapshot.isRageActive) {
+                                GameEngineConfig.RAGE_SPEED_MULTIPLIER
+                            } else {
+                                1.0
+                            }
                     } else {
                         0.0
                     },
@@ -388,6 +502,11 @@ internal suspend fun Container.createGameplayScreen(
         dragonView.update(
             snapshot = initialSnapshot,
             isPaused = controller.isPaused,
+        )
+        greenShieldView.update(
+            snapshot = initialSnapshot,
+            isPaused = controller.isPaused,
+            elapsedSeconds = 0.0,
         )
 
         hitSparkView.update(

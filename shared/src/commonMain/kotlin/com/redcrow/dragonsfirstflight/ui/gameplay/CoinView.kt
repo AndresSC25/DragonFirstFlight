@@ -18,6 +18,7 @@ private const val COIN_FRAME_COUNT: Int = 12
 private const val COIN_ROW_COUNT: Int = 2
 private const val COIN_FRAME_SECONDS: Double = 0.08
 
+/** Draws snapshot coins from a reusable image pool with a shared spin animation; 500-value coins use row two. */
 internal class CoinView private constructor(
     private val container: Container,
     private val frames: Array<Array<BmpSlice>>,
@@ -26,6 +27,7 @@ internal class CoinView private constructor(
     private val pool = ArrayList<Image>()
     private var animationSeconds: Double = 0.0
 
+    /** Advances the shared spin clock by [elapsedSeconds] only while running and not [isPaused]. */
     fun update(
         snapshot: GameSnapshot,
         isPaused: Boolean,

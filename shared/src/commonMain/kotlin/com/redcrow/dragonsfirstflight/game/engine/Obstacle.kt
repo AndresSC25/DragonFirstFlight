@@ -1,5 +1,9 @@
-﻿package com.redcrow.dragonsfirstflight.game.engine
+package com.redcrow.dragonsfirstflight.game.engine
 
+/**
+ * One obstacle in the game area, positioned in game-area pixels.
+ * [width] and [height] default to the square [size].
+ */
 data class Obstacle(
     val id: Int,
     val x: Double,
@@ -8,9 +12,14 @@ data class Obstacle(
     val spritePath: String,
     val width: Double = size,
     val height: Double = size,
+    /** Vertical anchor in pixels that [movement] oscillates around. */
     val baseY: Double = y,
     internal val movement: ObstacleMovement = ObstacleMovement.STATIC,
     internal val movementPhase: Double = 0.0,
+    internal val horizontalBehavior: ObstacleHorizontalBehavior =
+        ObstacleHorizontalBehavior.NORMAL,
+    /** Seconds the obstacle still holds still to warn about a rush; it does not move horizontally while above zero. */
+    val rushWarningRemainingSeconds: Double = 0.0,
 ) {
     init {
         require(id >= 0) {
@@ -36,6 +45,9 @@ data class Obstacle(
         }
         require(spritePath.isNotBlank()) {
             "Obstacle sprite path must not be blank."
+        }
+        require(rushWarningRemainingSeconds.isFinite() && rushWarningRemainingSeconds >= 0.0) {
+            "Rush warning time must be finite and must not be negative."
         }
         require(movementPhase.isFinite()) {
             "Obstacle movement phase must be finite."

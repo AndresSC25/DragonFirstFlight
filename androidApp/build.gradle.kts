@@ -14,6 +14,7 @@ kotlin {
 dependencies {
     implementation(project(":shared"))
     implementation(libs.korge)
+    implementation(libs.kotlinx.coroutinesAndroid)
 }
 
 android {
