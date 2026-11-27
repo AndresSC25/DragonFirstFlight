@@ -21,7 +21,6 @@ internal class ObstacleGenerator(
             ),
             listOf(
                 "sprites/obstacles/zone3/fairy_sprite.png",
-                "sprites/obstacles/zone3/flying_forest_monster.png",
                 "sprites/obstacles/zone3/giant_hornet.png",
                 "sprites/obstacles/zone3/wind_spirit.png",
             ),

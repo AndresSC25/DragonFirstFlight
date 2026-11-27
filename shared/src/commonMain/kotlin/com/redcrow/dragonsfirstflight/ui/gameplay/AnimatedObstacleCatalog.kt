@@ -24,9 +24,6 @@ internal const val ZONE_TWO_GHOST_KNIGHT_SPRITE_PATH: String =
 internal const val ZONE_THREE_FAIRY_SPRITE_PATH: String =
     "sprites/obstacles/zone3/fairy_sprite.png"
 
-internal const val ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH: String =
-    "sprites/obstacles/zone3/flying_forest_monster.png"
-
 internal const val ZONE_THREE_GIANT_HORNET_SPRITE_PATH: String =
     "sprites/obstacles/zone3/giant_hornet.png"
 
@@ -84,14 +81,6 @@ internal val ANIMATED_OBSTACLE_CONFIGS =
                 frameDurationMs = 120,
             ),
         ZONE_THREE_FAIRY_SPRITE_PATH to
-            AnimatedSpriteConfig(
-                frameWidth = 384,
-                frameHeight = 384,
-                columns = 8,
-                rows = 1,
-                frameDurationMs = 120,
-            ),
-        ZONE_THREE_FLYING_FOREST_MONSTER_SPRITE_PATH to
             AnimatedSpriteConfig(
                 frameWidth = 384,
                 frameHeight = 384,

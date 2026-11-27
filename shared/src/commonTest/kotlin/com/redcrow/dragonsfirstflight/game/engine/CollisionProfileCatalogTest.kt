@@ -15,7 +15,6 @@ class CollisionProfileCatalogTest {
             "sprites/obstacles/zone2/flying_gargoyle.png",
             "sprites/obstacles/zone2/ghost_knight.png",
             "sprites/obstacles/zone3/fairy_sprite.png",
-            "sprites/obstacles/zone3/flying_forest_monster.png",
             "sprites/obstacles/zone3/giant_hornet.png",
             "sprites/obstacles/zone3/wind_spirit.png",
         )
@@ -51,8 +50,8 @@ class CollisionProfileCatalogTest {
                 "sprites/obstacles/zone3/wind_spirit.png",
             )
 
-        assertEquals(95.0 / 384.0, margins.leftRatio)
-        assertEquals(95.0 / 384.0, margins.rightRatio)
+        assertEquals(72.0 / 384.0, margins.leftRatio)
+        assertEquals(72.0 / 384.0, margins.rightRatio)
     }
 
     @Test
